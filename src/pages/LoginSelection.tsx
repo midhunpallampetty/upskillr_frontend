@@ -1,0 +1,39 @@
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+
+export default function LoginSelection() {
+  const navigate = useNavigate();
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-indigo-900 to-indigo-700 flex flex-col items-center justify-center text-white">
+      {/* Logo & Title */}
+      <div className="text-center mb-10">
+        <h1 className="text-4xl font-bold text-white mb-2">Upskillr</h1>
+        <p className="text-lg text-indigo-200">Choose your login type</p>
+      </div>
+
+      {/* Selection Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+        {/* Student Login */}
+        <div
+          onClick={() => navigate('/studentLogin')}
+          className="cursor-pointer bg-indigo-800 hover:bg-indigo-600 transition-all p-8 rounded-lg text-center shadow-lg w-72"
+        >
+          <img src="/student3.png" alt="Student Icon" className="mx-auto mb-4 w-20 h-20" />
+          <h2 className="text-xl font-semibold mb-2">Student Login</h2>
+          <p className="text-indigo-200 text-sm">Access courses, exams, and learning material.</p>
+        </div>
+
+        {/* School Login */}
+        <div
+          onClick={() => navigate('/schoolLogin')}
+          className="cursor-pointer bg-indigo-800 hover:bg-indigo-600 transition-all p-8 rounded-lg text-center shadow-lg w-72"
+        >
+          <img src="/school3.png" alt="School Icon" className="mx-auto mb-4 w-20 h-20" />
+          <h2 className="text-xl font-semibold mb-2">School Login</h2>
+          <p className="text-indigo-200 text-sm">Manage courses, track students, and view reports.</p>
+        </div>
+      </div>
+    </div>
+  );
+}

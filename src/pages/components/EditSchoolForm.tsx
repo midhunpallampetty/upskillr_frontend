@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import type { School } from '../types/School';
+import type { School } from './Course/types/School';
 
 interface EditSchoolFormProps {
   schoolId: string;

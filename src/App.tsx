@@ -2,8 +2,8 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 import AdminAuth from './pages/AdminAuth';
-import SchoolRegister from './pages/schoolRegister';
-import SchoolLogin from './pages/schoolLogin';
+import SchoolRegister from './pages/school_pages/schoolRegister';
+import SchoolLogin from './pages/school_pages/schoolLogin';
 import LandingPage from './pages/Landing';
 import LoginSelection from './pages/LoginSelection';
 import SignupSelection from './pages/signupSelection';
@@ -12,9 +12,8 @@ import StudentLogin from './pages/studentLogin';
 import StudentRegister from './pages/studentRegister';
 import AdminDashboard from './pages/adminDashboard';
 import VerifiedSchoolHome from './pages/VerifiedSchoolHome';
-import AddCoursePage from './pages/AddCourse';
+import AddCoursePage from './pages/Course/AddCoursePage';
 
-// ✅ Subdomain extractor
 export const getSubdomain = (): string | null => {
   const host = window.location.hostname;
   const parts = host.split('.');

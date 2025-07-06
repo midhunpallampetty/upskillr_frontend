@@ -3,7 +3,7 @@ import axios from 'axios';
 import EditSchoolForm from './EditSchoolForm'; // Your form component
 import { Dialog, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
-import type { School } from '../types/School';
+import type { School } from './Course/types/School';
 
 const SchoolGrid: React.FC = () => {
   const [schools, setSchools] = useState<School[]>([]);

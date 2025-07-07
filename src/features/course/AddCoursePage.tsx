@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
-import uploadToCloudinary from '../components/Course/utils/uploadToCloudinary';
-import TextInput from '../components/Course/CourseForm/TextInput';
-import NumberInput from '../components/Course/CourseForm/NumberInput';
-import Checkbox from '../components/Course/CourseForm/Checkbox';
-import ThumbnailUploader from '../components/Course/CourseForm/ThumbnailUploader';
-import SectionsList from '../components/Course/CourseForm/SectionsList';
-import Section from '../components/Course/types/Section';
+import uploadToCloudinary from './utils/uploadToCloudinary';
+import TextInput from './components/TextInput';
+import NumberInput from './components/NumberInput';
+import Checkbox from './components/Checkbox';
+import ThumbnailUploader from './components/ThumbnailUploader';
+import SectionsList from './components/SectionsList';
+import Section from './types/Section';
 
 const CLOUD_NAME = import.meta.env.VITE_CLOUD_NAME;
 const UPLOAD_PRESET = import.meta.env.VITE_UPLOAD_PRESET;

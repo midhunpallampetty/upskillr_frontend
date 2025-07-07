@@ -39,7 +39,7 @@ const LandingPage: React.FC = () => {
           </h1>
           <div className=" rounded-lg p-4 max-w-2xl mx-auto h-64 flex items-center justify-center">
             <div className="text-xl text-indigo-200">
-            <img className='w-96 h-80' src='/school1.png'/>
+            <img className='w-96 h-80' src='/images/schools/school1.png'/>
             </div>
             s
           </div>
@@ -115,7 +115,7 @@ const LandingPage: React.FC = () => {
             <div className="flex flex-col items-center">
               <div className="bg-indigo-700 rounded-xl w-full h-64 flex items-center justify-center">
                 <div className="text-xl text-indigo-200">          
-                      <img className='w-96 h-80' src='/school2.png'/>
+                      <img className='w-96 h-80' src='/images/schools/school2.png'/>
                 </div>
               </div>
             </div>

@@ -1,19 +1,19 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
-import AdminAuth from './pages/AdminAuth';
-import SchoolRegister from './pages/school_pages/schoolRegister';
-import SchoolLogin from './pages/school_pages/schoolLogin';
-import LandingPage from './pages/Landing';
-import LoginSelection from './pages/LoginSelection';
-import SignupSelection from './pages/signupSelection';
-import VerificationStatus from './pages/VerificationStatus';
-import StudentLogin from './pages/studentLogin';
-import StudentRegister from './pages/studentRegister';
-import AdminDashboard from './pages/adminDashboard';
-import VerifiedSchoolHome from './pages/VerifiedSchoolHome';
-import AddCoursePage from './pages/Course/AddCoursePage';
-
+import AdminAuth from './features/admin/AdminAuth';
+import SchoolRegister from './features/school/schoolRegister';
+import SchoolLogin from './features/school/schoolLogin';
+import LandingPage from './features/shared/Landing';
+import LoginSelection from './features/shared/LoginSelection';
+import SignupSelection from './features/shared/SignupSelection';
+import VerificationStatus from './features/shared/VerificationStatus';
+import StudentLogin from './features/student/studentLogin';
+import StudentRegister from './features/student/studentRegister';
+import AdminDashboard from './features/admin/Dashboard';
+import VerifiedSchoolHome from './features/school/VerifiedSchoolHome';
+import AddCoursePage from './features/course/AddCoursePage';
+import StudentHomePage from './features/student/StudentHomePage';
 export const getSubdomain = (): string | null => {
   const host = window.location.hostname;
   const parts = host.split('.');
@@ -45,6 +45,7 @@ const App: React.FC = () => {
             <Route path="/studentLogin" element={<StudentLogin />} />
             <Route path="/studentRegister" element={<StudentRegister />} />
             <Route path="/dashboard" element={<AdminDashboard />} />
+            <Route path='/studenthome'element={<StudentHomePage/>}/>
             <Route path="/addCourse" element={<AddCoursePage />} />
             <Route path="/school/:verifiedSchool" element={<VerifiedSchoolHome />} />
             <Route path='/school/:verifiedSchool/addCourse' element={<AddCoursePage/>}/>

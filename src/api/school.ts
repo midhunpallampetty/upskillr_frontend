@@ -1,11 +1,18 @@
 // src/api/school.ts
 import axios from 'axios';
 
-const API_BASE = import.meta.env.SCHOOL_API_BASE;
+const API_BASE = "http://school.localhost:5000/api";
 
 export const registerSchool = async (formData: any) => {
   const response = await axios.post(`${API_BASE}/register`, formData);
   return response.data;
+};
+// src/api/school.ts
+
+
+export const loginSchool = async (email: string, password: string) => {
+  const res = await axios.post(`${API_BASE}/login`, { email, password });
+  return res.data.school; // return only school for cleaner use
 };
 
 export const uploadToCloudinary = async (file: File, cloudName: string, uploadPreset: string) => {

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
+import { loginSchool } from '../../api/school'; // adjust the path as needed
 
 const SchoolLogin = () => {
   const [email, setEmail] = useState('');
@@ -9,7 +9,6 @@ const SchoolLogin = () => {
   const [message, setMessage] = useState('');
   const navigate = useNavigate();
 
-  // Extract school name from full subdomain URL
   const extractSchoolName = (subDomainUrl: string): string => {
     try {
       const cleaned = subDomainUrl.replace(/^https?:\/\//, ''); // Remove http:// or https://
@@ -22,17 +21,10 @@ const SchoolLogin = () => {
   };
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-  
     try {
-      const res = await axios.post('http://school.localhost:5000/api/login', {
-        email,
-        password,
-      });
-  
-      const school = res.data.school;
+      const school = await loginSchool(email, password);
       const { accessToken, refreshToken } = school;
   
-      // Save tokens
       Cookies.set('accessToken', accessToken, {
         expires: 1,
         secure: true,
@@ -48,24 +40,20 @@ const SchoolLogin = () => {
       localStorage.setItem('accessToken', JSON.stringify(accessToken));
       setMessage(`✅ Welcome ${school.name}`);
   
-      // ✅ Extract slug from school.subDomain (handle full URLs)
- // ✅ If subDomain is missing or "null", go to /schoolStatus
-if (!school.subDomain || school.subDomain === 'null') {
-  navigate('/schoolStatus');
-  return;
-}
-
-let slug = '';
-try {
-  const url = new URL(school.subDomain);
-  slug = url.hostname.split('.')[0];
-} catch {
-  slug = school.subDomain;
-}
-
-// ✅ Navigate using slug
-navigate(`/school/${slug}`);
-
+      if (!school.subDomain || school.subDomain === 'null') {
+        navigate('/schoolStatus');
+        return;
+      }
+  
+      let slug = '';
+      try {
+        const url = new URL(school.subDomain);
+        slug = url.hostname.split('.')[0];
+      } catch {
+        slug = school.subDomain;
+      }
+  
+      navigate(`/school/${slug}`);
     } catch (err: any) {
       setMessage(`❌ ${err.response?.data?.msg || 'Login failed'}`);
     }
@@ -109,14 +97,15 @@ navigate(`/school/${slug}`);
               className="text-blue-600 hover:underline"
             >
               Register here
-            </button>
+            </button>        {/* School Login */}
+
           </p>
 
           {message && <p className="mt-4 text-sm text-red-600">{message}</p>}
         </form>
 
         <div className="flex-1 bg-blue-500 flex items-center justify-center">
-          <img src="/teaching.png" alt="illustration" className="w-80" />
+          <img src="/images/teaching.png" alt="illustration" className="w-80" />
         </div>
       </div>
     </div>

@@ -98,7 +98,7 @@ const AdminAuth: React.FC = () => {
         {/* Right Illustration */}
         <div className="hidden md:flex w-1/2 items-center justify-center bg-gradient-to-br from-blue-600 to-blue-400">
           <img
-            src="/student.png" // 👈 replace this with the path to your actual illustration
+            src="/images/students/student.png" // 👈 replace this with the path to your actual illustration
             alt="Illustration"
             className="w-[80%] max-w-md"
           />

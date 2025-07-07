@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { registerSchool, uploadToCloudinary } from '../../api/school';
 
@@ -108,7 +107,7 @@ const SchoolRegister = () => {
         coverImage: coverImageUrl,
         coursesOffered: formData.coursesOffered.split(',').map(c => c.trim()),
       });
-  
+      
       setMessage('✅ Registered successfully! You can now log in.');
     } catch (err: any) {
       setMessage(`❌ ${err.response?.data?.msg || 'Registration failed'}`);
@@ -204,7 +203,7 @@ const SchoolRegister = () => {
         </form>
 
         <div className="flex-1 bg-blue-500 flex items-center justify-center">
-          <img src="/schools.png" alt="illustration" className="w-80 rounded-3xl" />
+          <img src="/images/schools/schools.png" alt="illustration" className="w-80 rounded-3xl" />
         </div>
       </div>
     </div>

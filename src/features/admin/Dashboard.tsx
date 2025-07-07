@@ -1,6 +1,6 @@
 import  { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import SchoolGrid from './components/SchoolGrid';
+import SchoolGrid from '../school/components/SchoolGrid';
 // Dummy components — Replace with actual implementations
 const ManageStudents = () => <div>📋 Student Management UI</div>;
 const ManageContent = () => <div>📚 Content Management UI</div>;
@@ -11,7 +11,7 @@ const AdminDashboard = () => {
 
   const handleLogout = () => {
     localStorage.removeItem('admin');
-    navigate('/adminLogin');
+    navigate('/adminRegister');
   };
 
   const renderContent = () => {

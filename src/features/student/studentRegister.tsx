@@ -79,7 +79,7 @@ const StudentRegister = () => {
         {/* Right image */}
         <div className="flex-1 bg-blue-500 flex items-center justify-center p-4">
           <img
-            src="/student learning.png" // Update with your path
+            src="/images/students/student_learning.png" // Update with your path
             alt="Student"
             className="w-72 rounded shadow-lg"
           />

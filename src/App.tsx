@@ -14,6 +14,7 @@ import AdminDashboard from './features/admin/Dashboard';
 import VerifiedSchoolHome from './features/school/VerifiedSchoolHome';
 import AddCoursePage from './features/course/AddCoursePage';
 import StudentHomePage from './features/student/StudentHomePage';
+import AddVideoToSectionWrapper from './features/school/components/AddVideoToSectionWrapper';
 export const getSubdomain = (): string | null => {
   const host = window.location.hostname;
   const parts = host.split('.');
@@ -49,6 +50,8 @@ const App: React.FC = () => {
             <Route path="/addCourse" element={<AddCoursePage />} />
             <Route path="/school/:verifiedSchool" element={<VerifiedSchoolHome />} />
             <Route path='/school/:verifiedSchool/addCourse' element={<AddCoursePage/>}/>
+            <Route path="/school/:verifiedSchool/section/:sectionId/add-video"element={<AddVideoToSectionWrapper/>}
+        />
           </>
         )}
       </Routes>

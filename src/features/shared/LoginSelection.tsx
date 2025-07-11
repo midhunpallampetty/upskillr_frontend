@@ -17,7 +17,7 @@ export default function LoginSelection() {
           onClick={() => navigate('/studentLogin')}
           className="cursor-pointer bg-indigo-800 hover:bg-indigo-600 transition-all p-8 rounded-lg text-center shadow-lg w-72"
         >
-          <img src="/student3.png" alt="Student Icon" className="mx-auto mb-4 w-20 h-20" />
+          <img src="/images/students/student3.png" alt="Student Icon" className="mx-auto mb-4 w-20 h-20" />
           <h2 className="text-xl font-semibold mb-2">Student Login</h2>
           <p className="text-indigo-200 text-sm">Access courses, exams, and learning material.</p>
         </div>
@@ -26,7 +26,7 @@ export default function LoginSelection() {
           onClick={() => navigate('/schoolLogin')}
           className="cursor-pointer bg-indigo-800 hover:bg-indigo-600 transition-all p-8 rounded-lg text-center shadow-lg w-72"
         >
-          <img src="/school3.png" alt="School Icon" className="mx-auto mb-4 w-20 h-20" />
+          <img src="/images/schools/school3.png" alt="School Icon" className="mx-auto mb-4 w-20 h-20" />
           <h2 className="text-xl font-semibold mb-2">School Login</h2>
           <p className="text-indigo-200 text-sm">Manage courses, track students, and view reports.</p>
         </div>

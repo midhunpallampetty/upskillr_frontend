@@ -28,7 +28,7 @@ const SectionsList: React.FC<SectionsListProps> = ({ sections, setSections }) =>
             value={section.title}
             onChange={(e) => handleSectionChange(index, e.target.value)}
             className="flex-grow border px-3 py-2 rounded"
-            required
+            
           />
           {sections.length > 1 && (
             <button

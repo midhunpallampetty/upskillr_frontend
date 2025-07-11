@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { registerSchool, uploadToCloudinary } from '../../api/school';
+import LoadingButton from '../shared/components/Loader'; 
 
 const CLOUD_NAME = import.meta.env.VITE_CLOUD_NAME;
 const UPLOAD_PRESET = import.meta.env.VITE_UPLOAD_PRESET;
@@ -28,7 +29,7 @@ const SchoolRegister = () => {
 
   const clearFieldError = (field: string) => {
     setTimeout(() => {
-      setFieldErrors(prev => ({ ...prev, [field]: '' }));
+      setFieldErrors((prev) => ({ ...prev, [field]: '' }));
     }, 3000);
   };
 
@@ -38,34 +39,34 @@ const SchoolRegister = () => {
     if (name === 'image' && files) {
       const file = files[0];
       if (!file.type.startsWith('image/')) {
-        setFieldErrors(prev => ({ ...prev, image: '❌ Logo must be an image file' }));
+        setFieldErrors((prev) => ({ ...prev, image: '❌ Logo must be an image file' }));
         clearFieldError('image');
         return;
       }
       if (file.size > 2 * 1024 * 1024) {
-        setFieldErrors(prev => ({ ...prev, image: '❌ Logo must be less than 2MB' }));
+        setFieldErrors((prev) => ({ ...prev, image: '❌ Logo must be less than 2MB' }));
         clearFieldError('image');
         return;
       }
       setImageFile(file);
-      setFieldErrors(prev => ({ ...prev, image: '' }));
+      setFieldErrors((prev) => ({ ...prev, image: '' }));
     } else if (name === 'coverImage' && files) {
       const file = files[0];
       if (!file.type.startsWith('image/')) {
-        setFieldErrors(prev => ({ ...prev, coverImage: '❌ Cover must be an image file' }));
+        setFieldErrors((prev) => ({ ...prev, coverImage: '❌ Cover must be an image file' }));
         clearFieldError('coverImage');
         return;
       }
       if (file.size > 2 * 1024 * 1024) {
-        setFieldErrors(prev => ({ ...prev, coverImage: '❌ Cover must be less than 2MB' }));
+        setFieldErrors((prev) => ({ ...prev, coverImage: '❌ Cover must be less than 2MB' }));
         clearFieldError('coverImage');
         return;
       }
       setCoverImageFile(file);
-      setFieldErrors(prev => ({ ...prev, coverImage: '' }));
+      setFieldErrors((prev) => ({ ...prev, coverImage: '' }));
     } else {
       setFormData({ ...formData, [name]: value });
-      setFieldErrors(prev => ({ ...prev, [name]: '' }));
+      setFieldErrors((prev) => ({ ...prev, [name]: '' }));
     }
   };
 
@@ -83,31 +84,29 @@ const SchoolRegister = () => {
     if (!coverImageFile) errors.coverImage = 'Cover image is required';
 
     setFieldErrors(errors);
-    Object.keys(errors).forEach(field => clearFieldError(field));
+    Object.keys(errors).forEach((field) => clearFieldError(field));
 
     return Object.keys(errors).length === 0;
   };
-
-  
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setFieldErrors({});
     setMessage('');
     if (!validateFields()) return;
-  
+
     setLoading(true);
     try {
       const imageUrl = await uploadToCloudinary(imageFile!, CLOUD_NAME, UPLOAD_PRESET);
       const coverImageUrl = await uploadToCloudinary(coverImageFile!, CLOUD_NAME, UPLOAD_PRESET);
-  
+
       await registerSchool({
         ...formData,
         image: imageUrl,
         coverImage: coverImageUrl,
-        coursesOffered: formData.coursesOffered.split(',').map(c => c.trim()),
+        coursesOffered: formData.coursesOffered.split(',').map((c) => c.trim()),
       });
-      
+
       setMessage('✅ Registered successfully! You can now log in.');
     } catch (err: any) {
       setMessage(`❌ ${err.response?.data?.msg || 'Registration failed'}`);
@@ -115,7 +114,6 @@ const SchoolRegister = () => {
       setLoading(false);
     }
   };
-  
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-gray-800 to-blue-800">
@@ -132,9 +130,7 @@ const SchoolRegister = () => {
                 onChange={handleChange}
                 className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
-              {fieldErrors[field] && (
-                <p className="text-sm text-red-600 mt-1">{fieldErrors[field]}</p>
-              )}
+              {fieldErrors[field] && <p className="text-sm text-red-600 mt-1">{fieldErrors[field]}</p>}
             </div>
           ))}
 
@@ -157,9 +153,7 @@ const SchoolRegister = () => {
               onChange={handleChange}
               className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-            {fieldErrors.password && (
-              <p className="text-sm text-red-600 mt-1">{fieldErrors.password}</p>
-            )}
+            {fieldErrors.password && <p className="text-sm text-red-600 mt-1">{fieldErrors.password}</p>}
           </div>
 
           <div className="mb-4">
@@ -171,18 +165,11 @@ const SchoolRegister = () => {
           <div className="mb-4">
             <label className="block mb-2 text-sm text-gray-600">Cover Image</label>
             <input type="file" name="coverImage" onChange={handleChange} accept="image/*" />
-            {fieldErrors.coverImage && (
-              <p className="text-sm text-red-600 mt-1">{fieldErrors.coverImage}</p>
-            )}
+            {fieldErrors.coverImage && <p className="text-sm text-red-600 mt-1">{fieldErrors.coverImage}</p>}
           </div>
 
-          <button
-            type="submit"
-            className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 disabled:opacity-50"
-            disabled={loading}
-          >
-            {loading ? 'Registering...' : 'Register'}
-          </button>
+          {/* ✅ Modular Loading Button */}
+          <LoadingButton isLoading={loading} text="Register" type="submit" />
 
           <p className="mt-4 text-sm text-center text-gray-600">
             Already Registered?{' '}

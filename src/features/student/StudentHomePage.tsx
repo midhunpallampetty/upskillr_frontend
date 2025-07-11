@@ -2,15 +2,8 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
+import { School } from './types/School';
 
-interface School {
-  _id: string;
-  name: string;
-  image: string;
-  experience: string;
-  coursesOffered: string[];
-  isVerified: boolean;
-}
 
 const ITEMS_PER_PAGE = 5;
 
@@ -108,9 +101,9 @@ const StudentHomePage = () => {
             <h2 className="text-3xl font-bold">E Learning Platform</h2>
           </div>
           <img
-            src="https://www.clipartmax.com/png/full/198-1985660_students-clipart-transparent-background.png"
+            src="/images/students/student_home.png"
             alt="learning"
-            className="h-24"
+            className="h-40 bg-blue-500/50 rounded-md"
           />
         </section>
 

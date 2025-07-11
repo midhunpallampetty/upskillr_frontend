@@ -7,7 +7,6 @@ const NumberInput: React.FC<NumberInputProps> = ({
   value,
   onChange,
   min = 0,
-  required = true,
 }) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
@@ -24,7 +23,6 @@ const NumberInput: React.FC<NumberInputProps> = ({
         onChange={handleChange}
         className="w-full border px-3 py-2 rounded"
         min={min}
-        required={required}
       />
     </div>
   );

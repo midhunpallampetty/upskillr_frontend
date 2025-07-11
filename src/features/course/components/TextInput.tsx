@@ -9,7 +9,6 @@ import { TextInputProps } from "../types/TextInputProps";
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className="w-full border px-3 py-2 rounded"
-        required={required}
       />
     </div>
   );

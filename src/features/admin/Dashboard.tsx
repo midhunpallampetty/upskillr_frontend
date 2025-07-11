@@ -1,16 +1,32 @@
-import  { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SchoolGrid from '../school/components/SchoolGrid';
-// Dummy components — Replace with actual implementations
-const ManageStudents = () => <div>📋 Student Management UI</div>;
-const ManageContent = () => <div>📚 Content Management UI</div>;
+
+const ManageStudents = () => (
+  <div className="text-center text-gray-600">
+    📋 Student Management UI (Coming soon...)
+  </div>
+);
+
+const ManageContent = () => (
+  <div className="text-center text-gray-600">
+    📚 Content Management UI (Coming soon...)
+  </div>
+);
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
-  const [activeSection, setActiveSection] = useState<string>('welcome');
+  const [activeSection, setActiveSection] = useState<string>(() => {
+    return localStorage.getItem('admin_active_section') || 'welcome';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('admin_active_section', activeSection);
+  }, [activeSection]);
 
   const handleLogout = () => {
     localStorage.removeItem('admin');
+    localStorage.removeItem('admin_active_section');
     navigate('/adminRegister');
   };
 
@@ -25,7 +41,9 @@ const AdminDashboard = () => {
       default:
         return (
           <div className="text-center">
-            <h2 className="text-2xl font-semibold mb-4">Welcome to the Admin Dashboard</h2>
+            <h2 className="text-2xl font-semibold mb-4">
+              Welcome to the Admin Dashboard
+            </h2>
             <img
               src="/admin.png"
               alt="Admin Illustration"
@@ -33,6 +51,19 @@ const AdminDashboard = () => {
             />
           </div>
         );
+    }
+  };
+
+  const getSectionDescription = () => {
+    switch (activeSection) {
+      case 'students':
+        return 'Manage student data and accounts.';
+      case 'schools':
+        return 'View, approve, and edit schools.';
+      case 'content':
+        return 'Manage uploaded content and resources.';
+      default:
+        return 'Here’s a quick overview and tools to manage the platform.';
     }
   };
 
@@ -86,11 +117,7 @@ const AdminDashboard = () => {
       <main className="flex-1 p-10">
         <div className="mb-6">
           <h2 className="text-3xl font-bold text-gray-800">Welcome, Admin 👋</h2>
-          <p className="text-gray-500">
-            {activeSection === 'welcome'
-              ? 'Here’s a quick overview and tools to manage the platform.'
-              : `You’re viewing: ${activeSection.replace(/^./, c => c.toUpperCase())}`}
-          </p>
+          <p className="text-gray-500">{getSectionDescription()}</p>
         </div>
 
         <div className="bg-white p-6 rounded-lg shadow-md min-h-[300px]">

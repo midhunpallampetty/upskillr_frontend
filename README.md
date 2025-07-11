@@ -52,3 +52,57 @@ export default tseslint.config({
   },
 })
 ```
+Folder Structure 
+.
+├── babel.config.js
+├── eslint.config.js
+├── index.html
+├── jest.config.ts
+├── jest.setup.ts
+├── package.json
+├── package-lock.json
+├── postcss.config.js
+├── public
+│   └── images
+│       ├── education.png
+│       ├── logo.png
+│       ├── navbar_home.png
+│       ├── schools
+│       ├── students
+│       ├── teaching.png
+│       └── vite.svg
+├── README.md
+├── src
+│   ├── api
+│   │   └── school.ts
+│   ├── App.tsx
+│   ├── assets
+│   │   └── react.svg
+│   ├── constants
+│   ├── features
+│   │   ├── admin
+│   │   ├── course
+│   │   ├── school
+│   │   ├── shared
+│   │   └── student
+│   ├── hooks
+│   │   └── useAuthMiddleware.ts
+│   ├── main.tsx
+│   ├── routes
+│   ├── setupTests.ts
+│   ├── styles
+│   │   ├── App.css
+│   │   └── index.css
+│   ├── __tests__
+│   │   ├── admin
+│   │   ├── course
+│   │   ├── school
+│   │   └── shared
+│   └── vite-env.d.ts
+├── tailwind.config.js
+├── tsconfig.app.json
+├── tsconfig.json
+├── tsconfig.node.json
+└── vite.config.ts
+
+23 directories, 28 files

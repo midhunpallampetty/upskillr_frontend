@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Navbar from '../shared/components/Navbar'; // <-- Update the path to your actual Navbar component
 
 interface Props {
   sectionId: string;
@@ -75,53 +76,57 @@ const AddVideoToSection: React.FC<Props> = ({ sectionId, schoolDb }) => {
   };
 
   return (
-    <div className="max-w-md mx-auto p-6 bg-white shadow-md rounded-lg mt-6">
-      <h2 className="text-xl font-bold mb-4 text-center">📹 Add Video to Section</h2>
+    <div>
+      <Navbar /> {/* 🧠 This renders your Navbar on top */}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium mb-1">Video Name *</label>
-          <input
-            type="text"
-            value={videoName}
-            onChange={(e) => setVideoName(e.target.value)}
-            className="w-full border border-gray-300 px-3 py-2 rounded-md"
-            placeholder="Enter video title"
-            required
-          />
-        </div>
+      <div className="max-w-md mx-auto p-6 bg-white shadow-md rounded-lg mt-6">
+        <h2 className="text-xl font-bold mb-4 text-center">📹 Add Video to Section</h2>
 
-        <div>
-          <label className="block text-sm font-medium mb-1">Upload Video *</label>
-          <input
-            type="file"
-            accept="video/*"
-            onChange={(e) => setVideoFile(e.target.files?.[0] || null)}
-            className="w-full border border-gray-300 px-3 py-2 rounded-md"
-            required
-          />
-        </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">Video Name *</label>
+            <input
+              type="text"
+              value={videoName}
+              onChange={(e) => setVideoName(e.target.value)}
+              className="w-full border border-gray-300 px-3 py-2 rounded-md"
+              placeholder="Enter video title"
+              required
+            />
+          </div>
 
-        <div>
-          <label className="block text-sm font-medium mb-1">Description (optional)</label>
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            className="w-full border border-gray-300 px-3 py-2 rounded-md"
-            placeholder="Enter short description"
-          />
-        </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Upload Video *</label>
+            <input
+              type="file"
+              accept="video/*"
+              onChange={(e) => setVideoFile(e.target.files?.[0] || null)}
+              className="w-full border border-gray-300 px-3 py-2 rounded-md"
+              required
+            />
+          </div>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className={`w-full py-2 px-4 rounded-md text-white font-semibold ${
-            loading ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700'
-          }`}
-        >
-          {loading ? 'Uploading...' : 'Add Video'}
-        </button>
-      </form>
+          <div>
+            <label className="block text-sm font-medium mb-1">Description (optional)</label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="w-full border border-gray-300 px-3 py-2 rounded-md"
+              placeholder="Enter short description"
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className={`w-full py-2 px-4 rounded-md text-white font-semibold ${
+              loading ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700'
+            }`}
+          >
+            {loading ? 'Uploading...' : 'Add Video'}
+          </button>
+        </form>
+      </div>
 
       <ToastContainer position="bottom-center" />
     </div>
@@ -129,4 +134,3 @@ const AddVideoToSection: React.FC<Props> = ({ sectionId, schoolDb }) => {
 };
 
 export default AddVideoToSection;
-  

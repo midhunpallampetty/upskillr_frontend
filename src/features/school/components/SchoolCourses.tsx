@@ -4,11 +4,20 @@ import { Course } from '../types/Course';
 import { Props } from '../types/Props';
 import { getCoursesBySchool } from '../api/course.api';
 import { useNavigate } from 'react-router-dom';
+import VideoModal from '../components/VideoModal';
 
 interface Section {
   _id: string;
   sectionName: string;
   examRequired: boolean;
+  videos?: string[];
+}
+
+interface Video {
+  _id: string;
+  videoName: string;
+  description: string;
+  url: string;
 }
 
 const SchoolCourses: React.FC<Props> = ({ schoolId, dbname }) => {
@@ -17,8 +26,15 @@ const SchoolCourses: React.FC<Props> = ({ schoolId, dbname }) => {
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [sections, setSections] = useState<Section[]>([]);
   const [loadingSections, setLoadingSections] = useState(false);
-  const navigate = useNavigate(); // 👈 for routing
+  const [videoModalOpen, setVideoModalOpen] = useState(false);
+  const [videoIds, setVideoIds] = useState<string[]>([]);
+  const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
+  const [currentVideo, setCurrentVideo] = useState<Video | null>(null);
+  const [loadingVideo, setLoadingVideo] = useState(false);
 
+  const navigate = useNavigate();
+
+  // Load courses
   useEffect(() => {
     const fetchCourses = async () => {
       try {
@@ -36,6 +52,7 @@ const SchoolCourses: React.FC<Props> = ({ schoolId, dbname }) => {
     }
   }, [schoolId, dbname]);
 
+  // Load sections for selected course
   const handleCourseClick = async (course: Course) => {
     setSelectedCourse(course);
     setLoadingSections(true);
@@ -56,16 +73,83 @@ const SchoolCourses: React.FC<Props> = ({ schoolId, dbname }) => {
     setSections([]);
   };
 
-  if (loading) {
-    return <p className="p-6 text-gray-600">Loading courses...</p>;
-  }
+ const handleShowVideos = (section: Section) => {
+    if (!section.videos || section.videos.length === 0) {
+      alert('⚠️ No videos in this section.');
+      return;
+    }
+console.log(section,'hai');
+    setVideoIds(section.videos);
+    setCurrentVideoIndex(0);
+    setCurrentVideo(null);
+    setVideoModalOpen(true);
+  };
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    const fetchVideo = async () => {
+      if (
+        videoIds.length === 0 ||
+        currentVideoIndex < 0 ||
+        currentVideoIndex >= videoIds.length
+      ) {
+        setCurrentVideo(null);
+        return;
+      }
+
+      setLoadingVideo(true);
+      try {
+        const videoId = videoIds[currentVideoIndex];
+        const res = await axios.get(
+          `http://course.localhost:5000/api/getvideo/${dbname}/${videoId}`
+        );
+        if (!isCancelled) {
+          const videoData = res.data?.data;
+        
+          // Check if it's an array or single object
+          if (Array.isArray(videoData)) {
+            setCurrentVideo(videoData[0] || null);
+          } else {
+            setCurrentVideo(videoData || null);
+          }
+        }
+        
+      } catch (err) {
+        if (!isCancelled) {
+          console.error('❌ Failed to fetch video:', err);
+          setCurrentVideo(null);
+        }
+      } finally {
+        if (!isCancelled) {
+          setLoadingVideo(false);
+        }
+      }
+    };
+
+    fetchVideo();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [currentVideoIndex, videoIds, dbname]);
+
+  const closeModal = () => {
+    setVideoModalOpen(false);
+    setVideoIds([]);
+    setCurrentVideoIndex(0);
+    setCurrentVideo(null);
+    setLoadingVideo(false);
+  };
 
   return (
     <div className="p-6">
       {!selectedCourse ? (
         <>
           <h2 className="text-xl font-bold mb-4">🎓 Courses Offered</h2>
-          {courses.length === 0 ? (
+          {loading ? (
+            <p className="text-gray-600">Loading courses...</p>
+          ) : courses.length === 0 ? (
             <p className="text-gray-600">No courses added yet.</p>
           ) : (
             <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
@@ -120,20 +204,46 @@ const SchoolCourses: React.FC<Props> = ({ schoolId, dbname }) => {
                       {section.examRequired ? '📝 Exam Required' : '✅ No Exam'}
                     </p>
                   </div>
-                  <button
-                    onClick={() =>
-                      navigate(`/school/${dbname}/section/${section._id}/add-video`)
-                    }
-                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm shadow"
-                  >
-                    ➕ Add Video
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() =>
+                        navigate(`/school/${dbname}/section/${section._id}/add-video`)
+                      }
+                      className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm shadow"
+                    >
+                      ➕ Add Video
+                    </button>
+                    <button
+                      onClick={() => handleShowVideos(section)}
+                      className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded text-sm shadow"
+                    >
+                      ▶️ Show Videos
+                    </button>
+                  </div>
                 </li>
               ))}
             </ul>
           )}
         </>
       )}
+
+      {/* 🎬 Video Modal */}
+      <VideoModal
+        open={videoModalOpen}
+        currentVideo={currentVideo}
+        currentVideoIndex={currentVideoIndex}
+        videoCount={videoIds.length}
+        loadingVideo={loadingVideo}
+        onClose={closeModal}
+        onNext={() => {
+          setCurrentVideo(null);
+          setCurrentVideoIndex((prev) => Math.min(prev + 1, videoIds.length - 1));
+        }}
+        onPrev={() => {
+          setCurrentVideo(null);
+          setCurrentVideoIndex((prev) => Math.max(prev - 1, 0));
+        }}
+      />
     </div>
   );
 };

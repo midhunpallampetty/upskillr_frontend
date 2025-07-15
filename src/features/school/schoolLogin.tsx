@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
-import { loginSchool } from '../../api/school'; // adjust the path as needed
+import { loginSchool } from '../../api/school'; 
 
 const SchoolLogin = () => {
   const [email, setEmail] = useState('');
@@ -11,8 +11,8 @@ const SchoolLogin = () => {
 
   const extractSchoolName = (subDomainUrl: string): string => {
     try {
-      const cleaned = subDomainUrl.replace(/^https?:\/\//, ''); // Remove http:// or https://
-      const hostPart = cleaned.split('.')[0]; // Get first part before '.'
+      const cleaned = subDomainUrl.replace(/^https?:\/\//, ''); 
+      const hostPart = cleaned.split('.')[0]; 
       return hostPart;
     } catch (err) {
       console.error('Error extracting school name from subdomain:', err);
@@ -24,7 +24,7 @@ const SchoolLogin = () => {
     try {
       const school = await loginSchool(email, password);
       const { accessToken, refreshToken } = school;
-  
+  console.log(school,'response')
       Cookies.set('accessToken', accessToken, {
         expires: 1,
         secure: true,
@@ -36,7 +36,7 @@ const SchoolLogin = () => {
         secure: true,
         sameSite: 'strict',
       });
-  
+    
       localStorage.setItem('accessToken', JSON.stringify(accessToken));
       setMessage(`✅ Welcome ${school.name}`);
   
@@ -97,7 +97,7 @@ const SchoolLogin = () => {
               className="text-blue-600 hover:underline"
             >
               Register here
-            </button>        {/* School Login */}
+            </button>
 
           </p>
 

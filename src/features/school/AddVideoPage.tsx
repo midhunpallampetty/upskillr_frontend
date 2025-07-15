@@ -1,43 +1,14 @@
-import React, { useState } from 'react';
-import axios from 'axios';
+import React, { useState, lazy, Suspense } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import Navbar from '../shared/components/Navbar'; // <-- Update the path to your actual Navbar component
-
-interface Props {
-  sectionId: string;
-  schoolDb: string;
-}
-
-const CLOUD_NAME = import.meta.env.VITE_CLOUD_NAME;
-const UPLOAD_PRESET = import.meta.env.VITE_UPLOAD_PRESET;
-
-const AddVideoToSection: React.FC<Props> = ({ sectionId, schoolDb }) => {
+import { SectionProps } from './types/Props';
+import { addVideoToSection, uploadVideoToCloudinary } from './api/video.api';
+const Navbar = lazy(() => import('../shared/components/Navbar'));
+const AddVideoToSection: React.FC<SectionProps> = ({ sectionId, schoolDb }) => {
   const [videoName, setVideoName] = useState('');
   const [description, setDescription] = useState('');
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
-
-  const handleVideoUpload = async () => {
-    if (!videoFile) return null;
-
-    const formData = new FormData();
-    formData.append('file', videoFile);
-    formData.append('upload_preset', UPLOAD_PRESET);
-    formData.append('resource_type', 'video');
-
-    try {
-      const res = await axios.post(
-        `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/video/upload`,
-        formData
-      );
-      return res.data.secure_url;
-    } catch (err) {
-      console.error('❌ Cloudinary upload failed:', err);
-      toast.error('❌ Cloudinary upload failed');
-      return null;
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,20 +20,15 @@ const AddVideoToSection: React.FC<Props> = ({ sectionId, schoolDb }) => {
 
     setLoading(true);
 
-    const videoUrl = await handleVideoUpload();
+    const videoUrl = await uploadVideoToCloudinary(videoFile);
     if (!videoUrl) {
+      toast.error('❌ Video upload failed');
       setLoading(false);
       return;
     }
 
     try {
-      await axios.post(
-        `http://course.localhost:5000/api/${schoolDb}/sections/${sectionId}/videos`,
-        {
-          videos: [{ videoName, url: videoUrl, description }],
-        }
-      );
-
+      await addVideoToSection(schoolDb, sectionId, videoName, videoUrl, description);
       toast.success('✅ Video added successfully');
       setVideoName('');
       setDescription('');
@@ -77,7 +43,10 @@ const AddVideoToSection: React.FC<Props> = ({ sectionId, schoolDb }) => {
 
   return (
     <div>
-      <Navbar /> {/* 🧠 This renders your Navbar on top */}
+      <Suspense fallback={<div className="text-center py-2 text-gray-500">Loading Navbar...</div>}>
+        <Navbar />
+      </Suspense>
+
 
       <div className="max-w-md mx-auto p-6 bg-white shadow-md rounded-lg mt-6">
         <h2 className="text-xl font-bold mb-4 text-center">📹 Add Video to Section</h2>
@@ -119,9 +88,8 @@ const AddVideoToSection: React.FC<Props> = ({ sectionId, schoolDb }) => {
           <button
             type="submit"
             disabled={loading}
-            className={`w-full py-2 px-4 rounded-md text-white font-semibold ${
-              loading ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700'
-            }`}
+            className={`w-full py-2 px-4 rounded-md text-white font-semibold ${loading ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700'
+              }`}
           >
             {loading ? 'Uploading...' : 'Add Video'}
           </button>

@@ -1,7 +1,7 @@
 import React, { useEffect, useState, Fragment, lazy, Suspense } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import type { School } from '../../course/types/School';
-import { getSchools, approveSchool } from '../api/school';
+import { getSchools, approveSchool } from '../api/school.api';
 
 const EditSchoolForm = lazy(() => import('./EditSchoolForm'));
 

@@ -22,3 +22,11 @@ export const approveSchool = async (schoolId: string): Promise<void> => {
     isVerified: true,
   });
 };
+export const getSchoolBySubdomain = async (subDomain: string) => {
+  const url = `${BASE_URL}/getSchoolBySubDomain?subDomain=http://${subDomain}.localhost:5173`;
+  return axios.get(url);
+};  
+
+export const createDatabase = async (schoolName: string) => {
+  return axios.post(`${BASE_URL}/create-database`, { schoolName });
+};

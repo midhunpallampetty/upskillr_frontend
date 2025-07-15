@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { registerSchool, uploadToCloudinary } from '../../api/school';
-import LoadingButton from '../shared/components/Loader'; 
+
+const LoadingButton = lazy(() => import('../shared/components/Loader'));
 
 const CLOUD_NAME = import.meta.env.VITE_CLOUD_NAME;
 const UPLOAD_PRESET = import.meta.env.VITE_UPLOAD_PRESET;
@@ -169,7 +170,9 @@ const SchoolRegister = () => {
           </div>
 
           {/* ✅ Modular Loading Button */}
-          <LoadingButton isLoading={loading} text="Register" type="submit" />
+          <Suspense fallback={<button className="w-full p-2 bg-blue-500 text-white rounded">Loading...</button>}>
+            <LoadingButton isLoading={loading} text="Register" type="submit" />
+          </Suspense>
 
           <p className="mt-4 text-sm text-center text-gray-600">
             Already Registered?{' '}

@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState,lazy,Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
-import SchoolGrid from '../school/components/SchoolGrid';
+const SchoolGrid = lazy(() => import('../school/components/SchoolGrid'));
+
 
 const ManageStudents = () => (
   <div className="text-center text-gray-600">
@@ -30,29 +31,32 @@ const AdminDashboard = () => {
     navigate('/adminRegister');
   };
 
-  const renderContent = () => {
-    switch (activeSection) {
-      case 'students':
-        return <ManageStudents />;
-      case 'schools':
-        return <SchoolGrid />;
-      case 'content':
-        return <ManageContent />;
-      default:
-        return (
-          <div className="text-center">
-            <h2 className="text-2xl font-semibold mb-4">
-              Welcome to the Admin Dashboard
-            </h2>
-            <img
-              src="/admin.png"
-              alt="Admin Illustration"
-              className="w-80 mx-auto rounded shadow"
-            />
-          </div>
-        );
-    }
-  };
+const renderContent = () => {
+  return (
+    <Suspense fallback={<p className="text-center text-gray-400">Loading...</p>}>
+      {
+        {
+          students: <ManageStudents />,
+          schools: <SchoolGrid />,
+          content: <ManageContent />,
+          welcome: (
+            <div className="text-center">
+              <h2 className="text-2xl font-semibold mb-4">
+                Welcome to the Admin Dashboard
+              </h2>
+              <img
+                src="/admin.png"
+                alt="Admin Illustration"
+                className="w-80 mx-auto rounded shadow"
+              />
+            </div>
+          ),
+        }[activeSection]
+      }
+    </Suspense>
+  );
+};
+
 
   const getSectionDescription = () => {
     switch (activeSection) {

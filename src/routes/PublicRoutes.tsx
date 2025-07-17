@@ -15,7 +15,7 @@ const CoursesPage = lazy(() => import('../features/student/CoursesPage'));
 const StudentHomePage = lazy(() => import('../features/student/StudentHomePage'));
 const AddCoursePage = lazy(() => import('../features/course/AddCoursePage'));
 const VerifiedSchoolHome = lazy(() => import('../features/school/VerifiedSchoolHome'));
-const AddVideoToSectionWrapper = lazy(() => import('../features/school/components/AddVideoToSectionWrapper'));
+const AddVideoToSectionWrapper = lazy(() => import('../features/school/components/UI/AddVideoToSectionWrapper'));
 
 const PublicRoutes = () => (
   <Routes>

@@ -5,7 +5,7 @@ import AppRouter from './routes/AppRouter';
 
 const App: React.FC = () => {
   const subdomain = getSubdomain();
-
+  
   return (
     <Router>
       <Suspense fallback={<div className="text-center mt-10">Loading...</div>}>
@@ -16,3 +16,4 @@ const App: React.FC = () => {
 };
 
 export default App;
+

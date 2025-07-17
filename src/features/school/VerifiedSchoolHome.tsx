@@ -1,29 +1,31 @@
 // src/pages/SchoolHome.tsx
-import React, { useEffect, useState, lazy, Suspense } from 'react';
+import React, { useEffect, useState, lazy, Suspense, useReducer } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Cookies from 'js-cookie';
-
+import { useGlobalState, useGlobalDispatch } from '../../context/GlobalState';
 import { School } from './types/School';
 import { getSchoolBySubdomain, createDatabase } from './api/school.api';
+import { useSchoolInfo } from '../school/hooks/useSchoolInfo';
+const SchoolCourses = lazy(() => import('./components/UI/SchoolCourses'));
 
-// Lazy-loaded components
-const SchoolCourses = lazy(() => import('./components/SchoolCourses'));
 
-const SchoolHome: React.FC = () => {
+const SchoolHome: React.FC = () => {  
+    const { isDarkMode } = useGlobalState();
+    console.log(isDarkMode,'darkmode state')
   const navigate = useNavigate();
   const { verifiedSchool } = useParams();
-  const [school, setSchool] = useState<School | null>(null);
-  const [error, setError] = useState<string | null>(null);
+const { state, dispatch, school, setSchool } = useSchoolInfo(verifiedSchool);
 
-  // 🔁 Fetch School Info
+  // 🔁 Fetch School  
   useEffect(() => {
     const fetchSchoolInfo = async () => {
       if (!verifiedSchool) {
-        setError('❌ School identifier is missing in URL.');
+       dispatch({ type: 'FETCH_ERROR', payload: '❌ School identifier is missing in URL.' });
         return;
       }
 
       try {
+            dispatch({ type: 'FETCH_START' });
         const res = await getSchoolBySubdomain(verifiedSchool);
         const schoolData = res.data.school;
 
@@ -34,8 +36,8 @@ const SchoolHome: React.FC = () => {
         await createDatabase(verifiedSchool);
       } catch (err) {
         console.error('❌ Error fetching school:', err);
-        setError('Unable to fetch school details. Please try again later.');
-      }
+    dispatch({ type: 'FETCH_ERROR', payload: 'Unable to fetch school details. Please try again later.' });
+        }
     };
 
     fetchSchoolInfo();
@@ -75,8 +77,8 @@ const SchoolHome: React.FC = () => {
   };
 
   // ✨ UI States
-  if (error) {
-    return <div className="p-10 text-center text-red-600 text-lg">{error}</div>;
+  if (state.error) {
+    return <div className="p-10 text-center text-red-600 text-lg">{state.error}</div>;
   }
 
   if (!school) {

@@ -1,9 +1,9 @@
-import axios from 'axios';
 
+import cloudAxios from '../../../utils/axios/cloud';
+import courseAxios from '../../../utils/axios/course';
 const CLOUD_NAME = import.meta.env.VITE_CLOUD_NAME;
 const UPLOAD_PRESET = import.meta.env.VITE_UPLOAD_PRESET;
-const CLOUD_BASE_URL=import.meta.env.VITE_CLOUD_BASE;
-const COURSE_BASE_API=import.meta.env.VITE_COURSE_API_BASE;
+
 export const uploadVideoToCloudinary = async (videoFile: File): Promise<string | null> => {
   const formData = new FormData();
   formData.append('file', videoFile);
@@ -11,8 +11,8 @@ export const uploadVideoToCloudinary = async (videoFile: File): Promise<string |
   formData.append('resource_type', 'video');
 
   try {
-    const res = await axios.post(
-      `${CLOUD_BASE_URL}/${CLOUD_NAME}/video/upload`,
+    const res = await cloudAxios.post(
+      `/${CLOUD_NAME}/video/upload`,
       formData
     );
     return res.data.secure_url;
@@ -29,8 +29,8 @@ export const addVideoToSection = async (
   url: string,
   description: string
 ): Promise<void> => {
-  await axios.post(
-    `${COURSE_BASE_API}/${schoolDb}/sections/${sectionId}/videos`,
+  await courseAxios.post(
+    `/${schoolDb}/sections/${sectionId}/videos`,
     {
       videos: [{ videoName, url, description }],
     }

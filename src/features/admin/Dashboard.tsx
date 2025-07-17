@@ -1,6 +1,6 @@
 import { useEffect, useState,lazy,Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
-const SchoolGrid = lazy(() => import('../school/components/SchoolGrid'));
+const SchoolGrid = lazy(() => import('../school/components/UI/SchoolGrid'));
 
 
 const ManageStudents = () => (

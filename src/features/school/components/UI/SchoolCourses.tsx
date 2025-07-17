@@ -1,24 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Course } from '../types/Course';
-import { Props } from '../types/Props';
-import { getCoursesBySchool } from '../api/course.api';
+import { Course } from '../../types/Course';
+import { Props } from '../../types/Props';
+import { getCoursesBySchool } from '../../api/course.api';
 import { useNavigate } from 'react-router-dom';
-import VideoModal from '../components/VideoModal';
+import VideoModal from '../../components/UI/VideoModal';
+import Section from '../../../course/types/Section';
 
-interface Section {
-  _id: string;
-  sectionName: string;
-  examRequired: boolean;
-  videos?: string[];
-}
 
-interface Video {
-  _id: string;
-  videoName: string;
-  description: string;
-  url: string;
-}
 
 const SchoolCourses: React.FC<Props> = ({ schoolId, dbname }) => {
   const [courses, setCourses] = useState<Course[]>([]);

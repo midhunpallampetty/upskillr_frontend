@@ -1,12 +1,11 @@
-import axios from 'axios';
 import {RegisterData} from '../types/RegisterData';
 import { StudentLoginData, StudentLoginResponse } from '../types/StudentData';
 import { School } from '../types/School';
-const BASE_URL = import.meta.env.VITE_STUDENT_API_BASE;
-const SCHOOL_BASE_URL=import.meta.env.VITE_SCHOOL_API_BASE ;
+import schoolAxios from '../../../utils/axios/school';
+import studentAxios from '../../../utils/axios/student';
 export const registerStudent = async (formData: RegisterData) => {
   try {
-    const res = await axios.post(`${BASE_URL}/register`, formData);
+    const res = await studentAxios.post(`/register`, formData);
     return res.data;
   } catch (err: any) {
     const message = err.response?.data?.msg || 'Something went wrong during registration';
@@ -17,8 +16,8 @@ export const loginStudent = async (
   formData: StudentLoginData
 ): Promise<StudentLoginResponse> => {
   try {
-    const res = await axios.post(
-      `${import.meta.env.VITE_STUDENT_API_BASE}/login`,
+    const res = await studentAxios.post(
+      `/login`,
       formData
     );
     return res.data;
@@ -29,7 +28,7 @@ export const loginStudent = async (
 
 export const getAllSchools = async (): Promise<School[]> => {
   try {
-    const res = await axios.get(`${SCHOOL_BASE_URL}/getSchools`);
+    const res = await schoolAxios.get(`/getSchools`);
 
     const schoolList = Array.isArray(res.data)
       ? res.data

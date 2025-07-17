@@ -95,6 +95,7 @@ const AddVideoToSection: React.FC<SectionProps> = ({ sectionId, schoolDb }) => {
           </button>
         </form>
       </div>
+      
 
       <ToastContainer position="bottom-center" />
     </div>

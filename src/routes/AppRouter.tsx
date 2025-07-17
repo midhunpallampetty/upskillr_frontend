@@ -7,6 +7,7 @@ interface Props {
   subdomain: string | null;
 }
 
+
 const AppRouter: React.FC<Props> = ({ subdomain }) => {
   return (
     <Routes>
@@ -18,5 +19,6 @@ const AppRouter: React.FC<Props> = ({ subdomain }) => {
     </Routes>
   );
 };
+
 
 export default AppRouter;

@@ -1,7 +1,7 @@
 // components/AddVideoToSectionWrapper.tsx
 import React from 'react';
 import { useParams } from 'react-router-dom';
-import AddVideoToSection from '../AddVideoPage';
+import AddVideoToSection from '../../AddVideoPage';
 
 const AddVideoToSectionWrapper: React.FC = () => {
   const { sectionId, verifiedSchool } = useParams();

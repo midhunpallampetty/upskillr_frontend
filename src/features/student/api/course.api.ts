@@ -1,12 +1,11 @@
-import axios from 'axios';
-
+import courseAxios from '../../../utils/axios/course';
 export const fetchCoursesBySchool = async (schoolName: string): Promise<{
   success: boolean;
   courses?: any[];
   error?: string;
 }> => {
   try {
-    const res = await axios.post(`${import.meta.env.VITE_COURSE_API_BASE}/courses`, {
+    const res = await courseAxios.post(`/courses`, {
       schoolName,
     });
 

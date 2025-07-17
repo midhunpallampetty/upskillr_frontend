@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 import { Course } from '../../types/Course';
 import { Props } from '../../types/Props';
 import { getCoursesBySchool } from '../../api/course.api';
 import { useNavigate } from 'react-router-dom';
 import VideoModal from '../../components/UI/VideoModal';
 import Section from '../../../course/types/Section';
-
-
+import EditCourseModal from './EditCourseModal';
+import { Video } from '../../types/Video';
+import courseAxios from '../../../../utils/axios/course';
 
 const SchoolCourses: React.FC<Props> = ({ schoolId, dbname }) => {
   const [courses, setCourses] = useState<Course[]>([]);
@@ -20,6 +20,7 @@ const SchoolCourses: React.FC<Props> = ({ schoolId, dbname }) => {
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const [currentVideo, setCurrentVideo] = useState<Video | null>(null);
   const [loadingVideo, setLoadingVideo] = useState(false);
+  const [editingCourse, setEditingCourse] = useState<Course | null>(null);
 
   const navigate = useNavigate();
 
@@ -41,13 +42,13 @@ const SchoolCourses: React.FC<Props> = ({ schoolId, dbname }) => {
     }
   }, [schoolId, dbname]);
 
-  // Load sections for selected course
+  // Load sections
   const handleCourseClick = async (course: Course) => {
     setSelectedCourse(course);
     setLoadingSections(true);
     try {
-      const res = await axios.get(
-        `http://course.localhost:5000/api/${dbname}/courses/${course._id}/sections`
+      const res = await courseAxios.get(
+        `/${dbname}/courses/${course._id}/sections`
       );
       setSections(res.data.data || []);
     } catch (err) {
@@ -62,18 +63,19 @@ const SchoolCourses: React.FC<Props> = ({ schoolId, dbname }) => {
     setSections([]);
   };
 
- const handleShowVideos = (section: Section) => {
+  const handleShowVideos = (section: Section) => {
     if (!section.videos || section.videos.length === 0) {
       alert('⚠️ No videos in this section.');
       return;
     }
-console.log(section,'hai');
+
     setVideoIds(section.videos);
     setCurrentVideoIndex(0);
     setCurrentVideo(null);
     setVideoModalOpen(true);
   };
 
+  // Load individual video when index changes
   useEffect(() => {
     let isCancelled = false;
 
@@ -90,20 +92,18 @@ console.log(section,'hai');
       setLoadingVideo(true);
       try {
         const videoId = videoIds[currentVideoIndex];
-        const res = await axios.get(
-          `http://course.localhost:5000/api/getvideo/${dbname}/${videoId}`
+        const res = await courseAxios.get(
+          `/getvideo/${dbname}/${videoId}`
         );
+
         if (!isCancelled) {
           const videoData = res.data?.data;
-        
-          // Check if it's an array or single object
           if (Array.isArray(videoData)) {
             setCurrentVideo(videoData[0] || null);
           } else {
             setCurrentVideo(videoData || null);
           }
         }
-        
       } catch (err) {
         if (!isCancelled) {
           console.error('❌ Failed to fetch video:', err);
@@ -117,7 +117,6 @@ console.log(section,'hai');
     };
 
     fetchVideo();
-
     return () => {
       isCancelled = true;
     };
@@ -129,6 +128,27 @@ console.log(section,'hai');
     setCurrentVideoIndex(0);
     setCurrentVideo(null);
     setLoadingVideo(false);
+  };
+
+  const handleUpdateCourse = async (updatedData: Partial<Course>) => {
+    if (!editingCourse) return;
+    try {
+      await courseAxios.put(
+        `/${dbname}/course/${editingCourse._id}`,
+        updatedData
+      );
+
+      setCourses((prev) =>
+        prev.map((course) =>
+          course._id === editingCourse._id ? { ...course, ...updatedData } : course
+        )
+      );
+
+      setEditingCourse(null);
+    } catch (err) {
+      console.error('❌ Failed to update course:', err);
+      alert('Something went wrong while updating course.');
+    }
   };
 
   return (
@@ -145,13 +165,13 @@ console.log(section,'hai');
               {courses.map((course) => (
                 <div
                   key={course._id}
-                  className="bg-white shadow rounded-lg p-4 cursor-pointer hover:shadow-md transition"
-                  onClick={() => handleCourseClick(course)}
+                  className="bg-white shadow rounded-lg p-4 relative hover:shadow-md transition"
                 >
                   <img
                     src={course.courseThumbnail}
                     alt={course.courseName}
-                    className="w-full h-32 object-cover rounded mb-3"
+                    className="w-full h-32 object-cover rounded mb-3 cursor-pointer"
+                    onClick={() => handleCourseClick(course)}
                   />
                   <h3 className="text-lg font-semibold">{course.courseName}</h3>
                   <p className="text-gray-500">
@@ -160,6 +180,12 @@ console.log(section,'hai');
                   <p className="text-sm text-gray-600">
                     {course.isPreliminaryRequired ? 'Preliminary Required' : 'Open to All'}
                   </p>
+                  <button
+                    onClick={() => setEditingCourse(course)}
+                    className="absolute top-2 right-2 text-sm bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600"
+                  >
+                    ✏️ Edit
+                  </button>
                 </div>
               ))}
             </div>
@@ -224,15 +250,22 @@ console.log(section,'hai');
         videoCount={videoIds.length}
         loadingVideo={loadingVideo}
         onClose={closeModal}
-        onNext={() => {
-          setCurrentVideo(null);
-          setCurrentVideoIndex((prev) => Math.min(prev + 1, videoIds.length - 1));
-        }}
-        onPrev={() => {
-          setCurrentVideo(null);
-          setCurrentVideoIndex((prev) => Math.max(prev - 1, 0));
-        }}
+        onNext={() =>
+          setCurrentVideoIndex((prev) => Math.min(prev + 1, videoIds.length - 1))
+        }
+        onPrev={() =>
+          setCurrentVideoIndex((prev) => Math.max(prev - 1, 0))
+        }
       />
+
+      {/* ✏️ Edit Course Modal */}
+      {editingCourse && (
+        <EditCourseModal
+          course={editingCourse}
+          onClose={() => setEditingCourse(null)}
+          onSave={handleUpdateCourse}
+        />
+      )}
     </div>
   );
 };

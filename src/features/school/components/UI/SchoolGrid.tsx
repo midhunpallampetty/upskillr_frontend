@@ -1,12 +1,12 @@
 import React, { useEffect, useState, Fragment, lazy, Suspense } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
-import type { School } from '../../course/types/School';
-import { getSchools, approveSchool } from '../api/school.api';
+import type { School } from '../../types/School';
+import { getSchools, approveSchool } from '../../api/school.api';
 
 const EditSchoolForm = lazy(() => import('./EditSchoolForm'));
 
 const SchoolGrid: React.FC = () => {
-  const [schools, setSchools] = useState<School[]>([]);
+  const [schools, setSchools] = useState<School[] | any[]>([]);
   const [editSchool, setEditSchool] = useState<School | null>(null);
   const [selectedSchool, setSelectedSchool] = useState<School | null>(null);
   const [loading, setLoading] = useState<boolean>(true);

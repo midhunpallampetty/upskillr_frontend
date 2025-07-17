@@ -1,9 +1,15 @@
+// src/types/School.ts
 export interface School {
-    _id: string;
-    name: string;
-    email: string;
-    subDomain: string;
-    image: string;
-    coverImage: string;
-    [key: string]: any;
-  }
+  _id: string;
+  name: string;
+  address: string;
+  officialContact: string;
+  email: string;
+  coursesOffered: string[];
+  experience: number;
+  isVerified: boolean;
+  image?: string;
+  coverImage?: string;
+  subDomain?: string; // Make it optional to match the API response or adjust based on requirements
+  createdAt: string;
+}

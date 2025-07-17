@@ -2,7 +2,7 @@ import React, { lazy } from 'react';
 import { Routes, Route } from 'react-router-dom';
 
 const LandingPage = lazy(() => import('../features/shared/Landing'));
-const AdminAuth = lazy(() => import('../features/admin/AdminAuth'));
+const AdminAuth = lazy(() => import('../features/admin/components/Layout/AdminAuth'));
 const SchoolRegister = lazy(() => import('../features/school/schoolRegister'));
 const SchoolLogin = lazy(() => import('../features/school/schoolLogin'));
 const LoginSelection = lazy(() => import('../features/shared/LoginSelection'));
@@ -10,7 +10,7 @@ const SignupSelection = lazy(() => import('../features/shared/SignupSelection'))
 const VerificationStatus = lazy(() => import('../features/shared/VerificationStatus'));
 const StudentLogin = lazy(() => import('../features/student/studentLogin'));
 const StudentRegister = lazy(() => import('../features/student/studentRegister'));
-const AdminDashboard = lazy(() => import('../features/admin/Dashboard'));
+const AdminDashboard = lazy(() => import('../features/admin/components/Layout/Dashboard'));
 const CoursesPage = lazy(() => import('../features/student/CoursesPage'));
 const StudentHomePage = lazy(() => import('../features/student/StudentHomePage'));
 const AddCoursePage = lazy(() => import('../features/course/AddCoursePage'));

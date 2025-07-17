@@ -1,31 +1,32 @@
 // src/pages/SchoolHome.tsx
-import React, { useEffect, useState, lazy, Suspense, useReducer } from 'react';
+import React, { useEffect, useState, lazy, Suspense } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Cookies from 'js-cookie';
-import { useGlobalState, useGlobalDispatch } from '../../context/GlobalState';
-import { School } from './types/School';
+import { useGlobalState } from '../../context/GlobalState';
 import { getSchoolBySubdomain, createDatabase } from './api/school.api';
 import { useSchoolInfo } from '../school/hooks/useSchoolInfo';
+import { School } from './types/School';
+
 const SchoolCourses = lazy(() => import('./components/UI/SchoolCourses'));
+const StudentList = lazy(() => import('./components/UI/StudentList'));
 
-
-const SchoolHome: React.FC = () => {  
-    const { isDarkMode } = useGlobalState();
-    console.log(isDarkMode,'darkmode state')
+const SchoolHome: React.FC = () => {
+  const { isDarkMode } = useGlobalState();
   const navigate = useNavigate();
   const { verifiedSchool } = useParams();
-const { state, dispatch, school, setSchool } = useSchoolInfo(verifiedSchool);
+  const { state, dispatch, school, setSchool } = useSchoolInfo(verifiedSchool);
+  const [activeView, setActiveView] = useState<'dashboard' | 'students'>('dashboard');
 
-  // 🔁 Fetch School  
+  // 🔁 Fetch School
   useEffect(() => {
     const fetchSchoolInfo = async () => {
       if (!verifiedSchool) {
-       dispatch({ type: 'FETCH_ERROR', payload: '❌ School identifier is missing in URL.' });
+        dispatch({ type: 'FETCH_ERROR', payload: '❌ School identifier is missing in URL.' });
         return;
       }
 
       try {
-            dispatch({ type: 'FETCH_START' });
+        dispatch({ type: 'FETCH_START' });
         const res = await getSchoolBySubdomain(verifiedSchool);
         const schoolData = res.data.school;
 
@@ -36,8 +37,8 @@ const { state, dispatch, school, setSchool } = useSchoolInfo(verifiedSchool);
         await createDatabase(verifiedSchool);
       } catch (err) {
         console.error('❌ Error fetching school:', err);
-    dispatch({ type: 'FETCH_ERROR', payload: 'Unable to fetch school details. Please try again later.' });
-        }
+        dispatch({ type: 'FETCH_ERROR', payload: 'Unable to fetch school details. Please try again later.' });
+      }
     };
 
     fetchSchoolInfo();
@@ -111,31 +112,50 @@ const { state, dispatch, school, setSchool } = useSchoolInfo(verifiedSchool);
         </div>
       </div>
 
-      {/* Main Grid */}
-      <div className="mt-16 px-6">
-        <h1 className="text-3xl font-bold mb-6">Welcome, {school.name}</h1>
+      {activeView === 'dashboard' ? (
+        <>
+          {/* Main Grid */}
+          <div className="mt-16 px-6">
+            <h1 className="text-3xl font-bold mb-6">Welcome, {school.name}</h1>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-          <Card title="Add Course" onClick={() => navigate(`/school/${verifiedSchool}/addCourse`)}>
-            Create and publish new courses.
-          </Card>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+              <Card title="Add Course" onClick={() => navigate(`/school/${verifiedSchool}/addCourse`)}>
+                Create and publish new courses.
+              </Card>
 
-          <Card title="Enrolled Students">
-            View and manage your students.
-          </Card>
+              <Card title="Enrolled Students" onClick={() => setActiveView('students')}>
+                View and manage your students.
+              </Card>
 
-          <Card title="Payments">
-            Track course payments and dues.
-          </Card>
+              <Card title="Payments">
+                Track course payments and dues.
+              </Card>
+            </div>
+          </div>
+
+          {/* School Courses */}
+          <div className="mt-10">
+            <Suspense fallback={<p className="text-center text-gray-500 mt-6">Loading courses...</p>}>
+              <SchoolCourses schoolId={school._id} dbname={verifiedSchool || ''} />
+            </Suspense>
+          </div>
+        </>
+      ) : activeView === 'students' ? (
+        <div className="mt-10 px-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-semibold">Enrolled Students</h2>
+            <button
+              onClick={() => setActiveView('dashboard')}
+              className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-md"
+            >
+              Back to Dashboard
+            </button>
+          </div>
+          <Suspense fallback={<p className="text-center text-gray-500">Loading students...</p>}>
+            <StudentList dbname={verifiedSchool || ''} />
+          </Suspense>
         </div>
-      </div>
-
-      {/* School Courses */}
-      <div className="mt-10">
-        <Suspense fallback={<p className="text-center text-gray-500 mt-6">Loading courses...</p>}>
-          <SchoolCourses schoolId={school._id} dbname={verifiedSchool || ''} />
-        </Suspense>
-      </div>
+      ) : null}
     </div>
   );
 };

@@ -1,4 +1,3 @@
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
 export default function LoginSelection() {
@@ -6,7 +5,7 @@ export default function LoginSelection() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-indigo-900 to-indigo-700 flex flex-col items-center justify-center text-white">
-      {/* Logo & Title */}
+  
       <div className="text-center mb-10">
         <h1 className="text-4xl font-bold text-white mb-2">Upskillr</h1>
         <p className="text-lg text-indigo-200">Choose your login type</p>

@@ -8,7 +8,6 @@ export interface CoursePayload {
   courseName: string;
   isPreliminaryRequired: boolean;
   courseThumbnail: string;
-  noOfLessons: number;
   fee: number;
   sections: SectionPayload[];
   forum: null;

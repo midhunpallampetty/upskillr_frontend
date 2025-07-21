@@ -20,6 +20,8 @@ const EditCourseModal: React.FC<EditCourseModalProps> = ({
     isPreliminaryRequired: course.isPreliminaryRequired,
   });
 
+  const [uploading, setUploading] = useState(false);
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
@@ -31,6 +33,42 @@ const EditCourseModal: React.FC<EditCourseModalProps> = ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value,
     }));
+  };
+
+  const handleImageChange = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', import.meta.env.VITE_UPLOAD_PRESET);
+
+    setUploading(true);
+    try {
+      const res = await fetch(
+        `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUD_NAME}/image/upload`,
+        {
+          method: 'POST',
+          body: formData,
+        }
+      );
+      const data = await res.json();
+      if (data.secure_url) {
+        setForm((prev) => ({
+          ...prev,
+          courseThumbnail: data.secure_url,
+        }));
+      } else {
+        alert('Image upload failed');
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      alert('Upload failed');
+    } finally {
+      setUploading(false);
+    }
   };
 
   return (
@@ -53,21 +91,26 @@ const EditCourseModal: React.FC<EditCourseModalProps> = ({
             placeholder="Fee"
             className="w-full border p-2 rounded"
           />
-          <input
-            type="number"
-            name="noOfLessons"
-            value={form.noOfLessons}
-            onChange={handleChange}
-            placeholder="Number of Lessons"
-            className="w-full border p-2 rounded"
-          />
-          <input
-            name="courseThumbnail"
-            value={form.courseThumbnail}
-            onChange={handleChange}
-            placeholder="Thumbnail URL"
-            className="w-full border p-2 rounded"
-          />
+        
+
+          <div className="space-y-2">
+            <label className="block font-medium">Thumbnail</label>
+            {form.courseThumbnail && (
+              <img
+                src={form.courseThumbnail}
+                alt="Course Thumbnail"
+                className="w-full h-40 object-cover rounded border"
+              />
+            )}
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              className="w-full"
+            />
+            {uploading && <p className="text-sm text-gray-500">Uploading...</p>}
+          </div>
+
           <label className="flex items-center gap-2">
             <input
               type="checkbox"
@@ -85,8 +128,9 @@ const EditCourseModal: React.FC<EditCourseModalProps> = ({
           <button
             onClick={() => onSave(form)}
             className="px-4 py-2 bg-blue-600 text-white rounded"
+            disabled={uploading}
           >
-            Update
+            {uploading ? 'Updating...' : 'Update'}
           </button>
         </div>
       </div>

@@ -3,9 +3,8 @@ import React, { useEffect, useState, lazy, Suspense } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Cookies from 'js-cookie';
 import { useGlobalState } from '../../context/GlobalState';
-import { getSchoolBySubdomain, createDatabase } from './api/school.api';
+import { getSchoolBySubdomain, createDatabase, } from './api/school.api';
 import { useSchoolInfo } from '../school/hooks/useSchoolInfo';
-import { School } from './types/School';
 
 const SchoolCourses = lazy(() => import('./components/UI/SchoolCourses'));
 const StudentList = lazy(() => import('./components/UI/StudentList'));

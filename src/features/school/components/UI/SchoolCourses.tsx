@@ -1,14 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Course } from '../../types/Course';
 import { Props } from '../../types/Props';
-import { getCoursesBySchool } from '../../api/course.api';
 import { useNavigate } from 'react-router-dom';
 import VideoModal from '../../components/UI/VideoModal';
 import Section from '../../../course/types/Section';
 import EditCourseModal from './EditCourseModal';
 import { Video } from '../../types/Video';
-import courseAxios from '../../../../utils/axios/course';
-
+import { getCoursesBySchool, getSectionsByCourse, getVideoById, updateCourseById, deleteCourseById } from '../../api/course.api'
+import Swal from 'sweetalert2';
 const SchoolCourses: React.FC<Props> = ({ schoolId, dbname }) => {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
@@ -47,10 +46,10 @@ const SchoolCourses: React.FC<Props> = ({ schoolId, dbname }) => {
     setSelectedCourse(course);
     setLoadingSections(true);
     try {
-      const res = await courseAxios.get(
-        `/${dbname}/courses/${course._id}/sections`
-      );
-      setSections(res.data.data || []);
+      // New:
+      const fetchedSections = await getSectionsByCourse(dbname, course._id);
+      setSections(fetchedSections);
+
     } catch (err) {
       console.error('❌ Failed to fetch sections:', err);
     } finally {
@@ -62,6 +61,41 @@ const SchoolCourses: React.FC<Props> = ({ schoolId, dbname }) => {
     setSelectedCourse(null);
     setSections([]);
   };
+
+const handleDeleteCourse = async (courseId: string) => {
+  const result = await Swal.fire({
+    title: 'Are you sure?',
+    text: 'You won’t be able to revert this!',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Yes, delete it!',
+  });
+
+  if (!result.isConfirmed) return;
+
+  try {
+    await deleteCourseById(dbname, courseId);
+    setCourses((prev) => prev.filter((c) => c._id !== courseId));
+
+    await Swal.fire({
+      title: 'Deleted!',
+      text: 'The course has been deleted.',
+      icon: 'success',
+      confirmButtonColor: '#3085d6',
+    });
+  } catch (err) {
+    console.error('❌ Failed to delete course:', err);
+    Swal.fire({
+      title: 'Error!',
+      text: 'Something went wrong while deleting the course.',
+      icon: 'error',
+      confirmButtonColor: '#d33',
+    });
+  }
+};
+
 
   const handleShowVideos = (section: Section) => {
     if (!section.videos || section.videos.length === 0) {
@@ -92,12 +126,11 @@ const SchoolCourses: React.FC<Props> = ({ schoolId, dbname }) => {
       setLoadingVideo(true);
       try {
         const videoId = videoIds[currentVideoIndex];
-        const res = await courseAxios.get(
-          `/getvideo/${dbname}/${videoId}`
-        );
+        // New:
+        const videoData = await getVideoById(dbname, videoId);
+
 
         if (!isCancelled) {
-          const videoData = res.data?.data;
           if (Array.isArray(videoData)) {
             setCurrentVideo(videoData[0] || null);
           } else {
@@ -133,10 +166,9 @@ const SchoolCourses: React.FC<Props> = ({ schoolId, dbname }) => {
   const handleUpdateCourse = async (updatedData: Partial<Course>) => {
     if (!editingCourse) return;
     try {
-      await courseAxios.put(
-        `/${dbname}/course/${editingCourse._id}`,
-        updatedData
-      );
+      // New:
+      await updateCourseById(dbname, editingCourse._id, updatedData);
+
 
       setCourses((prev) =>
         prev.map((course) =>
@@ -175,18 +207,26 @@ const SchoolCourses: React.FC<Props> = ({ schoolId, dbname }) => {
                   />
                   <h3 className="text-lg font-semibold">{course.courseName}</h3>
                   <p className="text-gray-500">
-                    ₹{course.fee} • {course.noOfLessons} Lessons
+                    ₹{course.fee}
                   </p>
                   <p className="text-sm text-gray-600">
                     {course.isPreliminaryRequired ? 'Preliminary Required' : 'Open to All'}
                   </p>
-                  <button
-                    onClick={() => setEditingCourse(course)}
-                    className="absolute top-2 right-2 text-sm bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600"
-                  >
-                    ✏️ Edit
-                  </button>
-                </div>
+                  <div className="absolute top-2 right-2 flex space-x-2">
+                    <button
+                      onClick={() => setEditingCourse(course)}
+                      className="text-sm bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600"
+                    >
+                      ✏️ Edit
+                    </button>
+                    <button
+                      onClick={() => handleDeleteCourse(course._id)}
+                      className="text-sm bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
+                    >
+                      🗑️ Delete
+                    </button>
+                  </div>
+                 </div>
               ))}
             </div>
           )}

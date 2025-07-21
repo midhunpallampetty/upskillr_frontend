@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import type { School } from '../types/School';
+import type { School } from '../../types/School';
 
 interface EditSchoolFormProps {
   schoolId: string;
@@ -38,28 +38,21 @@ const EditSchoolForm: React.FC<EditSchoolFormProps> = ({ schoolId, onSuccess }) 
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleCoursesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    if (!formData) return;
-    setFormData({ ...formData, coursesOffered: value.split(',') });
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData) return;
-  
+
     try {
-      // Ensure _id is included in the formData
       const payload = {
         ...formData,
         _id: schoolId,
       };
-  
+
       const res = await axios.post(
         'http://school.localhost:5000/api/updateSchoolData',
         payload
       );
-  
+
       setMsg(res.data.msg);
       onSuccess?.();
     } catch (error) {
@@ -67,7 +60,7 @@ const EditSchoolForm: React.FC<EditSchoolFormProps> = ({ schoolId, onSuccess }) 
       setMsg('Failed to update school.');
     }
   };
-  
+
   if (loading) return <p>Loading...</p>;
   if (!formData) return <p>School not found.</p>;
 
@@ -90,14 +83,6 @@ const EditSchoolForm: React.FC<EditSchoolFormProps> = ({ schoolId, onSuccess }) 
           placeholder="Experience"
           value={formData.experience}
           onChange={handleChange}
-          className="w-full border p-2 rounded"
-        />
-        <input
-          type="text"
-          name="coursesOffered"
-          placeholder="Courses (comma-separated)"
-          value={formData.coursesOffered.join(',')}
-          onChange={handleCoursesChange}
           className="w-full border p-2 rounded"
         />
         <input
@@ -133,9 +118,33 @@ const EditSchoolForm: React.FC<EditSchoolFormProps> = ({ schoolId, onSuccess }) 
         />
         <input
           type="text"
+          name="city"
+          placeholder="City"
+          value={formData.city}
+          onChange={handleChange}
+          className="w-full border p-2 rounded"
+        />
+        <input
+          type="text"
+          name="state"
+          placeholder="State"
+          value={formData.state}
+          onChange={handleChange}
+          className="w-full border p-2 rounded"
+        />
+        <input
+          type="text"
+          name="country"
+          placeholder="Country"
+          value={formData.country}
+          onChange={handleChange}
+          className="w-full border p-2 rounded"
+        />
+        <input
+          type="text"
           name="subDomain"
           placeholder="Subdomain (e.g., modern-school)"
-          value={formData.subDomain}
+          value={formData.subDomain || ''}
           onChange={handleChange}
           className="w-full border p-2 rounded"
         />

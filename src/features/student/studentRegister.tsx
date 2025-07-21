@@ -8,8 +8,15 @@ import { validateStudentRegister } from './validations/registerValidation';
 import { RegisterFormErrors } from './types/RegisterData';
 
 const StudentRegister = () => {
-  const [formData, setFormData] = useState({ fullName: '', email: '', password: '' });
-  const [errors, setErrors] = useState<RegisterFormErrors>({});
+  const [formData, setFormData] = useState({
+    fullName: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+  });
+const [errors, setErrors] = useState<RegisterFormErrors>({} as RegisterFormErrors);
+    const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -21,6 +28,9 @@ const StudentRegister = () => {
     e.preventDefault();
 
     const validationErrors = validateStudentRegister(formData);
+    if (formData.password !== formData.confirmPassword) {
+      validationErrors.confirmPassword = "Passwords do not match";
+    }
     setErrors(validationErrors);
 
     if (Object.keys(validationErrors).length > 0) return;
@@ -88,16 +98,44 @@ const StudentRegister = () => {
             {errors.email && <p className="text-sm text-red-600 mt-1">{errors.email}</p>}
           </div>
 
-          <div className="mb-4">
+          <div className="mb-4 relative">
             <input
               name="password"
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               placeholder="Password"
               value={formData.password}
               onChange={handleChange}
               className="w-full p-2 border border-gray-300 rounded"
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword((prev) => !prev)}
+              className="absolute top-2 right-2 text-sm text-blue-600"
+            >
+              {showPassword ? 'Hide' : 'Show'}
+            </button>
             {errors.password && <p className="text-sm text-red-600 mt-1">{errors.password}</p>}
+          </div>
+
+          <div className="mb-4 relative">
+            <input
+              name="confirmPassword"
+              type={showConfirmPassword ? 'text' : 'password'}
+              placeholder="Confirm Password"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              className="w-full p-2 border border-gray-300 rounded"
+            />
+            <button
+              type="button"
+              onClick={() => setShowConfirmPassword((prev) => !prev)}
+              className="absolute top-2 right-2 text-sm text-blue-600"
+            >
+              {showConfirmPassword ? 'Hide' : 'Show'}
+            </button>
+            {errors.confirmPassword && (
+              <p className="text-sm text-red-600 mt-1">{errors.confirmPassword}</p>
+            )}
           </div>
 
           <button

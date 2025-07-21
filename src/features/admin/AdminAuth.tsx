@@ -4,7 +4,8 @@ import { useNavigate } from 'react-router-dom';
 const AdminAuth: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [accountType, setAccountType] = useState('admin');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [accountType] = useState('admin');
   const [isLogin, setIsLogin] = useState(false);
   const [message, setMessage] = useState('');
   const navigate = useNavigate();
@@ -12,6 +13,12 @@ const AdminAuth: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage('');
+
+    // ✅ Confirm password check
+    if (!isLogin && password !== confirmPassword) {
+      setMessage('❌ Passwords do not match');
+      return;
+    }
 
     const endpoint = isLogin ? 'login' : 'register';
     try {
@@ -24,10 +31,8 @@ const AdminAuth: React.FC = () => {
       setMessage(data.msg || 'Unexpected response');
 
       if (res.ok && isLogin) {
-        // Redirect to admin dashboard or save token
         console.log('Admin logged in:', data.admin);
-        navigate('/dashboard')
-        // navigate('/admin/dashboard');
+        navigate('/dashboard');
       }
     } catch (err) {
       setMessage('Something went wrong');
@@ -64,6 +69,18 @@ const AdminAuth: React.FC = () => {
               required
             />
 
+            {/* Confirm Password (only in Signup mode) */}
+            {!isLogin && (
+              <input
+                type="password"
+                placeholder="Confirm Password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-100"
+                required
+              />
+            )}
+
             <select
               className="w-full px-4 py-2 border rounded-md bg-gray-100"
               value={accountType}
@@ -83,7 +100,11 @@ const AdminAuth: React.FC = () => {
           <p className="mt-4 text-sm text-gray-600">
             {isLogin ? "Don't have an account?" : 'Already have an account?'}{' '}
             <span
-              onClick={() => setIsLogin(!isLogin)}
+              onClick={() => {
+                setIsLogin(!isLogin);
+                setMessage('');
+                setConfirmPassword('');
+              }}
               className="text-blue-500 cursor-pointer"
             >
               {isLogin ? 'Signup' : 'Login'}
@@ -98,7 +119,7 @@ const AdminAuth: React.FC = () => {
         {/* Right Illustration */}
         <div className="hidden md:flex w-1/2 items-center justify-center bg-gradient-to-br from-blue-600 to-blue-400">
           <img
-            src="/images/students/student.png" // 👈 replace this with the path to your actual illustration
+            src="/images/students/student.png"
             alt="Illustration"
             className="w-[80%] max-w-md"
           />

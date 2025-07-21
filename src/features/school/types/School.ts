@@ -5,7 +5,9 @@ export interface School {
   address: string;
   officialContact: string;
   email: string;
-  coursesOffered: string[];
+  state:string;
+  country:string;
+  city:string;
   experience: number;
   isVerified: boolean;
   image?: string;

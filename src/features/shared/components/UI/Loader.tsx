@@ -1,5 +1,5 @@
 import React from 'react';
-import { LoadingButtonProps } from '../types/LoadingProps';
+import { LoadingButtonProps } from '../../types/LoadingProps';
 
 const LoadingButton: React.FC<LoadingButtonProps> = ({
   isLoading,

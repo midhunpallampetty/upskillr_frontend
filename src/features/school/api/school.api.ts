@@ -28,3 +28,25 @@ export const getSchoolBySubdomain = async (subDomain: string) => {
 export const createDatabase = async (schoolName: string) => {
   return schoolAxios.post(`/create-database`, { schoolName });
 };
+
+export const sendForgotPasswordLink = async (email: string) => {
+  const response = await schoolAxios.post('/forgot-password', {
+    email,
+  });
+  return response.data;
+};
+
+export const resetSchoolPassword = async ({
+  token,
+password,
+}: {
+  token: string;
+  password: string;
+}) => {
+  const response = await schoolAxios.post('/reset-password', {
+    token,
+    password,
+  });
+  return response.data;
+};
+

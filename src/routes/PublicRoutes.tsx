@@ -1,8 +1,12 @@
 import React, { lazy } from 'react';
 import { Routes, Route } from 'react-router-dom';
+import ResetPassword from '../features/school/ResetPassword';
+import ForgotPassword from '../features/school/ForgotPassword';
+import ResetStudentPassword from '../features/student/ResetPassword';
+import ForgotStudentPassword from '../features/student/ForgotPassword';
 
 const LandingPage = lazy(() => import('../features/shared/Landing'));
-const AdminAuth = lazy(() => import('../features/admin/components/Layout/AdminAuth'));
+const AdminAuth = lazy(() => import('../features/admin/AdminAuth'));
 const SchoolRegister = lazy(() => import('../features/school/schoolRegister'));
 const SchoolLogin = lazy(() => import('../features/school/schoolLogin'));
 const LoginSelection = lazy(() => import('../features/shared/LoginSelection'));
@@ -34,7 +38,12 @@ const PublicRoutes = () => (
     <Route path="/addCourse" element={<AddCoursePage />} />
     <Route path="/school/:verifiedSchool" element={<VerifiedSchoolHome />} />
     <Route path="/school/:verifiedSchool/addCourse" element={<AddCoursePage />} />
+    <Route path="/school/reset-password" element={<ResetPassword />} />
+    <Route path='/school/forgot-password'element={<ForgotPassword/>}/>
     <Route path="/school/:verifiedSchool/section/:sectionId/add-video" element={<AddVideoToSectionWrapper />} />
+    <Route path='/student/reset-password'element={<ResetStudentPassword/>}/>
+    <Route path='/student/forgot-password'element={<ForgotStudentPassword/>}/>
+
   </Routes>
 );
 

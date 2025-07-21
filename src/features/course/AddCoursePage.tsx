@@ -13,7 +13,7 @@ const SectionsList = lazy(() => import('./components/SectionsList'));
 const TextInput = lazy(() => import('./components/TextInput'));
 const NumberInput = lazy(() => import('./components/NumberInput'));
 const Checkbox = lazy(() => import('./components/Checkbox'));
-const LoadingButton = lazy(() => import('../shared/components/Loader'));
+const LoadingButton = lazy(() => import('../shared/components/UI/Loader'));
 
 const CLOUD_NAME = import.meta.env.VITE_CLOUD_NAME;
 const UPLOAD_PRESET = import.meta.env.VITE_UPLOAD_PRESET;
@@ -23,7 +23,6 @@ const AddCoursePage: React.FC = () => {
   const [isPreliminary, setIsPreliminary] = useState(false);
   const [courseThumbnail, setCourseThumbnail] = useState<File | null>(null);
   const [previewURL, setPreviewURL] = useState<string | null>(null);
-  const [noOfLessons, setNoOfLessons] = useState<number | ''>('');
   const [fee, setFee] = useState<number | ''>('');
   const [sections, setSections] = useState<Section[]>([
     {
@@ -41,7 +40,6 @@ const AddCoursePage: React.FC = () => {
     e.preventDefault();
 
     if (!courseName.trim()) return toast.error('Course name is required.');
-    if (!noOfLessons || Number(noOfLessons) <= 0) return toast.error('Please enter a valid number of lessons.');
     if (fee === '' || Number(fee) < 0) return toast.error('Please enter a valid course fee.');
     if (!courseThumbnail) return toast.error('Please upload a course thumbnail!');
 
@@ -75,7 +73,6 @@ const AddCoursePage: React.FC = () => {
         courseName,
         isPreliminaryRequired: isPreliminary,
         courseThumbnail: thumbnailURL,
-        noOfLessons: Number(noOfLessons),
         fee: Number(fee),
         sections: mappedSections,
         forum: null,
@@ -106,7 +103,6 @@ const AddCoursePage: React.FC = () => {
       setIsPreliminary(false);
       setCourseThumbnail(null);
       setPreviewURL(null);
-      setNoOfLessons('');
       setFee('');
       setSections([
         {
@@ -143,13 +139,7 @@ const AddCoursePage: React.FC = () => {
               setPreviewURL={setPreviewURL}
               setError={(msg) => toast.error(msg)}
             />
-            <NumberInput
-              label="Number of Lessons"
-              id="noOfLessons"
-              value={noOfLessons}
-              onChange={setNoOfLessons}
-              min={1}
-            />
+         
             <NumberInput label="Course Fee (₹)" id="courseFee" value={fee} onChange={setFee} />
             <SectionsList sections={sections} setSections={setSections} />
             <LoadingButton isLoading={isLoading} text="Submit Course" type="submit" />

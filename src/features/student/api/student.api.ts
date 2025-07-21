@@ -44,3 +44,16 @@ export const getAllSchools = async (): Promise<School[]> => {
     return []; 
   }
 };
+
+export const sendStudentResetLink = async (email: string): Promise<string> => {
+  const response = await studentAxios.post(`/forgot-password`, { email });
+  return response.data.message || 'Reset link sent to your email.';
+};
+export const resetStudentPassword = async (email: string, token: string, newPassword: string): Promise<string> => {
+  const response = await studentAxios .post(`/reset-password`, {
+    email,
+    token,
+    newPassword,
+  });
+  return response.data.message || 'Password reset successfully.';
+};

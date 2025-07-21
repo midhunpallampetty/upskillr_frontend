@@ -1,6 +1,7 @@
 import courseAxios from '../../../utils/axios/course';
 import { Course } from '../types/Course';
-
+import Section from '../../course/types/Section';
+import { Video } from '../types/Video';
 export const getCoursesBySchool = async (
   schoolId: string,
   dbname: string
@@ -11,10 +12,45 @@ export const getCoursesBySchool = async (
     const response = await courseAxios.get(
       `/${dbname}/courses?schoolId=${schoolId}`
     );
-    courses = response.data.courses || [];
+    courses = response.data?.courses || [];
   } catch (error) {
     console.error('Error fetching courses:', error);
   } finally {
     return courses;
   }
+};
+export const getSectionsByCourse = async (
+  dbname: string,
+  courseId: string
+): Promise<Section[]> => {
+  const res = await courseAxios.get(`/${dbname}/courses/${courseId}/sections`);
+  return res.data?.data || [];
+};
+
+export const getVideoById = async (
+  dbname: string,
+  videoId: string
+): Promise<Video | null> => {
+  const res = await courseAxios.get(`/getvideo/${dbname}/${videoId}`);
+  const videoData = res.data?.data;
+  if (Array.isArray(videoData)) {
+    return videoData[0] || null;
+  }
+  return videoData || null;
+};
+
+export const updateCourseById = async (
+  dbname: string,
+  courseId: string,
+  updatedData: Partial<Course>
+): Promise<void> => {
+  await courseAxios.put(`/${dbname}/course/${courseId}`, updatedData);
+};
+export const deleteCourseById = async (
+  dbname: string,
+  courseId: string
+): Promise<void> => {
+  await courseAxios.patch(`/${dbname}/course/${courseId}/soft-delete`, {
+    isDeleted: true,
+  });
 };

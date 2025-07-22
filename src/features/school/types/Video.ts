@@ -3,4 +3,6 @@ export interface Video {
   videoName: string;
   description: string;
   url: string;
+  schoolName:string;
+  title:string;
 }

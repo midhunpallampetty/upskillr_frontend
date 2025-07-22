@@ -26,7 +26,12 @@ export const getSectionsByCourse = async (
   const res = await courseAxios.get(`/${dbname}/courses/${courseId}/sections`);
   return res.data?.data || [];
 };
-
+export const softDeleteVideoById = async (schoolName: string, videoId: string) => {
+  const res = await courseAxios.patch(
+    `/${schoolName}/videos/${videoId}/soft-delete`
+  );
+  return res.data;
+};
 export const getVideoById = async (
   dbname: string,
   videoId: string
@@ -53,4 +58,17 @@ export const deleteCourseById = async (
   await courseAxios.patch(`/${dbname}/course/${courseId}/soft-delete`, {
     isDeleted: true,
   });
+};
+export const softDeleteSectionById = async (schoolDb: string, sectionId: string) => {
+  try {
+    const response = await courseAxios.patch(
+      `/${schoolDb}/sections/${sectionId}/soft-delete`
+    );
+
+    return response.data; // Contains the message + data
+  } catch (error: any) {
+    const message =
+      error.response?.data?.message || 'Failed to soft delete section';
+    throw new Error(message);
+  }
 };

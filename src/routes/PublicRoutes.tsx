@@ -33,8 +33,8 @@ const PublicRoutes = () => (
     <Route path="/studentLogin" element={<StudentLogin />} />
     <Route path="/studentRegister" element={<StudentRegister />} />
     <Route path="/dashboard" element={<AdminDashboard />} />
-    <Route path="/school/:schoolName/courses" element={<CoursesPage />} />
-    <Route path="/studenthome" element={<StudentHomePage />} />
+   <Route path="/school/:schoolName/home" element={<CoursesPage />} />
+   <Route path="/studenthome" element={<StudentHomePage />} />
     <Route path="/addCourse" element={<AddCoursePage />} />
     <Route path="/school/:verifiedSchool" element={<VerifiedSchoolHome />} />
     <Route path="/school/:verifiedSchool/addCourse" element={<AddCoursePage />} />

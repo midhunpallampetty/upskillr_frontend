@@ -6,7 +6,7 @@ import VideoModal from '../../components/UI/VideoModal';
 import Section from '../../../course/types/Section';
 import EditCourseModal from './EditCourseModal';
 import { Video } from '../../types/Video';
-import { getCoursesBySchool, getSectionsByCourse, getVideoById, updateCourseById, deleteCourseById } from '../../api/course.api'
+import { getCoursesBySchool, getSectionsByCourse, getVideoById, updateCourseById, deleteCourseById, softDeleteSectionById, softDeleteVideoById } from '../../api/course.api'
 import Swal from 'sweetalert2';
 const SchoolCourses: React.FC<Props> = ({ schoolId, dbname }) => {
   const [courses, setCourses] = useState<Course[]>([]);
@@ -61,11 +61,10 @@ const SchoolCourses: React.FC<Props> = ({ schoolId, dbname }) => {
     setSelectedCourse(null);
     setSections([]);
   };
-
-const handleDeleteCourse = async (courseId: string) => {
+const handleDeleteVideo = async (videoId: string) => {
   const result = await Swal.fire({
     title: 'Are you sure?',
-    text: 'You won’t be able to revert this!',
+    text: 'This video will be soft-deleted!',
     icon: 'warning',
     showCancelButton: true,
     confirmButtonColor: '#d33',
@@ -76,25 +75,92 @@ const handleDeleteCourse = async (courseId: string) => {
   if (!result.isConfirmed) return;
 
   try {
-    await deleteCourseById(dbname, courseId);
-    setCourses((prev) => prev.filter((c) => c._id !== courseId));
+    await softDeleteVideoById(dbname, videoId);
+
+    setVideoIds((prev) => prev.filter((id) => id !== videoId));
+    setCurrentVideoIndex(0);
+    setCurrentVideo(null);
 
     await Swal.fire({
       title: 'Deleted!',
-      text: 'The course has been deleted.',
+      text: 'Video has been soft-deleted.',
       icon: 'success',
-      confirmButtonColor: '#3085d6',
     });
   } catch (err) {
-    console.error('❌ Failed to delete course:', err);
+    console.error('❌ Failed to delete video:', err);
     Swal.fire({
       title: 'Error!',
-      text: 'Something went wrong while deleting the course.',
+      text: 'Failed to delete the video.',
       icon: 'error',
-      confirmButtonColor: '#d33',
     });
   }
 };
+
+  const handleDeleteCourse = async (courseId: string) => {
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: 'You won’t be able to revert this!',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, delete it!',
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      await deleteCourseById(dbname, courseId);
+      setCourses((prev) => prev.filter((c) => c._id !== courseId));
+
+      await Swal.fire({
+        title: 'Deleted!',
+        text: 'The course has been deleted.',
+        icon: 'success',
+        confirmButtonColor: '#3085d6',
+      });
+    } catch (err) {
+      console.error('❌ Failed to delete course:', err);
+      Swal.fire({
+        title: 'Error!',
+        text: 'Something went wrong while deleting the course.',
+        icon: 'error',
+        confirmButtonColor: '#d33',
+      });
+    }
+  };
+  const handleDeleteSection = async (sectionId: string) => {
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: 'This section will be deleted!',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, delete it!',
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      await softDeleteSectionById(dbname, sectionId);
+
+      setSections((prev) => prev.filter((s) => s._id !== sectionId));
+
+      await Swal.fire({
+        title: 'Deleted!',
+        text: 'Section has been soft-deleted.',
+        icon: 'success',
+      });
+    } catch (err) {
+      console.error('❌ Failed to delete section:', err);
+      Swal.fire({
+        title: 'Error!',
+        text: 'Failed to delete the section.',
+        icon: 'error',
+      });
+    }
+  };
 
 
   const handleShowVideos = (section: Section) => {
@@ -226,7 +292,7 @@ const handleDeleteCourse = async (courseId: string) => {
                       🗑️ Delete
                     </button>
                   </div>
-                 </div>
+                </div>
               ))}
             </div>
           )}
@@ -258,6 +324,7 @@ const handleDeleteCourse = async (courseId: string) => {
                     <p className="text-sm text-gray-500">
                       {section.examRequired ? '📝 Exam Required' : '✅ No Exam'}
                     </p>
+                
                   </div>
                   <div className="flex gap-2">
                     <button
@@ -274,6 +341,12 @@ const handleDeleteCourse = async (courseId: string) => {
                     >
                       ▶️ Show Videos
                     </button>
+                        <button
+                      onClick={() => handleDeleteSection(section._id)}
+                      className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded text-sm shadow"
+                    >
+                      🗑️ Delete
+                    </button>
                   </div>
                 </li>
               ))}
@@ -283,20 +356,22 @@ const handleDeleteCourse = async (courseId: string) => {
       )}
 
       {/* 🎬 Video Modal */}
-      <VideoModal
-        open={videoModalOpen}
-        currentVideo={currentVideo}
-        currentVideoIndex={currentVideoIndex}
-        videoCount={videoIds.length}
-        loadingVideo={loadingVideo}
-        onClose={closeModal}
-        onNext={() =>
-          setCurrentVideoIndex((prev) => Math.min(prev + 1, videoIds.length - 1))
-        }
-        onPrev={() =>
-          setCurrentVideoIndex((prev) => Math.max(prev - 1, 0))
-        }
-      />
+  <VideoModal
+  open={videoModalOpen}
+  currentVideo={currentVideo}
+  currentVideoIndex={currentVideoIndex}
+  videoCount={videoIds.length}
+  loadingVideo={loadingVideo}
+  onClose={closeModal}
+  onDelete={() => currentVideo && handleDeleteVideo(currentVideo._id)}
+  onNext={() =>
+    setCurrentVideoIndex((prev) => Math.min(prev + 1, videoIds.length - 1))
+  }
+  onPrev={() =>
+    setCurrentVideoIndex((prev) => Math.max(prev - 1, 0))
+  }
+/>
+
 
       {/* ✏️ Edit Course Modal */}
       {editingCourse && (

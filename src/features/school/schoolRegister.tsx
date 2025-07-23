@@ -1,22 +1,9 @@
 import React, { useState, lazy, Suspense } from 'react';
-import { useNavigate, Link } from 'react-router-dom'; // Add Link to imports
+import { useNavigate, Link } from 'react-router-dom';
 import { registerSchool, uploadToCloudinary } from '../../api/school';
-
-type SchoolFormData = {
-  schoolName: string;
-  experience: string;
-  address: string;
-  officialContact: string;
-  city: string;
-  state: string;
-  country: string;
-  image: string;
-  coverImage: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-};
-
+import type { SchoolFormData } from './types/SchoolForm';
+import { useFormReducer } from './reducers/useFormReducer';
+import { useRegisterReducer } from './reducers/useRegisterReducer';
 const LoadingButton = lazy(() => import('../shared/components/UI/Loader'));
 
 const CLOUD_NAME = import.meta.env.VITE_CLOUD_NAME;
@@ -25,33 +12,15 @@ const UPLOAD_PRESET = import.meta.env.VITE_UPLOAD_PRESET;
 const SchoolRegister = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
+const [formData, dispatchForm] = useFormReducer();
+const [state, dispatch] = useRegisterReducer();
+const { imageFile, coverImageFile, fieldErrors, loading, message, isLoading } = state;
 
-  const [formData, setFormData] = useState<SchoolFormData>({
-    schoolName: '',
-    experience: '',
-    address: '',
-    officialContact: '',
-    city: '',
-    state: '',
-    country: '',
-    image: '',
-    coverImage: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-  });
-
-  const [imageFile, setImageFile] = useState(null);
-  const [coverImageFile, setCoverImageFile] = useState(null);
-  const [fieldErrors, setFieldErrors] = useState<Partial<SchoolFormData>>({});
-  const [message, setMessage] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const allowedImageTypes = ['image/jpeg', 'image/png', 'image/webp'];
 
-  const clearFieldError = (field: string) => {
+  const clearFieldError = (field: keyof SchoolFormData) => {
     setTimeout(() => {
-      setFieldErrors((prev) => ({ ...prev, [field]: '' }));
+      dispatch({ type: 'CLEAR_FIELD_ERROR', field });
     }, 3000);
   };
 
@@ -63,50 +32,38 @@ const SchoolRegister = () => {
       if (!file) return;
 
       if (!allowedImageTypes.includes(file.type)) {
-        setFieldErrors((prev) => ({
-          ...prev,
-          [name]: '❌ Allowed formats: .jpg, .jpeg, .png, .webp',
-        }));
-        if (name === 'image') {
-          setImageFile(null);
-          setFormData((prev) => ({ ...prev, image: '' }));
-        } else if (name === 'coverImage') {
-          setCoverImageFile(null);
-          setFormData((prev) => ({ ...prev, coverImage: '' }));
-        }
-        clearFieldError(name);
+        dispatch({
+          type: 'SET_FIELD_ERRORS',
+          payload: { ...fieldErrors, [name]: '❌ Allowed formats: .jpg, .jpeg, .png, .webp' },
+        });
+        clearFieldError(name as keyof SchoolFormData);
         return;
       }
 
       if (file.size > 2 * 1024 * 1024) {
-        setFieldErrors((prev) => ({
-          ...prev,
-          [name]: '❌ File must be less than 2MB',
-        }));
-        if (name === 'image') {
-          setImageFile(null);
-          setFormData((prev) => ({ ...prev, image: '' }));
-        } else if (name === 'coverImage') {
-          setCoverImageFile(null);
-          setFormData((prev) => ({ ...prev, coverImage: '' }));
-        }
-        clearFieldError(name);
+        dispatch({
+          type: 'SET_FIELD_ERRORS',
+          payload: { ...fieldErrors, [name]: '❌ File must be less than 2MB' },
+        });
+        clearFieldError(name as keyof SchoolFormData);
         return;
       }
 
       if (name === 'image') {
-        setImageFile(file);
-        setFormData((prev) => ({ ...prev, image: file.name }));
-        setFieldErrors((prev) => ({ ...prev, image: '' }));
+        dispatch({ type: 'SET_IMAGE_FILE', payload: file });
       } else if (name === 'coverImage') {
-        setCoverImageFile(file);
-        setFormData((prev) => ({ ...prev, coverImage: file.name }));
-        setFieldErrors((prev) => ({ ...prev, coverImage: '' }));
+        dispatch({ type: 'SET_COVER_IMAGE_FILE', payload: file });
       }
+
+      dispatchForm({ type: 'UPDATE_FIELD', field: name as keyof SchoolFormData, value: file.name });
     } else {
-      setFormData({ ...formData, [name]: value });
-      setFieldErrors((prev) => ({ ...prev, [name]: '' }));
+      dispatchForm({ type: 'UPDATE_FIELD', field: name as keyof SchoolFormData, value });
     }
+
+    dispatch({
+      type: 'SET_FIELD_ERRORS',
+      payload: { ...fieldErrors, [name]: '' },
+    });
   };
 
   const validateFields = () => {
@@ -121,31 +78,7 @@ const SchoolRegister = () => {
     const currentFields = stepsFields[currentStep];
 
     currentFields.forEach((field) => {
-      if (field === 'image') {
-        if (!imageFile) {
-          errors.image = 'Logo is required';
-        } else if (!allowedImageTypes.includes(imageFile.type)) {
-          errors.image = '❌ Allowed formats: .jpg, .jpeg, .png, .webp';
-          setImageFile(null);
-          setFormData((prev) => ({ ...prev, image: '' }));
-        } else if (imageFile.size > 2 * 1024 * 1024) {
-          errors.image = '❌ File must be less than 2MB';
-          setImageFile(null);
-          setFormData((prev) => ({ ...prev, image: '' }));
-        }
-      } else if (field === 'coverImage') {
-        if (!coverImageFile) {
-          errors.coverImage = 'Cover image is required';
-        } else if (!allowedImageTypes.includes(coverImageFile.type)) {
-          errors.coverImage = '❌ Allowed formats: .jpg, .jpeg, .png, .webp';
-          setCoverImageFile(null);
-          setFormData((prev) => ({ ...prev, coverImage: '' }));
-        } else if (coverImageFile.size > 2 * 1024 * 1024) {
-          errors.coverImage = '❌ File must be less than 2MB';
-          setCoverImageFile(null);
-          setFormData((prev) => ({ ...prev, coverImage: '' }));
-        }
-      } else if (!formData[field].trim()) {
+      if (!formData[field]?.trim() && field !== 'image' && field !== 'coverImage') {
         errors[field] = 'This field is required';
       }
     });
@@ -174,6 +107,11 @@ const SchoolRegister = () => {
       });
     }
 
+    if (currentStep === 2) {
+      if (!imageFile) errors.image = 'Logo is required';
+      if (!coverImageFile) errors.coverImage = 'Cover image is required';
+    }
+
     if (currentStep === 3) {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(formData.email)) {
@@ -182,8 +120,7 @@ const SchoolRegister = () => {
 
       const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\-+={}[\]|\\:;"'<>,.?/~`]).{6,}$/;
       if (!passwordRegex.test(formData.password)) {
-        errors.password =
-          'Password must be at least 6 characters with 1 uppercase, 1 lowercase, 1 number, and 1 special character';
+        errors.password = 'Password must be stronger (6+ chars, 1 uppercase, 1 lowercase, 1 number, 1 symbol)';
       }
 
       if (formData.password !== formData.confirmPassword) {
@@ -191,16 +128,14 @@ const SchoolRegister = () => {
       }
     }
 
-    setFieldErrors(errors);
-    Object.keys(errors).forEach(clearFieldError);
+    dispatch({ type: 'SET_FIELD_ERRORS', payload: errors });
+    Object.keys(errors).forEach((field) => clearFieldError(field as keyof SchoolFormData));
 
     return Object.keys(errors).length === 0;
   };
 
   const handleNext = () => {
-    if (validateFields()) {
-      setCurrentStep((prev) => prev + 1);
-    }
+    if (validateFields()) setCurrentStep((prev) => prev + 1);
   };
 
   const handleBack = () => {
@@ -209,12 +144,14 @@ const SchoolRegister = () => {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    setFieldErrors({});
-    setMessage('');
-    setIsLoading(true);
+    dispatch({ type: 'SET_FIELD_ERRORS', payload: {} });
+    dispatch({ type: 'SET_MESSAGE', payload: '' });
+    dispatch({ type: 'SET_IS_LOADING', payload: true });
+
     if (!validateFields()) return;
 
-    setLoading(true);
+    dispatch({ type: 'SET_LOADING', payload: true });
+
     try {
       const imageUrl = await uploadToCloudinary(imageFile, CLOUD_NAME, UPLOAD_PRESET);
       const coverImageUrl = await uploadToCloudinary(coverImageFile, CLOUD_NAME, UPLOAD_PRESET);
@@ -225,12 +162,15 @@ const SchoolRegister = () => {
         coverImage: coverImageUrl,
       });
 
-      setMessage('✅ Registered successfully! You can now log in.');
+      dispatch({ type: 'SET_MESSAGE', payload: '✅ Registered successfully! Redirecting...' });
       setTimeout(() => navigate('/schoolLogin'), 2000);
     } catch (err) {
-      setMessage(`❌ ${err.response?.data?.msg || 'Registration failed'}`);
+      dispatch({
+        type: 'SET_MESSAGE',
+        payload: `❌ ${err.response?.data?.msg || 'Registration failed'}`,
+      });
     } finally {
-      setLoading(false);
+      dispatch({ type: 'SET_LOADING', payload: false });
     }
   };
 
@@ -272,29 +212,20 @@ const SchoolRegister = () => {
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-gray-800 to-blue-800 px-4 py-6">
       <div className="bg-white w-full max-w-6xl rounded-xl overflow-hidden shadow-lg flex flex-col md:flex-row">
-        {/* Left Side: Image */}
-        <div className="w-full md:w-1/2 bg-blue-500 flex items-center justify-center p-6 order-1 md:order-none">
-          <img
-            src="/images/schools/schools.png"
-            alt="illustration"
-            className="w-full max-w-xs rounded-3xl"
-          />
+        <div className="w-full md:w-1/2 bg-blue-500 flex items-center justify-center p-6">
+          <img src="/images/schools/schools.png" alt="illustration" className="w-full max-w-xs rounded-3xl" />
         </div>
 
-        {/* Right Side: Form */}
         <div className="w-full md:w-1/2 p-6 md:p-10">
           <h1 className="text-2xl font-bold mb-6 text-center md:text-left">Register School</h1>
 
-          {/* Stepper Navigation */}
           <div className="flex justify-between mb-6">
             {steps.map((step, index) => (
               <div
                 key={index}
                 className={`flex-1 text-center py-2 text-sm ${
                   index <= currentStep ? 'bg-blue-100 text-blue-700' : 'bg-gray-200 text-gray-500'
-                } ${index === 0 ? 'rounded-l-lg' : ''} ${
-                  index === steps.length - 1 ? 'rounded-r-lg' : ''
-                }`}
+                } ${index === 0 ? 'rounded-l-lg' : ''} ${index === steps.length - 1 ? 'rounded-r-lg' : ''}`}
               >
                 {step.title}
               </div>
@@ -321,12 +252,7 @@ const SchoolRegister = () => {
                     rows={3}
                   />
                 ) : type === 'file' ? (
-                  <input
-                    type="file"
-                    name={name}
-                    onChange={handleChange}
-                    className="w-full"
-                  />
+                  <input type="file" name={name} onChange={handleChange} className="w-full" />
                 ) : (
                   <input
                     type={type}
@@ -352,6 +278,7 @@ const SchoolRegister = () => {
                   Back
                 </button>
               )}
+
               <button
                 type={currentStep === steps.length - 1 ? 'submit' : 'button'}
                 onClick={currentStep < steps.length - 1 ? handleNext : undefined}
@@ -362,23 +289,15 @@ const SchoolRegister = () => {
                   <Suspense fallback={<span>Loading...</span>}>
                     <LoadingButton type="submit" isLoading={isLoading} text="Submit" />
                   </Suspense>
-                ) : currentStep === steps.length - 1 ? (
-                  'Register'
-                ) : (
-                  'Next'
-                )}
+                ) : currentStep === steps.length - 1 ? 'Register' : 'Next'}
               </button>
             </div>
           </form>
 
-          {/* Add Login Link */}
           <div className="md:col-span-2 text-center mt-4">
             <p className="text-sm text-gray-600">
               Already have an account?{' '}
-              <Link
-                to="/schoolLogin"
-                className="text-blue-600 hover:underline font-semibold"
-              >
+              <Link to="/schoolLogin" className="text-blue-600 hover:underline font-semibold">
                 Login
               </Link>
             </p>

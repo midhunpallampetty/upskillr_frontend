@@ -222,7 +222,6 @@ const SchoolGrid: React.FC = () => {
                         <p className="font-semibold text-gray-600">📧 Email</p>
                         <p className="text-sm">{selectedSchool.email}</p>
                         <p className="font-semibold text-gray-600">📚 Courses</p>
-                        <p className="text-sm">{selectedSchool.coursesOffered.join(', ')}</p>
                         <p className="font-semibold text-gray-600">🏆 Experience</p>
                         <p className="text-sm">{selectedSchool.experience} years</p>
                         <p className="font-semibold text-gray-600">✅ Verified</p>

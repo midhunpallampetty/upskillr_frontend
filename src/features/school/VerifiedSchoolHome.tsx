@@ -1,22 +1,24 @@
-// src/pages/SchoolHome.tsx
-import React, { useEffect, useState, lazy, Suspense } from 'react';
+
+import React, { useEffect,  lazy, Suspense, useReducer } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Cookies from 'js-cookie';
 import { useGlobalState } from '../../context/GlobalState';
 import { getSchoolBySubdomain, createDatabase, } from './api/school.api';
 import { useSchoolInfo } from '../school/hooks/useSchoolInfo';
+import { viewReducer, type ViewState } from './reducers/ViewReducer';
 
 const SchoolCourses = lazy(() => import('./components/UI/SchoolCourses'));
 const StudentList = lazy(() => import('./components/UI/StudentList'));
+
 
 const SchoolHome: React.FC = () => {
   const { isDarkMode } = useGlobalState();
   const navigate = useNavigate();
   const { verifiedSchool } = useParams();
   const { state, dispatch, school, setSchool } = useSchoolInfo(verifiedSchool);
-  const [activeView, setActiveView] = useState<'dashboard' | 'students'>('dashboard');
+const [activeView, dispatchView] = useReducer(viewReducer, 'dashboard');
 
-  // 🔁 Fetch School
+  
   useEffect(() => {
     const fetchSchoolInfo = async () => {
       if (!verifiedSchool) {
@@ -43,7 +45,6 @@ const SchoolHome: React.FC = () => {
     fetchSchoolInfo();
   }, [verifiedSchool]);
 
-  // 🔐 Token Watchdog (Auth Guard)
   useEffect(() => {
     const checkAuth = () => {
       const accessToken = Cookies.get('accessToken');
@@ -99,8 +100,18 @@ const SchoolHome: React.FC = () => {
       </div>
 
       {/* Cover + Logo */}
+      {/* Cover + Logo */}
       <div className="relative">
+        {/* Profile Button */}
+        <button
+          onClick={() => navigate(`/school/${verifiedSchool}/profile`)}
+          className="absolute top-4 right-4 bg-blue-600 text-white px-4 py-2 rounded-md shadow hover:bg-blue-700 transition"
+        >
+          Profile
+        </button>
+
         <img src={school.coverImage} alt="Cover" className="w-full h-60 object-cover" loading="lazy" />
+
         <div className="absolute -bottom-12 left-6">
           <img
             src={school.image}
@@ -111,6 +122,7 @@ const SchoolHome: React.FC = () => {
         </div>
       </div>
 
+
       {activeView === 'dashboard' ? (
         <>
           {/* Main Grid */}
@@ -118,13 +130,15 @@ const SchoolHome: React.FC = () => {
             <h1 className="text-3xl font-bold mb-6">Welcome, {school.name}</h1>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+
               <Card title="Add Course" onClick={() => navigate(`/school/${verifiedSchool}/addCourse`)}>
                 Create and publish new courses.
               </Card>
 
-              <Card title="Enrolled Students" onClick={() => setActiveView('students')}>
+              <Card title="Enrolled Students" onClick={() => dispatchView({ type: 'SHOW_STUDENTS' })}>
                 View and manage your students.
               </Card>
+
 
               <Card title="Payments">
                 Track course payments and dues.
@@ -144,11 +158,12 @@ const SchoolHome: React.FC = () => {
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-semibold">Enrolled Students</h2>
             <button
-              onClick={() => setActiveView('dashboard')}
+              onClick={() => dispatchView({ type: 'SHOW_DASHBOARD' })}
               className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-md"
             >
               Back to Dashboard
             </button>
+
           </div>
           <Suspense fallback={<p className="text-center text-gray-500">Loading students...</p>}>
             <StudentList dbname={verifiedSchool || ''} />

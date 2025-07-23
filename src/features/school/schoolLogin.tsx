@@ -1,19 +1,20 @@
-import React, { useState } from 'react';
+import React, { useReducer } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
 import { loginSchool } from '../../api/school';
+import {
+  loginReducer,
+  initialLoginState,
+} from './reducers/schoolLogin.reducer';
 
 const SchoolLogin = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [message, setMessage] = useState('');
+  const [state, dispatch] = useReducer(loginReducer, initialLoginState);
   const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const school = await loginSchool(email, password);
+      const school = await loginSchool(state.email, state.password);
       const { accessToken, refreshToken } = school;
 
       Cookies.set('accessToken', accessToken, {
@@ -29,7 +30,7 @@ const SchoolLogin = () => {
       });
 
       localStorage.setItem('accessToken', JSON.stringify(accessToken));
-      setMessage(`✅ Welcome ${school.name}`);
+      dispatch({ type: 'SET_MESSAGE', payload: `✅ Welcome ${school.name}` });
 
       if (!school.subDomain || school.subDomain === 'null') {
         navigate('/schoolStatus');
@@ -46,7 +47,10 @@ const SchoolLogin = () => {
 
       navigate(`/school/${slug}`);
     } catch (err: any) {
-      setMessage(`❌ ${err.response?.data?.msg || 'Login failed'}`);
+      dispatch({
+        type: 'SET_MESSAGE',
+        payload: `❌ ${err.response?.data?.msg || 'Login failed'}`,
+      });
     }
   };
 
@@ -60,8 +64,8 @@ const SchoolLogin = () => {
           <input
             name="email"
             placeholder=" Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            value={state.email}
+            onChange={(e) => dispatch({ type: 'SET_EMAIL', payload: e.target.value })}
             className="w-full mb-3 p-2 border border-gray-300 rounded"
             required
           />
@@ -70,17 +74,17 @@ const SchoolLogin = () => {
             <input
               name="password"
               placeholder=" Password"
-              type={showPassword ? 'text' : 'password'}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              type={state.showPassword ? 'text' : 'password'}
+              value={state.password}
+              onChange={(e) => dispatch({ type: 'SET_PASSWORD', payload: e.target.value })}
               className="w-full p-2 border border-gray-300 rounded pr-10"
               required
             />
             <span
-              onClick={() => setShowPassword(!showPassword)}
+              onClick={() => dispatch({ type: 'TOGGLE_SHOW_PASSWORD' })}
               className="absolute right-3 top-2.5 text-gray-500 cursor-pointer select-none"
             >
-              {showPassword ? '🙈' : '👁️'}
+              {state.showPassword ? '🙈' : '👁️'}
             </span>
           </div>
 
@@ -109,7 +113,7 @@ const SchoolLogin = () => {
             </button>
           </p>
 
-          {message && <p className="mt-4 text-sm text-red-600">{message}</p>}
+          {state.message && <p className="mt-4 text-sm text-red-600">{state.message}</p>}
         </form>
 
         <div className="flex-1 bg-blue-500 flex items-center justify-center">

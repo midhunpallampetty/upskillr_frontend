@@ -7,6 +7,7 @@
   import { getAllSchools } from './api/student.api';
   import { School } from './types/School';
   import { Student } from './types/School';
+import StudentNavbar from './components/StudentNavbar';
 
   const ITEMS_PER_PAGE = 6;
 
@@ -17,7 +18,6 @@
     const [currentPage, setCurrentPage] = useState(1);
     const [student, setStudent] = useState<Student | null>(null);
     const navigate = useNavigate();
-
     useEffect(() => {
       const token = Cookies.get('studentAccessToken');
       if (!token) {
@@ -84,41 +84,7 @@ const handleSchoolClick = (schoolUrl: string) => {
     return (
       <div className="min-h-screen bg-gray-50">
         {/* Navbar */}
-        <nav className="bg-white shadow-sm border-b">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center h-16">
-              <div className="flex items-center space-x-3">
-                <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg">
-                  <GraduationCap className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-xl font-bold text-gray-900">Upskillr</h1>
-                  <p className="text-xs text-gray-500">E-Learning Platform</p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-4">
-                <div className="hidden md:flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-gradient-to-r from-green-400 to-blue-500 rounded-full flex items-center justify-center">
-                    <span className="text-white text-sm font-medium">
-                      {student?.fullName?.charAt(0) || 'G'}
-                    </span>
-                  </div>
-                  <div className="text-sm">
-                    <p className="font-medium text-gray-900">{student?.fullName || 'Guest'}</p>
-                    <p className="text-gray-500">Student</p>
-                  </div>
-                </div>
-                <button
-                  onClick={handleLogout}
-                  className="flex items-center space-x-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors duration-200"
-                >
-                  <LogOut className="w-4 h-4 text-gray-600" />
-                  <span className="text-sm font-medium text-gray-700">Logout</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </nav>
+           <StudentNavbar student={student} handleLogout={handleLogout} />
 
         {/* Hero Section */}
         <section className="bg-gradient-to-br from-blue-600 via-purple-600 to-blue-800 text-white py-16 px-6 md:px-12">

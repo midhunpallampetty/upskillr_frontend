@@ -4,6 +4,9 @@ import ResetPassword from '../features/school/ResetPassword';
 import ForgotPassword from '../features/school/ForgotPassword';
 import ResetStudentPassword from '../features/student/ResetPassword';
 import ForgotStudentPassword from '../features/student/ForgotPassword';
+import ProfilePage from '../features/school/Profile';
+import SchoolProfilePage from '../features/school/Profile';
+import StudentProfilePage from '../features/student/StudentProfile';
 
 const LandingPage = lazy(() => import('../features/shared/Landing'));
 const AdminAuth = lazy(() => import('../features/admin/AdminAuth'));
@@ -25,7 +28,9 @@ const PublicRoutes = () => (
   <Routes>
     <Route path="/" element={<LandingPage />} />
     <Route path="/adminRegister" element={<AdminAuth />} />
-    <Route path="/schoolRegister" element={<SchoolRegister />} />
+    <Route path="/school/:schoolname/profile" element={<SchoolProfilePage />} />
+    <Route path='/student/profile'element={<StudentProfilePage/>}/>
+   <Route path="/schoolRegister" element={<SchoolRegister />} />
     <Route path="/schoolLogin" element={<SchoolLogin />} />
     <Route path="/loginSelection" element={<LoginSelection />} />
     <Route path="/signupSelection" element={<SignupSelection />} />

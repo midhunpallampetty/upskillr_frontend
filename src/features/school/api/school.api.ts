@@ -1,5 +1,6 @@
 import type { School } from '../../course/types/School';
 import schoolAxios from '../../../utils/axios/school';
+import axios from 'axios';
 
 export const getSchools = async (
   search: string = '',
@@ -48,5 +49,26 @@ password,
     password,
   });
   return response.data;
+};
+export const getSchoolByDomain = async (subDomain: string) => {
+  const response = await axios.get(`http://school.localhost:5000/api/getSchoolBySubDomain?subDomain=${encodeURIComponent(subDomain)}`);
+  return response.data;
+};
+
+export const updateSchoolData = async (payload: any) => {
+  return await axios.post('http://school.localhost:5000/api/updateSchoolData', payload);
+};
+
+export const uploadToCloudinary = async (file: File): Promise<string> => {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('upload_preset', import.meta.env.VITE_UPLOAD_PRESET);
+
+  const response = await axios.post(
+    `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUD_NAME}/image/upload`,
+    formData
+  );
+
+  return response.data.secure_url;
 };
 

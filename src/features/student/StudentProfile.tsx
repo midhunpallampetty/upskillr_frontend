@@ -6,8 +6,10 @@ import StudentNavbar from './components/StudentNavbar';
 import Cookies from 'js-cookie';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import useStudentAuthGuard from './hooks/useStudentAuthGuard';
 
 const StudentProfilePage = () => {
+  useStudentAuthGuard()
   const [editMode, setEditMode] = useState(false);
   const [studentData,setStudentData]=useState()
   const [student, setStudent] = useState({

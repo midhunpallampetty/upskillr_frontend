@@ -3,8 +3,10 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { SectionProps } from './types/Props';
 import { addVideoToSection, uploadVideoToCloudinary } from './api/video.api';
+import useSchoolAuthGuard from './hooks/useSchoolAuthGuard';
 const Navbar = lazy(() => import('../shared/components/Navbar'));
 const AddVideoToSection: React.FC<SectionProps> = ({ sectionId, schoolDb }) => {
+  useSchoolAuthGuard();
   const [videoName, setVideoName] = useState('');
   const [description, setDescription] = useState('');
   const [videoFile, setVideoFile] = useState<File | null>(null);
@@ -95,7 +97,7 @@ const AddVideoToSection: React.FC<SectionProps> = ({ sectionId, schoolDb }) => {
           </button>
         </form>
       </div>
-      
+
 
       <ToastContainer position="bottom-center" />
     </div>

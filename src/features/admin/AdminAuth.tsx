@@ -1,43 +1,58 @@
-import React, { useState } from 'react';
+import React, { useReducer } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { loginAdmin, registerAdmin } from './api/admin.api';
+import {
+  adminAuthReducer,
+  initialAdminAuthState,
+} from './reducers/adminAuthReducer';
+import Cookies from 'js-cookie';
+import useAdminAuthGuard from './hooks/useAdminAuthGuard';
 
 const AdminAuth: React.FC = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [accountType] = useState('admin');
-  const [isLogin, setIsLogin] = useState(false);
-  const [message, setMessage] = useState('');
+  useAdminAuthGuard()
+  const [state, dispatch] = useReducer(adminAuthReducer, initialAdminAuthState);
   const navigate = useNavigate();
+  const accountType = 'admin';
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setMessage('');
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  dispatch({ type: 'SET_MESSAGE', payload: '' });
 
-    // ✅ Confirm password check
-    if (!isLogin && password !== confirmPassword) {
-      setMessage('❌ Passwords do not match');
-      return;
-    }
+  if (!state.isLogin && state.password !== state.confirmPassword) {
+    dispatch({ type: 'SET_MESSAGE', payload: '❌ Passwords do not match' });
+    return;
+  }
 
-    const endpoint = isLogin ? 'login' : 'register';
-    try {
-      const res = await fetch(`${import.meta.env.VITE_ADMIN_API_URL}/${endpoint}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+  try {
+    const data = state.isLogin
+      ? await loginAdmin(state.email, state.password)
+      : await registerAdmin(state.email, state.password);
+
+    dispatch({ type: 'SET_MESSAGE', payload: data.msg || 'Success' });
+console.log(data)
+    if (state.isLogin) {
+      // 🍪 Set tokens as cookies
+      Cookies.set('adminAccessToken', data.accessToken, {
+        expires: 1, // 1 day
+        secure: true,
+        sameSite: 'strict',
       });
-      const data = await res.json();
-      setMessage(data.msg || 'Unexpected response');
 
-      if (res.ok && isLogin) {
-        console.log('Admin logged in:', data.admin);
-        navigate('/dashboard');
-      }
-    } catch (err) {
-      setMessage('Something went wrong');
+      Cookies.set('adminRefreshToken', data.refreshToken, {
+        expires: 7, // 7 days
+        secure: true,
+        sameSite: 'strict',
+      });
+
+      console.log('Admin logged in:', data.accessToken);
+      navigate('/dashboard');
     }
-  };
+  } catch (error: any) {  
+    const errMsg = error.response?.data?.msg || 'Something went wrong';
+    dispatch({ type: 'SET_MESSAGE', payload: `❌ ${errMsg}` });
+  }
+};
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-[#0f2027] via-[#203a43] to-[#2c5364] font-sans">
@@ -54,8 +69,10 @@ const AdminAuth: React.FC = () => {
             <input
               type="email"
               placeholder="Email Address"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={state.email}
+              onChange={(e) =>
+                dispatch({ type: 'SET_EMAIL', payload: e.target.value })
+              }
               className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-100"
               required
             />
@@ -63,19 +80,22 @@ const AdminAuth: React.FC = () => {
             <input
               type="password"
               placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              value={state.password}
+              onChange={(e) =>
+                dispatch({ type: 'SET_PASSWORD', payload: e.target.value })
+              }
               className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-100"
               required
             />
 
-            {/* Confirm Password (only in Signup mode) */}
-            {!isLogin && (
+            {!state.isLogin && (
               <input
                 type="password"
                 placeholder="Confirm Password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
+                value={state.confirmPassword}
+                onChange={(e) =>
+                  dispatch({ type: 'SET_CONFIRM_PASSWORD', payload: e.target.value })
+                }
                 className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-100"
                 required
               />
@@ -93,26 +113,24 @@ const AdminAuth: React.FC = () => {
               type="submit"
               className="w-full bg-teal-600 text-white py-2 rounded-md hover:bg-teal-700 transition"
             >
-              {isLogin ? 'Login' : 'Signup'}
+              {state.isLogin ? 'Login' : 'Signup'}
             </button>
           </form>
 
           <p className="mt-4 text-sm text-gray-600">
-            {isLogin ? "Don't have an account?" : 'Already have an account?'}{' '}
+            {state.isLogin ? "Don't have an account?" : 'Already have an account?'}{' '}
             <span
-              onClick={() => {
-                setIsLogin(!isLogin);
-                setMessage('');
-                setConfirmPassword('');
-              }}
+              onClick={() => dispatch({ type: 'TOGGLE_LOGIN' })}
               className="text-blue-500 cursor-pointer"
             >
-              {isLogin ? 'Signup' : 'Login'}
+              {state.isLogin ? 'Signup' : 'Login'}
             </span>
           </p>
 
-          {message && (
-            <div className="mt-4 text-center text-sm text-red-500">{message}</div>
+          {state.message && (
+            <div className="mt-4 text-center text-sm text-red-500">
+              {state.message}
+            </div>
           )}
         </div>
 

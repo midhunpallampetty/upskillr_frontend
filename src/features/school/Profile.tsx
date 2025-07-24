@@ -6,8 +6,11 @@ import 'react-toastify/dist/ReactToastify.css';
 import { School } from './types/School';
 import { getSchoolByDomain, updateSchoolData, uploadToCloudinary } from './api/school.api';
 import Swal from 'sweetalert2';
+import useSchoolAuthGuard from './hooks/useSchoolAuthGuard';
 
 const SchoolProfilePage = () => {
+    useSchoolAuthGuard();
+
   const [school, setSchool] = useState<School | null>(null);
   const [form, setForm] = useState<Partial<School>>({});
   const [imagePreview, setImagePreview] = useState<string | null>(null);

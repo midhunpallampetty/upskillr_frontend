@@ -1,4 +1,4 @@
-import React, { useState, Suspense, lazy } from 'react';
+import React, { useReducer, Suspense, lazy } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
 import Swal from 'sweetalert2';
@@ -7,7 +7,12 @@ import 'react-toastify/dist/ReactToastify.css';
 import uploadToCloudinary from './utils/uploadToCloudinary';
 import { addCourseToSchool } from './api/course.api';
 import Navbar from '../shared/components/Navbar';
-import Section from './types/Section';
+import {
+  courseFormReducer,
+  initialCourseFormState,
+} from './reducers/courseForm.reducer'; 
+import useSchoolAuthGuard from '../school/hooks/useSchoolAuthGuard';
+
 const ThumbnailUploader = lazy(() => import('./components/ThumbnailUploader'));
 const SectionsList = lazy(() => import('./components/SectionsList'));
 const TextInput = lazy(() => import('./components/TextInput'));
@@ -19,22 +24,20 @@ const CLOUD_NAME = import.meta.env.VITE_CLOUD_NAME;
 const UPLOAD_PRESET = import.meta.env.VITE_UPLOAD_PRESET;
 
 const AddCoursePage: React.FC = () => {
-  const [courseName, setCourseName] = useState('');
-  const [isPreliminary, setIsPreliminary] = useState(false);
-  const [courseThumbnail, setCourseThumbnail] = useState<File | null>(null);
-  const [previewURL, setPreviewURL] = useState<string | null>(null);
-  const [fee, setFee] = useState<number | ''>('');
-  const [sections, setSections] = useState<Section[]>([
-    {
-      title: '',
-      sectionName: '',
-      examRequired: false,
-      _id: '',
-      videos: [],
-    },
-  ]);
-  const [isLoading, setIsLoading] = useState(false);
+    useSchoolAuthGuard();
+
+  const [state, dispatch] = useReducer(courseFormReducer, initialCourseFormState);
   const navigate = useNavigate();
+
+  const {
+    courseName,
+    isPreliminary,
+    courseThumbnail,
+    previewURL,
+    fee,
+    sections,
+    isLoading,
+  } = state;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,7 +63,7 @@ const AddCoursePage: React.FC = () => {
     if (!dbname || !schoolId) return toast.error('School data missing. Please login again.');
 
     try {
-      setIsLoading(true);
+      dispatch({ type: 'SET_LOADING', payload: true });
 
       const thumbnailURL = await uploadToCloudinary(courseThumbnail, UPLOAD_PRESET, CLOUD_NAME);
       const mappedSections = validSections.map((s) => ({
@@ -83,11 +86,11 @@ const AddCoursePage: React.FC = () => {
 
       if (!result.success) {
         toast.error(result.error || 'Failed to add course');
-        setIsLoading(false);
+        dispatch({ type: 'SET_LOADING', payload: false });
         return;
       }
 
-      setIsLoading(false);
+      dispatch({ type: 'SET_LOADING', payload: false });
       navigate(-1);
 
       Swal.fire({
@@ -98,24 +101,10 @@ const AddCoursePage: React.FC = () => {
         confirmButtonText: 'OK',
       });
 
-      // Reset form
-      setCourseName('');
-      setIsPreliminary(false);
-      setCourseThumbnail(null);
-      setPreviewURL(null);
-      setFee('');
-      setSections([
-        {
-          title: '',
-          sectionName: '',
-          examRequired: false,
-          _id: '',
-          videos: [],
-        },
-      ]);
+      dispatch({ type: 'RESET_FORM' });
     } catch (error) {
       console.error('❌ Submission error:', error);
-      setIsLoading(false);
+      dispatch({ type: 'SET_LOADING', payload: false });
       toast.error('Something went wrong while submitting the course.');
     }
   };
@@ -124,28 +113,42 @@ const AddCoursePage: React.FC = () => {
     <>
       <Navbar />
       <ToastContainer position="top-right" autoClose={3000} />
-
       <div className="max-w-2xl mx-auto p-6 bg-white shadow-lg rounded-xl mt-6">
         <h2 className="text-2xl font-bold mb-6">📘 Add New Course</h2>
-
         <Suspense fallback={<p className="text-center text-gray-500">Loading form components...</p>}>
           <form onSubmit={handleSubmit} className="space-y-5">
-            <TextInput label="Course Name" id="courseName" value={courseName} onChange={setCourseName} />
-            <Checkbox label="Is Preliminary?" id="isPreliminary" checked={isPreliminary} onChange={setIsPreliminary} />
+            <TextInput
+              label="Course Name"
+              id="courseName"
+              value={courseName}
+              onChange={(val) => dispatch({ type: 'SET_COURSE_NAME', payload: val })}
+            />
+            <Checkbox
+              label="Is Preliminary?"
+              id="isPreliminary"
+              checked={isPreliminary}
+              onChange={(val) => dispatch({ type: 'SET_IS_PRELIMINARY', payload: val })}
+            />
             <ThumbnailUploader
               file={courseThumbnail}
-              setFile={setCourseThumbnail}
+              setFile={(val) => dispatch({ type: 'SET_THUMBNAIL', payload: val })}
               previewURL={previewURL}
-              setPreviewURL={setPreviewURL}
+              setPreviewURL={(val) => dispatch({ type: 'SET_PREVIEW_URL', payload: val })}
               setError={(msg) => toast.error(msg)}
             />
-         
-            <NumberInput label="Course Fee (₹)" id="courseFee" value={fee} onChange={setFee} />
-            <SectionsList sections={sections} setSections={setSections} />
+            <NumberInput
+              label="Course Fee (₹)"
+              id="courseFee"
+              value={fee}
+              onChange={(val) => dispatch({ type: 'SET_FEE', payload: val })}
+            />
+            <SectionsList
+              sections={sections}
+              setSections={(val) => dispatch({ type: 'SET_SECTIONS', payload: val })}
+            />
             <LoadingButton isLoading={isLoading} text="Submit Course" type="submit" />
           </form>
         </Suspense>
-
       </div>
     </>
   );

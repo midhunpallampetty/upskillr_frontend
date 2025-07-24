@@ -4,6 +4,7 @@ import { registerSchool, uploadToCloudinary } from '../../api/school';
 import type { SchoolFormData } from './types/SchoolForm';
 import { useFormReducer } from './reducers/useFormReducer';
 import { useRegisterReducer } from './reducers/useRegisterReducer';
+import useNavigateToSchool from './hooks/useNavigateIntoSchool';
 const LoadingButton = lazy(() => import('../shared/components/UI/Loader'));
 
 const CLOUD_NAME = import.meta.env.VITE_CLOUD_NAME;
@@ -11,6 +12,8 @@ const UPLOAD_PRESET = import.meta.env.VITE_UPLOAD_PRESET;
 
 const SchoolRegister = () => {
   const navigate = useNavigate();
+  useNavigateToSchool();
+
   const [currentStep, setCurrentStep] = useState(0);
 const [formData, dispatchForm] = useFormReducer();
 const [state, dispatch] = useRegisterReducer();

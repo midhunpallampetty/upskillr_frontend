@@ -1,7 +1,14 @@
-import { useEffect, useState,lazy,Suspense } from 'react';
+import { useReducer, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
-const SchoolGrid = lazy(() => import('../../../school/components/UI/SchoolGrid'));
+import {
+  adminDashboardReducer,
+  initialAdminDashboardState,
+} from '../../reducers/adminDashboardReducer';
+import { Cookie } from 'lucide-react';
+import Cookies from 'js-cookie';
+import useAdminAuthGuard from '../../hooks/useAdminAuthGuard';
 
+const SchoolGrid = lazy(() => import('../../../school/components/UI/SchoolGrid'));
 
 const ManageStudents = () => (
   <div className="text-center text-gray-600">
@@ -16,50 +23,50 @@ const ManageContent = () => (
 );
 
 const AdminDashboard = () => {
+  useAdminAuthGuard()
   const navigate = useNavigate();
-  const [activeSection, setActiveSection] = useState<string>(() => {
-    return localStorage.getItem('admin_active_section') || 'welcome';
-  });
-
-  useEffect(() => {
-    localStorage.setItem('admin_active_section', activeSection);
-  }, [activeSection]);
+  const [state, dispatch] = useReducer(
+    adminDashboardReducer,
+    initialAdminDashboardState
+  );
 
   const handleLogout = () => {
     localStorage.removeItem('admin');
-    localStorage.removeItem('admin_active_section');
+    Cookies.remove('adminAccessToken');
+    Cookies.remove('adminRefreshToken');
+
+    dispatch({ type: 'RESET' });
     navigate('/adminRegister');
   };
 
-const renderContent = () => {
-  return (
-    <Suspense fallback={<p className="text-center text-gray-400">Loading...</p>}>
-      {
+  const renderContent = () => {
+    return (
+      <Suspense fallback={<p className="text-center text-gray-400">Loading...</p>}>
         {
-          students: <ManageStudents />,
-          schools: <SchoolGrid />,
-          content: <ManageContent />,
-          welcome: (
-            <div className="text-center">
-              <h2 className="text-2xl font-semibold mb-4">
-                Welcome to the Admin Dashboard
-              </h2>
-              <img
-                src="/admin.png"
-                alt="Admin Illustration"
-                className="w-80 mx-auto rounded shadow"
-              />
-            </div>
-          ),
-        }[activeSection]
-      }
-    </Suspense>
-  );
-};
-
+          {
+            students: <ManageStudents />,
+            schools: <SchoolGrid />,
+            content: <ManageContent />,
+            welcome: (
+              <div className="text-center">
+                <h2 className="text-2xl font-semibold mb-4">
+                  Welcome to the Admin Dashboard
+                </h2>
+                <img
+                  src="/admin.png"
+                  alt="Admin Illustration"
+                  className="w-80 mx-auto rounded shadow"
+                />
+              </div>
+            ),
+          }[state.activeSection]
+        }
+      </Suspense>
+    );
+  };
 
   const getSectionDescription = () => {
-    switch (activeSection) {
+    switch (state.activeSection) {
       case 'students':
         return 'Manage student data and accounts.';
       case 'schools':
@@ -82,25 +89,25 @@ const renderContent = () => {
 
         <nav className="flex flex-col gap-3">
           <button
-            onClick={() => setActiveSection('students')}
+            onClick={() => dispatch({ type: 'SET_SECTION', payload: 'students' })}
             className={`bg-slate-800 py-2 px-4 rounded hover:bg-slate-700 text-left ${
-              activeSection === 'students' ? 'bg-slate-700' : ''
+              state.activeSection === 'students' ? 'bg-slate-700' : ''
             }`}
           >
             🎓 Manage Students
           </button>
           <button
-            onClick={() => setActiveSection('schools')}
+            onClick={() => dispatch({ type: 'SET_SECTION', payload: 'schools' })}
             className={`bg-slate-800 py-2 px-4 rounded hover:bg-slate-700 text-left ${
-              activeSection === 'schools' ? 'bg-slate-700' : ''
+              state.activeSection === 'schools' ? 'bg-slate-700' : ''
             }`}
           >
             🏫 Manage Schools
           </button>
           <button
-            onClick={() => setActiveSection('content')}
+            onClick={() => dispatch({ type: 'SET_SECTION', payload: 'content' })}
             className={`bg-slate-800 py-2 px-4 rounded hover:bg-slate-700 text-left ${
-              activeSection === 'content' ? 'bg-slate-700' : ''
+              state.activeSection === 'content' ? 'bg-slate-700' : ''
             }`}
           >
             📚 Manage Content

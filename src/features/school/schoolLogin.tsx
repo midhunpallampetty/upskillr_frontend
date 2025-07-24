@@ -2,6 +2,7 @@ import React, { useReducer } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
 import { loginSchool } from '../../api/school';
+import useNavigateToSchool from './hooks/useNavigateIntoSchool';
 import {
   loginReducer,
   initialLoginState,
@@ -11,11 +12,13 @@ const SchoolLogin = () => {
   const [state, dispatch] = useReducer(loginReducer, initialLoginState);
   const navigate = useNavigate();
 
+  useNavigateToSchool();
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       const school = await loginSchool(state.email, state.password);
-      const { accessToken, refreshToken } = school;
+      const { accessToken, refreshToken, dbname } = school;
 
       Cookies.set('accessToken', accessToken, {
         expires: 1,
@@ -25,6 +28,18 @@ const SchoolLogin = () => {
 
       Cookies.set('refreshToken', refreshToken, {
         expires: 7,
+        secure: true,
+        sameSite: 'strict',
+      });
+
+      Cookies.set('schoolData', JSON.stringify(school), {
+        expires: 1,
+        secure: true,
+        sameSite: 'strict',
+      });
+
+      Cookies.set('dbname', dbname, {
+        expires: 1,
         secure: true,
         sameSite: 'strict',
       });

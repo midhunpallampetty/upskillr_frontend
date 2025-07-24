@@ -6,8 +6,10 @@ import 'react-toastify/dist/ReactToastify.css';
 import { registerStudent } from './api/student.api';
 import { validateStudentRegister } from './validations/registerValidation';
 import { RegisterFormErrors } from './types/RegisterData';
+import useNavigateToStudentHome from './hooks/useNavigateToStudentHome';
 
 const StudentRegister = () => {
+    useNavigateToStudentHome();
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',

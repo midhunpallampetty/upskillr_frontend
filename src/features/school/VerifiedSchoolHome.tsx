@@ -11,6 +11,7 @@ const SchoolCourses = lazy(() => import('./components/UI/SchoolCourses'));
 const StudentList = lazy(() => import('./components/UI/StudentList'));
 
 
+
 const SchoolHome: React.FC = () => {
   const { isDarkMode } = useGlobalState();
   const navigate = useNavigate();

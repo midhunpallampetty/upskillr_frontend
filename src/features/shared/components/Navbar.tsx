@@ -1,7 +1,19 @@
-import React from 'react';
+import Cookies from 'js-cookie';
+
 import { useNavigate } from 'react-router-dom';
 const Navbar = () => {
   const navigate = useNavigate();
+  const handleLogout=(()=>{
+Cookies.remove('accessToken');
+Cookies.remove('refreshToken');
+Cookies.remove('schoolData');
+Cookies.remove('dbname');
+navigate('/schoolLogin')
+
+
+
+  })
+
   return (
     <nav className="w-full h-16 flex items-center justify-between bg-gray-300 shadow px-4">
       {/* Left Logo */}
@@ -17,7 +29,7 @@ const Navbar = () => {
     </div>
 
       {/* Right Logout Button */}
-      <button className="bg-[#1A2FA0] text-white font-bold px-5 py-2 rounded-full hover:bg-[#0d1e75] transition">
+      <button onClick={handleLogout} className="bg-[#1A2FA0] text-white font-bold px-5 py-2 rounded-full hover:bg-[#0d1e75] transition">
         Logout
       </button>
     </nav>

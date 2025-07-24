@@ -8,22 +8,19 @@
   import { School } from './types/School';
   import { Student } from './types/School';
 import StudentNavbar from './components/StudentNavbar';
+import useSchoolAuthGuard from '../school/hooks/useSchoolAuthGuard';
+import useStudentAuthGuard from './hooks/useStudentAuthGuard';
 
   const ITEMS_PER_PAGE = 6;
 
   const StudentHomePage: React.FC = () => {
+    useStudentAuthGuard()
     const [schools, setSchools] = useState<School[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [student, setStudent] = useState<Student | null>(null);
     const navigate = useNavigate();
-    useEffect(() => {
-      const token = Cookies.get('studentAccessToken');
-      if (!token) {
-        navigate('/studentlogin');
-      }
-    }, [navigate]);
 
     useEffect(() => {
       const stored = localStorage.getItem('student');

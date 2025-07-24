@@ -3,10 +3,12 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { fetchCoursesBySchool } from './api/course.api';
 import { Course } from './types/Course';
 import { ChevronLeft, ChevronRight, BookOpen, Clock } from 'lucide-react';
+import useStudentAuthGuard from './hooks/useStudentAuthGuard';
 
 const ITEMS_PER_PAGE = 6;
 
 const CoursesPage: React.FC = () => {
+  useStudentAuthGuard()
   const { schoolName } = useParams();
   const navigate = useNavigate();
   const [courses, setCourses] = useState<Course[]>([]);

@@ -4,10 +4,13 @@ import { fetchCoursesBySchool } from './api/course.api';
 import { Course } from './types/Course';
 import { ChevronLeft, ChevronRight, BookOpen, Clock } from 'lucide-react';
 import useStudentAuthGuard from './hooks/useStudentAuthGuard';
+import { useGlobalDispatch } from '../../context/GlobalState';
 
 const ITEMS_PER_PAGE = 6;
 
 const CoursesPage: React.FC = () => {
+  const dispatch = useGlobalDispatch();
+
   useStudentAuthGuard()
   const { schoolName } = useParams();
   const navigate = useNavigate();
@@ -21,9 +24,10 @@ const CoursesPage: React.FC = () => {
     if (!schoolName) return;
 
     const decodedUrl = decodeURIComponent(schoolName);
-console.log(decodedUrl,"decodedUrl")
+      dispatch({ type: 'SET_SCHOOL_NAME', payload: decodedUrl }); 
+    console.log(decodedUrl, "decodedUrl")
     const getCourses = async () => {
-      const result = await fetchCoursesBySchool("http://"+decodedUrl+'.localhost:5173');
+      const result = await fetchCoursesBySchool("http://" + decodedUrl + '.localhost:5173');
 
       if (result.success && result.courses) {
         setCourses(result.courses);
@@ -147,9 +151,17 @@ console.log(decodedUrl,"decodedUrl")
                     <p className="text-xs text-gray-400 mt-2">
                       Created on {new Date(course.createdAt).toLocaleDateString('en-IN')}
                     </p>
-                    <button className="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-md text-sm font-medium transition">
+                    <button
+                      onClick={() => {
+                        dispatch({ type: 'SET_COURSE', payload: JSON.stringify(course) });
+                        navigate(`/school/${schoolName}/course/${course._id}`);
+                      }}
+                      className="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-md text-sm font-medium transition"
+                    >
                       View Details
                     </button>
+
+
                   </div>
                 </div>
               ))}
@@ -168,9 +180,8 @@ console.log(decodedUrl,"decodedUrl")
                 <button
                   key={i}
                   onClick={() => setCurrentPage(i + 1)}
-                  className={`px-4 py-2 rounded ${
-                    currentPage === i + 1 ? 'bg-blue-600 text-white' : 'bg-gray-200'
-                  }`}
+                  className={`px-4 py-2 rounded ${currentPage === i + 1 ? 'bg-blue-600 text-white' : 'bg-gray-200'
+                    }`}
                 >
                   {i + 1}
                 </button>

@@ -7,9 +7,10 @@ import {
 } from './reducers/adminAuthReducer';
 import Cookies from 'js-cookie';
 import useAdminAuthGuard from './hooks/useAdminAuthGuard';
+import useAdminRedirect from './hooks/useAdminRedirect';
 
 const AdminAuth: React.FC = () => {
-  useAdminAuthGuard()
+  useAdminRedirect()
   const [state, dispatch] = useReducer(adminAuthReducer, initialAdminAuthState);
   const navigate = useNavigate();
   const accountType = 'admin';

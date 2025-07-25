@@ -4,4 +4,5 @@
       examRequired:boolean;
       _id:any;
       videos:any;
+      description:string
     }

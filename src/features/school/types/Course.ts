@@ -6,4 +6,5 @@ export interface Course {
   noOfLessons: number;
   isPreliminaryRequired: boolean;
   sections: { title: string }[];
+  description:string;
 }

@@ -8,6 +8,8 @@ import ProfilePage from '../features/school/Profile';
 import SchoolProfilePage from '../features/school/Profile';
 import StudentProfilePage from '../features/student/StudentProfile';
 import NotFound from '../features/shared/components/Layout/NotFound';
+import CourseDetailsPage from '../features/student/CourseDetailsPage';
+import CoursePurchasePage from '../features/student/CoursePurchasePage';
 
 const LandingPage = lazy(() => import('../features/shared/Landing'));
 const AdminAuth = lazy(() => import('../features/admin/AdminAuth'));
@@ -33,6 +35,9 @@ const PublicRoutes = () => (
     <Route path='/student/profile'element={<StudentProfilePage/>}/>
     <Route path="*" element={<NotFound />} />
    <Route path="/schoolRegister" element={<SchoolRegister />} />
+        <Route path="/purchase" element={<CoursePurchasePage />} />
+<Route path="/school/:schoolName/course/:courseId" element={<CourseDetailsPage />} />
+
     <Route path="/schoolLogin" element={<SchoolLogin />} />
     <Route path="/loginSelection" element={<LoginSelection />} />
     <Route path="/signupSelection" element={<SignupSelection />} />

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Course } from '../../types/Course';
+import { toast } from 'react-toastify';
 
 interface EditCourseModalProps {
   course: Course;
@@ -18,16 +19,17 @@ const EditCourseModal: React.FC<EditCourseModalProps> = ({
     noOfLessons: course.noOfLessons,
     courseThumbnail: course.courseThumbnail,
     isPreliminaryRequired: course.isPreliminaryRequired,
+    description: course.description || '', // ✅ added
   });
 
   const [uploading, setUploading] = useState(false);
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
-    const target = e.target as HTMLInputElement;
-    const { name, value, type } = target;
-    const checked = type === 'checkbox' ? target.checked : undefined;
+    const target = e.target;
+    const { name, value, type } = target as HTMLInputElement;
+    const checked = type === 'checkbox' ? (target as HTMLInputElement).checked : undefined;
 
     setForm((prev) => ({
       ...prev,
@@ -35,9 +37,7 @@ const EditCourseModal: React.FC<EditCourseModalProps> = ({
     }));
   };
 
-  const handleImageChange = async (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -71,6 +71,12 @@ const EditCourseModal: React.FC<EditCourseModalProps> = ({
     }
   };
 
+  const handleSave = () => {
+    onSave(form);
+    toast.success('Course updated successfully!');
+    onClose();
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
       <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
@@ -91,7 +97,15 @@ const EditCourseModal: React.FC<EditCourseModalProps> = ({
             placeholder="Fee"
             className="w-full border p-2 rounded"
           />
-        
+
+          {/* ✅ New Description Field */}
+          <textarea
+            name="description"
+            value={form.description}
+            onChange={handleChange}
+            placeholder="Course Description"
+            className="w-full border p-2 rounded resize-none h-24"
+          />
 
           <div className="space-y-2">
             <label className="block font-medium">Thumbnail</label>
@@ -126,7 +140,7 @@ const EditCourseModal: React.FC<EditCourseModalProps> = ({
             Cancel
           </button>
           <button
-            onClick={() => onSave(form)}
+            onClick={handleSave}
             className="px-4 py-2 bg-blue-600 text-white rounded"
             disabled={uploading}
           >

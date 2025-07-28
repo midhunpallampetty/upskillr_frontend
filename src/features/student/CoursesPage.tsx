@@ -13,6 +13,7 @@ const CoursesPage: React.FC = () => {
 
   useStudentAuthGuard()
   const { schoolName } = useParams();
+  localStorage.setItem('schoolname',schoolName);
   const navigate = useNavigate();
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);

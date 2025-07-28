@@ -22,3 +22,12 @@ export const fetchCoursesBySchool = async (schoolName: string): Promise<{
     };
   }
 };
+export const fetchPurchasedCourses = async (studentId: string) => {
+  try {
+    const response = await courseAxios.get(`/course/school-info/${studentId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Failed to fetch purchased courses:', error);
+    throw error;
+  }
+};

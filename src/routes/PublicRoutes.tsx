@@ -10,6 +10,10 @@ import StudentProfilePage from '../features/student/StudentProfile';
 import NotFound from '../features/shared/components/Layout/NotFound';
 import CourseDetailsPage from '../features/student/CourseDetailsPage';
 import CoursePurchasePage from '../features/student/CoursePurchasePage';
+import PaymentSuccess from '../features/student/PaymentSuccess';
+import PaymentCancel from '../features/student/PaymentCancel';
+import PurchasedCourses from '../features/student/PurchasedCourses';
+import CoursesShowPage from '../features/student/CourseShowPage';
 
 const LandingPage = lazy(() => import('../features/shared/Landing'));
 const AdminAuth = lazy(() => import('../features/admin/AdminAuth'));
@@ -35,8 +39,8 @@ const PublicRoutes = () => (
     <Route path='/student/profile'element={<StudentProfilePage/>}/>
     <Route path="*" element={<NotFound />} />
    <Route path="/schoolRegister" element={<SchoolRegister />} />
-        <Route path="/purchase" element={<CoursePurchasePage />} />
-<Route path="/school/:schoolName/course/:courseId" element={<CourseDetailsPage />} />
+    <Route path="/student/payment/:courseId" element={<CoursePurchasePage />} />
+    <Route path="/school/:schoolName/course/:courseId" element={<CourseDetailsPage />} />
 
     <Route path="/schoolLogin" element={<SchoolLogin />} />
     <Route path="/loginSelection" element={<LoginSelection />} />
@@ -55,7 +59,10 @@ const PublicRoutes = () => (
     <Route path="/school/:verifiedSchool/section/:sectionId/add-video" element={<AddVideoToSectionWrapper />} />
     <Route path='/student/reset-password'element={<ResetStudentPassword/>}/>
     <Route path='/student/forgot-password'element={<ForgotStudentPassword/>}/>
-
+    <Route path="/student/payment-success" element={<PaymentSuccess />} />
+    <Route path='/student/payment-cancelled'element={<PaymentCancel/>}/>
+    <Route path='/student/purchased-courses'element={<PurchasedCourses/>}/>
+    <Route path='/student/course-page'element={<CoursesShowPage/>}/>
   </Routes>
 );
 

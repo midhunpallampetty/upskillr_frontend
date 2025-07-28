@@ -1,44 +1,34 @@
 import React, { useState, useEffect } from 'react';
-import { LogOut, GraduationCap } from 'lucide-react';
+import { LogOut, GraduationCap, Eye, EyeOff } from 'lucide-react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import StudentNavbar from './components/StudentNavbar';
+import StudentNavbar from './components/Layout/StudentNavbar';
 import Cookies from 'js-cookie';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import useStudentAuthGuard from './hooks/useStudentAuthGuard';
 
 const StudentProfilePage = () => {
-  useStudentAuthGuard()
+  useStudentAuthGuard();
   const [editMode, setEditMode] = useState(false);
-  const [studentData,setStudentData]=useState()
+  const [isImageUploading, setIsImageUploading] = useState(false);
+  const [showPasswords, setShowPasswords] = useState({
+    currentPassword: false,
+    newPassword: false,
+    confirmPassword: false,
+  });
+
   const [student, setStudent] = useState({
     _id: '',
     fullName: '',
     email: '',
-    password: '',
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
     image: '',
   });
-useEffect(() => {
-  const stored = localStorage.getItem('student');
-  if (stored) {
-    try {
-      const parsed = JSON.parse(stored);
-      setStudent({
-        _id: parsed._id || '',
-        fullName: parsed.fullName || '',
-        email: parsed.email || '',
-        password: '',
-        image: parsed.image || '',
-      });
-      setImagePreview(parsed.image || null);
-    } catch (err) {
-      console.error('Error parsing student from localStorage:', err);
-    }
-  }
-}, []);
 
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imagePreview, setImagePreview] = useState(null);
   const navigate = useNavigate();
 
   const dummyCourses = [
@@ -47,35 +37,82 @@ useEffect(() => {
   ];
 
   useEffect(() => {
-    const studentData = Cookies.get('student');
-    if (studentData) {
-      const parsed = JSON.parse(studentData);
-      setStudent({
-        _id: parsed._id || '',
-        fullName: parsed.fullName || '',
-        email: parsed.email || '',
-        password: '',
-        image: parsed.image || '',
-      });
-      setImagePreview(parsed.image || null);
+    const cookieData = Cookies.get('student');
+    if (cookieData) {
+      const parsed = JSON.parse(cookieData);
+      const id = parsed._id;
+
+      const fetchStudent = async () => {
+        try {
+          const res = await axios.get(`http://student.localhost:5000/api/student/${id}`);
+          const student = res.data.student;
+          setStudent({
+            _id: student._id,
+            fullName: student.fullName,
+            email: student.email,
+            currentPassword: '',
+            newPassword: '',
+            confirmPassword: '',
+            image: student.image || '',
+          });
+          setImagePreview(student.image || null);
+        } catch (error) {
+          console.error('Failed to fetch student', error);
+          toast.error('Failed to load profile');
+        }
+      };
+
+      fetchStudent();
     }
   }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  useEffect(() => {
+    const stored = localStorage.getItem('student');
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        setStudent({
+          _id: parsed._id || '',
+          fullName: parsed.fullName || '',
+          email: parsed.email || '',
+          currentPassword: '',
+          newPassword: '',
+          confirmPassword: '',
+          image: parsed.image || '',
+        });
+        setImagePreview(parsed.image || null);
+      } catch (err) {
+        console.error('Error parsing student from localStorage:', err);
+      }
+    }
+  }, []);
+
+  const validatePassword = (password) => {
+    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
+    return passwordRegex.test(password);
+  };
+
+  const handleChange = (e) => {
     setStudent({ ...student, [e.target.name]: e.target.value });
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e) => {
     const file = e.target.files?.[0];
     if (file) {
       setImagePreview(URL.createObjectURL(file));
-      uploadToCloudinary(file).then((url) => {
+      setIsImageUploading(true);
+      try {
+        const url = await uploadToCloudinary(file);
         setStudent((prev) => ({ ...prev, image: url }));
-      });
+      } catch (err) {
+        toast.error("Image upload failed!");
+      } finally {
+        setIsImageUploading(false);
+      }
     }
   };
 
-  const uploadToCloudinary = async (file: File): Promise<string> => {
+  const uploadToCloudinary = async (file) => {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('upload_preset', 'upskillr');
@@ -85,7 +122,6 @@ useEffect(() => {
         `https://api.cloudinary.com/v1_1/dgnjzuwqu/image/upload`,
         formData
       );
-      console.log("response.data.secure_url",response.data.secure_url )
       return response.data.secure_url;
     } catch (error) {
       toast.error('Image upload failed!');
@@ -93,39 +129,79 @@ useEffect(() => {
     }
   };
 
+  const toggleShowPassword = (field) => {
+    setShowPasswords((prev) => ({
+      ...prev,
+      [field]: !prev[field],
+    }));
+  };
+
   const handleSave = async () => {
-    console.log(student.image,'image')
+    if (isImageUploading) {
+      toast.warning("Please wait for image to finish uploading...");
+      return;
+    }
+
+    // Only validate passwords if any password field is filled
+    if (student.currentPassword || student.newPassword || student.confirmPassword) {
+      if (!student.currentPassword) {
+        toast.error("Please enter your current password");
+        return;
+      }
+      if (!validatePassword(student.newPassword)) {
+        toast.error("New password must be at least 8 characters long and contain at least one letter, one number, and one special character");
+        return;
+      }
+      if (student.newPassword !== student.confirmPassword) {
+        toast.error("New password and confirm password must match");
+        return;
+      }
+    }
+
     try {
       const payload = {
         fullName: student.fullName,
         email: student.email,
-        ...(student.password && { password: student.password }),
         image: student.image,
       };
+
+      // Only include password fields if they are filled
+      if (student.currentPassword && student.newPassword) {
+        payload.currentPassword = student.currentPassword;
+        payload.newPassword = student.newPassword;
+      }
 
       await axios.put(
         `http://student.localhost:5000/api/students/${student._id}`,
         payload
       );
+
       toast.success('Profile updated!');
       setEditMode(false);
 
-      // Update cookies with new student data
+      // Update localStorage
       localStorage.setItem('student', JSON.stringify({
         _id: student._id,
         fullName: student.fullName,
         email: student.email,
         image: student.image,
       }));
-      localStorage.setItem('image', JSON.stringify(student.image))
+
+      // Reset password fields
+      setStudent((prev) => ({
+        ...prev,
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: '',
+      }));
     } catch (error) {
       toast.error('Update failed. Try again!');
     }
   };
 
   const handleLogout = () => {
-    Cookies.remove('accessToken');
-    Cookies.remove('refreshToken');
+    Cookies.remove('studentAccessToken');
+    Cookies.remove('studentRefreshToken');
     Cookies.remove('student');
     Cookies.remove('dbname');
     toast.info('Logged out!');
@@ -134,23 +210,20 @@ useEffect(() => {
 
   return (
     <>
-      {/* Navbar */}
       <StudentNavbar student={student} handleLogout={handleLogout} />
 
-      {/* Banner */}
       <section className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white py-10 px-6 text-center">
         <h2 className="text-3xl font-bold">Welcome to Your Learning Profile</h2>
         <p className="mt-2 text-sm">Manage your profile and see your learning journey!</p>
       </section>
 
-      {/* Main Content */}
       <main className="max-w-4xl mx-auto mt-10 p-6 bg-white shadow-xl rounded-xl">
         <h3 className="text-2xl font-semibold mb-6 text-gray-800">Profile Details</h3>
 
         <div className="flex gap-6">
           <div className="w-32 h-32 relative">
             <img
-              src={imagePreview || student.image || 'https://via.placeholder.com/150'}
+              src={student.image || 'https://via.placeholder.com/150'}
               alt="Profile"
               className="w-full h-full object-cover rounded-full border-4 border-purple-400"
             />
@@ -189,30 +262,87 @@ useEffect(() => {
               />
             </div>
 
-            <div>
-              <label className="block text-gray-600 font-medium">Password</label>
-              <input
-                type="password"
-                name="password"
-                value={student.password}
-                onChange={handleChange}
-                disabled={!editMode}
-                placeholder="Change password"
-                className="w-full border border-gray-300 rounded p-2"
-              />
-            </div>
+            {editMode && (
+              <>
+                <div className="relative">
+                  <label className="block text-gray-600 font-medium">Current Password</label>
+                  <input
+                    type={showPasswords.currentPassword ? 'text' : 'password'}
+                    name="currentPassword"
+                    value={student.currentPassword}
+                    onChange={handleChange}
+                    placeholder="Enter current password (optional)"
+                    className="w-full border border-gray-300 rounded p-2 pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => toggleShowPassword('currentPassword')}
+                    className="absolute right-2 top-9 text-gray-600"
+                  >
+                    {showPasswords.currentPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
+                </div>
+
+                <div className="relative">
+                  <label className="block text-gray-600 font-medium">New Password</label>
+                  <input
+                    type={showPasswords.newPassword ? 'text' : 'password'}
+                    name="newPassword"
+                    value={student.newPassword}
+                    onChange={handleChange}
+                    placeholder="Enter new password (optional)"
+                    className="w-full border border-gray-300 rounded p-2 pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => toggleShowPassword('newPassword')}
+                    className="absolute right-2 top-9 text-gray-600"
+                  >
+                    {showPasswords.newPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
+                </div>
+
+                <div className="relative">
+                  <label className="block text-gray-600 font-medium">Confirm New Password</label>
+                  <input
+                    type={showPasswords.confirmPassword ? 'text' : 'password'}
+                    name="confirmPassword"
+                    value={student.confirmPassword}
+                    onChange={handleChange}
+                    placeholder="Confirm new password (optional)"
+                    className="w-full border border-gray-300 rounded p-2 pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => toggleShowPassword('confirmPassword')}
+                    className="absolute right-2 top-9 text-gray-600"
+                  >
+                    {showPasswords.confirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
+                </div>
+              </>
+            )}
 
             <div className="flex gap-4">
               {editMode ? (
                 <>
                   <button
                     onClick={handleSave}
-                    className="bg-purple-600 text-white px-4 py-2 rounded"
+                    className={`px-4 py-2 rounded text-white ${isImageUploading ? 'bg-gray-400' : 'bg-purple-600'}`}
+                    disabled={isImageUploading}
                   >
-                    Save
+                    {isImageUploading ? 'Uploading...' : 'Save'}
                   </button>
                   <button
-                    onClick={() => setEditMode(false)}
+                    onClick={() => {
+                      setEditMode(false);
+                      setStudent((prev) => ({
+                        ...prev,
+                        currentPassword: '',
+                        newPassword: '',
+                        confirmPassword: '',
+                      }));
+                    }}
                     className="bg-gray-400 text-white px-4 py-2 rounded"
                   >
                     Cancel
@@ -230,7 +360,6 @@ useEffect(() => {
           </div>
         </div>
 
-        {/* Purchased Courses */}
         <div className="mt-12">
           <h3 className="text-xl font-semibold mb-4 text-gray-700">Purchased Courses</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

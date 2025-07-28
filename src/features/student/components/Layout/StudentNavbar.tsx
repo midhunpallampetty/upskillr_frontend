@@ -82,6 +82,12 @@ const StudentNavbar: React.FC<StudentNavbarProps> = ({ student, handleLogout }) 
                   >
                     Profile
                   </button>
+                       <button
+                    onClick={(()=>navigate('/student/purchased-courses'))}
+                    className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm text-gray-700"
+                  >
+                    My Courses
+                  </button>
                 </div>
               )}
             </div>

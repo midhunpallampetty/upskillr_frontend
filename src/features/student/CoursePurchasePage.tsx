@@ -1,116 +1,307 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+import { loadStripe } from '@stripe/stripe-js';
+import axios from 'axios';
+import { 
+  Clock, 
+  Users, 
+  Award, 
+  Play, 
+  Download, 
+  CheckCircle, 
+  Star,
+  BookOpen,
+  Globe,
+  Smartphone
+} from 'lucide-react';
+import { useGlobalState } from '../../context/GlobalState';
 
-interface Course {
-  id: string;
-  courseName: string;
-  courseDescription: string;
-  courseThumbnail: string;
-  coursePrice: number;
-  isFree: boolean;
-}
+// ⚠️ Use .env.local to store your public key securely
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_...');
 
-const DUMMY_COURSES: Course[] = [
-  {
-    id: 'abc123',
-    courseName: 'React Mastery Bootcamp',
-    courseDescription: 'Learn React from scratch to advanced level with projects.',
-    courseThumbnail: 'https://via.placeholder.com/400x300.png?text=React+Course',
-    coursePrice: 999,
-    isFree: false,
-  },
-  {
-    id: 'free456',
-    courseName: 'Intro to HTML & CSS',
-    courseDescription: 'A completely free course to get started with web development.',
-    courseThumbnail: 'https://via.placeholder.com/400x300.png?text=HTML+%26+CSS',
-    coursePrice: 0,
-    isFree: true,
-  },
-];
-
-const CoursePurchasePage = () => {
+const CoursePaymentPage = () => {
   const { courseId } = useParams();
-  const navigate = useNavigate();
-  const [course, setCourse] = useState<Course | null>(null);
+  const [course, setCourse] = useState(null);
+  console.log(course,'course')
   const [loading, setLoading] = useState(false);
+  const [fetchLoading, setFetchLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // 🧪 Simulate fetching course data
   useEffect(() => {
-    const fetchCourse = () => {
-      const found = DUMMY_COURSES.find((c) => c.id === courseId);
-      if (!found) {
-        toast.error('Course not found');
-        navigate('/');
-        return;
+    const fetchCourse = async () => {
+      try {
+        const schoolName = localStorage.getItem('schoolname');
+        const response = await axios.get(`http://course.localhost:5000/api/${schoolName}/course/${courseId}`);
+        
+        setCourse(response.data.data);
+        setFetchLoading(false);
+      } catch (err) {
+        setError('Failed to fetch course data. Please try again.');
+        setFetchLoading(false);
       }
-      setCourse(found);
     };
-
     fetchCourse();
-  }, [courseId, navigate]);
+  }, [courseId]);
 
-  // 🧪 Simulate purchase/enrollment
-  const handlePurchase = async () => {
-    if (!course) return;
-    setLoading(true);
+const handlePayment = async () => {
+  setLoading(true);
+  try {
+    const stripe = await stripePromise;
+    if (!stripe) {
+      alert('Stripe failed to load.');
+      return;
+    }
 
-    setTimeout(() => {
-      if (course.isFree) {
-        toast.success('✅ Enrolled in the course!');
-        navigate('/mycourses');
-      } else {
-        toast.info('💳 Redirecting to payment...');
-        setTimeout(() => {
-          toast.success('🎉 Payment successful!');
-          navigate('/mycourses');
-        }, 1000);
-      }
-      setLoading(false);
-    }, 1500);
-  };
+    const schoolName = localStorage.getItem('schoolname');
+    if (!schoolName) {
+      alert('School name not found in localStorage.');
+      return;
+    }
 
-  if (!course) return <div className="p-8 text-center">Loading course...</div>;
+    const response = await axios.post(
+      `http://course.localhost:5000/api/payment/checkout/${schoolName}/${courseId}`
+    );
+
+    const { url } = response.data;
+
+    // Redirect to Stripe
+    window.location.href = url;
+  } catch (error) {
+    console.error('Payment Error:', error);
+    alert('Payment initiation failed. Please try again.');
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+  if (fetchLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (error || !course) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-red-600 text-lg">{error || 'Course not found'}</div>
+      </div>
+    );
+  }
 
   return (
-    <div className="max-w-4xl mx-auto px-6 py-10">
-      <div className="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col md:flex-row">
-        <img
-          src={course.courseThumbnail}
-          alt={course.courseName}
-          className="w-full md:w-1/3 object-cover"
-        />
-        <div className="p-6 flex flex-col justify-between">
-          <div>
-            <h1 className="text-2xl font-bold">{course.courseName}</h1>
-            <p className="text-gray-600 mt-2">{course.courseDescription}</p>
-            <p className="text-lg mt-4">
-              {course.isFree ? (
-                <span className="text-green-500 font-semibold">Free</span>
-              ) : (
-                <span className="text-indigo-600 font-semibold">₹{course.coursePrice}</span>
-              )}
-            </p>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      {/* Header */}
+      <div className="bg-white shadow-sm border-b">
+        <div className="max-w-6xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-bold text-gray-900">Course Enrollment</h2>
+            <div className="flex items-center space-x-2 text-green-600">
+              <CheckCircle className="w-5 h-5" />
+              <span className="text-sm font-medium">Secure Checkout</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        <div className="grid lg:grid-cols-3 gap-8">
+          {/* Course Details - Left Column */}
+          <div className="lg:col-span-2 space-y-8">
+            {/* Course Header */}
+            <div className="bg-white rounded-2xl shadow-lg p-8">
+              <div className="flex flex-col md:flex-row gap-6">
+                <div className="md:w-20 w-50 h-50">
+                  <img
+                    src={course.courseThumbnail || "https://images.pexels.com/photos/11035380/pexels-photo-11035380.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop"}
+                    alt="Course Thumbnail"
+                    className="w-50   h-50 rounded-xl shadow-md"
+                  />
+                </div>
+                <div className="md:w-2/3">
+                  <h1 className="text-3xl font-bold text-gray-900 mb-4">{course.courseName}</h1>
+<p className="text-gray-600 text-lg mb-6">
+  {course.description?.split(' ').slice(0, 20).join(' ')}{course.description?.split(' ').length > 20 ? '...' : ''}
+</p>
+                  
+                  {/* Course Stats */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div className="text-center p-3 bg-blue-50 rounded-lg">
+                      <Clock className="w-6 h-6 text-blue-600 mx-auto mb-1" />
+                      <div className="text-sm font-semibold text-gray-900">{course.duration}</div>
+                      <div className="text-xs text-gray-600">Duration</div>
+                    </div>
+                    <div className="text-center p-3 bg-green-50 rounded-lg">
+                      <Play className="w-6 h-6 text-green-600 mx-auto mb-1" />
+                      <div className="text-sm font-semibold text-gray-900">{course.lessons}</div>
+                      <div className="text-xs text-gray-600">Lessons</div>
+                    </div>
+                    <div className="text-center p-3 bg-purple-50 rounded-lg">
+                      <Users className="w-6 h-6 text-purple-600 mx-auto mb-1" />
+                      <div className="text-sm font-semibold text-gray-900">{course.students?.toLocaleString()}</div>
+                      <div className="text-xs text-gray-600">Students</div>
+                    </div>
+                    <div className="text-center p-3 bg-yellow-50 rounded-lg">
+                      <Star className="w-6 h-6 text-yellow-600 mx-auto mb-1" />
+                      <div className="text-sm font-semibold text-gray-900">{course.rating}</div>
+                      <div className="text-xs text-gray-600">Rating</div>
+                    </div>
+                  </div>
+
+                  {/* Rating */}
+                  <div className="flex items-center space-x-2 mb-4">
+                    <div className="flex items-center space-x-1">
+                      {[...Array(5)].map((_, i) => (
+                        <Star 
+                          key={i} 
+                          className={`w-5 h-5 ${i < Math.floor(course.rating) ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} 
+                        />
+                      ))}
+                    </div>
+                    <span className="text-lg font-semibold text-gray-900">{course.rating}</span>
+                    <span className="text-gray-600">({course.reviews?.toLocaleString()} reviews)</span>
+                  </div>
+
+                  {/* Course Details */}
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="text-gray-600">Level: </span>
+                      <span className="font-semibold text-gray-900">{course.level}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-600">Language: </span>
+                      <span className="font-semibold text-gray-900">{course.language}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-600">Last Updated: </span>
+                      <span className="font-semibold text-gray-900">{course.lastUpdated}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+<div className="bg-white rounded-2xl shadow-lg p-8">
+              <h3 className="text-2xl font-bold text-gray-900 mb-6">Real-World Projects</h3>
+              {/* Course Info - All Details */}
+<div className="bg-white rounded-2xl shadow-lg p-8">
+  <h3 className="text-2xl font-bold text-gray-900 mb-6">Course Info</h3>
+  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-gray-700">
+    <div>
+      <span className="font-medium text-gray-900">Total Lessons: </span>
+      {course.noOfLessons || 'N/A'}
+    </div>
+    <div>
+      <span className="font-medium text-gray-900">Preliminary Required: </span>
+      {course.isPreliminaryRequired ? 'Yes' : 'No'}
+    </div>
+    <div>
+      <span className="font-medium text-gray-900">Deleted: </span>
+      {course.isDeleted ? 'Yes' : 'No'}
+    </div>
+    <div>
+      <span className="font-medium text-gray-900">School ID: </span>
+      {course.school}
+    </div>
+    <div>
+      <span className="font-medium text-gray-900">Created At: </span>
+      {new Date(course.createdAt).toLocaleString()}
+    </div>
+    <div>
+      <span className="font-medium text-gray-900">Updated At: </span>
+      {new Date(course.updatedAt).toLocaleString()}
+    </div>
+  </div>
+</div>
+
+              <div className="space-y-3">
+                {course.projects?.map((project, index) => (
+                  <div key={index} className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
+                    <BookOpen className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" />
+                    <span className="text-gray-700 font-medium">{project}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
 
-          <button
-            onClick={handlePurchase}
-            disabled={loading}
-            className={`mt-6 ${
-              loading ? 'bg-gray-400' : 'bg-indigo-600 hover:bg-indigo-700'
-            } text-white px-6 py-2 rounded transition`}
-          >
-            {loading
-              ? 'Processing...'
-              : course.isFree
-              ? 'Enroll for Free'
-              : 'Buy Now'}
-          </button>
+          {/* Purchase Card - Right Column */}
+          <div className="lg:col-span-1">
+            <div className="bg-white rounded-2xl shadow-xl p-8 sticky top-8">
+              {/* Pricing */}
+              <div className="text-center mb-8">
+                <div className="flex items-center justify-center space-x-3 mb-2">
+                  <span className="text-3xl font-bold text-green-600">₹{course.fee}</span>
+                  <span className="text-xl text-gray-500 line-through">₹{course.fee}</span>
+                </div>
+                <div className="inline-block bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-semibold">
+                  {Math.round(((course.originalPrice - course.coursePrice) / course.originalPrice) * 100)}% OFF - Limited Time
+                </div>
+              </div>
+
+              {/* Purchase Button */}
+              <button
+                onClick={handlePayment}
+                disabled={loading}
+                className={`w-full py-4 rounded-xl text-white font-bold text-lg transition-all duration-200 transform ${
+                  loading 
+                    ? 'bg-gray-500 cursor-not-allowed' 
+                    : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 hover:scale-105 shadow-lg hover:shadow-xl'
+                }`}
+              >
+                {loading ? (
+                  <div className="flex items-center justify-center space-x-2">
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    <span>Processing...</span>
+                  </div>
+                ) : (
+                  'Enroll Now'
+                )}
+              </button>
+
+              <p className="text-center text-sm text-gray-500 mt-3">
+                30-day money-back guarantee
+              </p>
+
+              {/* Features */}
+              <div className="mt-8 space-y-4">
+                <h4 className="font-semibold text-gray-900 text-lg">This course includes:</h4>
+                {course.features?.map((feature, index) => (
+                  <div key={index} className="flex items-start space-x-3">
+                    <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                    <span className="text-gray-700 text-sm">{feature}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Access Icons */}
+              <div className="mt-8 pt-6 border-t border-gray-200">
+                <div className="flex justify-center space-x-6">
+                  <div className="text-center">
+                    <Smartphone className="w-6 h-6 text-gray-600 mx-auto mb-1" />
+                    <span className="text-xs text-gray-600">Mobile</span>
+                  </div>
+                  <div className="text-center">
+                    <Globe className="w-6 h-6 text-gray-600 mx-auto mb-1" />
+                    <span className="text-xs text-gray-600">Desktop</span>
+                  </div>
+                  <div className="text-center">
+                    <Download className="w-6 h-6 text-gray-600 mx-auto mb-1" />
+                    <span className="text-xs text-gray-600">Offline</span>
+                  </div>
+                  <div className="text-center">
+                    <Award className="w-6 h-6 text-gray-600 mx-auto mb-1" />
+                    <span className="text-xs text-gray-600">Certificate</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   );
 };
 
-export default CoursePurchasePage;
+export default CoursePaymentPage;

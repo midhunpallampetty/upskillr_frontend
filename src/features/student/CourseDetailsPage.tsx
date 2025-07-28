@@ -1,34 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import CourseSkeleton from './components/UI/CourseSkeleton';
 import { useGlobalState, useSetStudent } from '../../context/GlobalState';
-import StudentNavbar from './components/StudentNavbar';
+import StudentNavbar from './components/Layout/StudentNavbar';
 import Cookies from 'js-cookie';
 import { getSectionsByCourse } from '../school/api/course.api';
+import { useParams } from 'react-router-dom';
+import { useSetCourse } from '../../context/GlobalState';
 
-const CourseSkeleton = () => (
-  <div className="animate-pulse px-4 md:px-10 py-6">
-    <div className="bg-gradient-to-br from-indigo-100 to-purple-200 rounded-xl shadow-lg mb-10 flex flex-col md:flex-row items-center">
-      <div className="w-full md:w-1/2 h-72 bg-gray-300 rounded-md" />
-      <div className="p-8 md:w-1/2 space-y-4">
-        <div className="h-6 bg-gray-300 rounded w-3/4"></div>
-        <div className="h-4 bg-gray-300 rounded w-full"></div>
-        <div className="h-4 bg-gray-300 rounded w-5/6"></div>
-        <div className="h-4 bg-gray-300 rounded w-1/2"></div>
-      </div>
-    </div>
 
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      {[...Array(5)].map((_, i) => (
-        <div key={i} className="bg-white border rounded-lg p-5 shadow-md">
-          <div className="h-4 bg-gray-300 rounded w-1/2 mb-2"></div>
-          <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-        </div>
-      ))}
-    </div>
-  </div>
-);
 
 const CourseDetailsPage: React.FC = () => {
+  const { courseId } = useParams();
+const setCourse = useSetCourse();
+
   const { student, schoolName, course } = useGlobalState();
   const setStudent = useSetStudent();
   const [parsedCourse, setParsedCourse] = useState<any>(null);
@@ -42,8 +27,11 @@ const CourseDetailsPage: React.FC = () => {
   );
 
   // Navigate to payment page
-  const handleClick = (courseId: string) => {
-    navigate(`/purchase`);
+  const handleClick = (id: string) => {
+     localStorage.removeItem('selectedCourse'); // 👈 force reload fresh
+  window.location.href = `/student/payment/${id}`
+  
+
   };
 
   // ✅ Load student from localStorage into global state
@@ -63,38 +51,55 @@ const CourseDetailsPage: React.FC = () => {
   }, [sections]);
 
   // ✅ Load course and sections
-  useEffect(() => {
-    const loadCourse = async () => {
-      try {
-        let parsed = null;
+useEffect(() => {
+  const loadCourse = async () => {
+    try {
+      setLoading(true);
 
-        if (course) {
-          parsed = JSON.parse(course);
-          localStorage.setItem('selectedCourse', course);
-        } else {
-          const local = localStorage.getItem('selectedCourse');
-          parsed = local ? JSON.parse(local) : null;
+      let selectedCourse = null;
+
+      // Try localStorage first
+      const local = localStorage.getItem('selectedCourse');
+      if (local) {
+        const parsed = JSON.parse(local);
+        if (parsed._id === courseId) {
+          selectedCourse = parsed;
         }
-
-        setParsedCourse(parsed);
-
-        if (parsed?.courseThumbnail) {
-          setImgSrc(parsed.courseThumbnail);
-        }
-
-        if (parsed?.school && parsed?._id) {
-          const sectionList = await getSectionsByCourse(schoolName, parsed._id);
-          setSections(sectionList);
-        }
-      } catch (err) {
-        console.error('Error loading course or sections:', err);
-      } finally {
-        setTimeout(() => setLoading(false), 1000);
       }
-    };
 
-    loadCourse();
-  }, [course, schoolName]);
+      // If not in local or mismatched, fallback to context
+      if (!selectedCourse && course) {
+        const parsed = JSON.parse(course);
+        if (parsed._id === courseId) {
+          selectedCourse = parsed;
+          localStorage.setItem('selectedCourse', course);
+        }
+      }
+
+      setParsedCourse(selectedCourse);
+if (selectedCourse) {
+  setCourse(JSON.stringify(selectedCourse));
+}
+      if (selectedCourse?.courseThumbnail) {
+        setImgSrc(selectedCourse.courseThumbnail);
+      }
+
+      if (selectedCourse?.school && selectedCourse?._id) {
+        const sectionList = await getSectionsByCourse(schoolName, selectedCourse._id);
+        setSections(sectionList);
+      } else {
+        setSections([]);
+      }
+    } catch (err) {
+      console.error('Error loading course or sections:', err);
+    } finally {
+      setTimeout(() => setLoading(false), 1000);
+    }
+  };
+
+  loadCourse();
+}, [courseId, course, schoolName]); // 👈 crucial dependency!
+
 
   // ✅ Logout handler
   const handleLogout = () => {

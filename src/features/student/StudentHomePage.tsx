@@ -7,7 +7,7 @@
   import { getAllSchools } from './api/student.api';
   import { School } from './types/School';
   import { Student } from './types/School';
-import StudentNavbar from './components/StudentNavbar';
+import StudentNavbar from './components/Layout/StudentNavbar';
 import useSchoolAuthGuard from '../school/hooks/useSchoolAuthGuard';
 import useStudentAuthGuard from './hooks/useStudentAuthGuard';
 

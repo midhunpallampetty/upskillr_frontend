@@ -57,3 +57,11 @@ export const resetStudentPassword = async (email: string, token: string, newPass
   });
   return response.data.message || 'Password reset successfully.';
 };
+export const getStudentById = async (id: string) => {
+  const response = await studentAxios.get(`/student/${id}`);
+  return response.data.student;
+};
+
+export const updateStudentById = async (id: string, payload: any) => {
+  return await studentAxios.put(`/students/${id}`, payload);
+};

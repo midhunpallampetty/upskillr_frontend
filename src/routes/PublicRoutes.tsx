@@ -14,6 +14,7 @@ import PaymentSuccess from '../features/student/PaymentSuccess';
 import PaymentCancel from '../features/student/PaymentCancel';
 import PurchasedCourses from '../features/student/PurchasedCourses';
 import CoursesShowPage from '../features/student/CourseShowPage';
+import ExamManager from '../features/school/ExamManager';
 
 const LandingPage = lazy(() => import('../features/shared/Landing'));
 const AdminAuth = lazy(() => import('../features/admin/AdminAuth'));
@@ -62,7 +63,8 @@ const PublicRoutes = () => (
     <Route path="/student/payment-success" element={<PaymentSuccess />} />
     <Route path='/student/payment-cancelled'element={<PaymentCancel/>}/>
     <Route path='/student/purchased-courses'element={<PurchasedCourses/>}/>
-    <Route path='/student/course-page'element={<CoursesShowPage/>}/>
+    <Route path='/student/course-page/:schoolName/:courseId'element={<CoursesShowPage/>}/>
+    <Route path='/school/manage-exam'element={<ExamManager/>}/>
   </Routes>
 );
 

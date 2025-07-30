@@ -114,7 +114,7 @@ const PurchasedCourses = () => {
                     </p>
                   </div>
                   <Link
-                    to={`/watch/${item.course._id}`}
+                    to={`/student/course-page/${item.schoolName}/${item.course._id}`}
                     className="mt-4 inline-block text-purple-600 hover:text-purple-800 font-semibold transition"
                   >
                     ▶ Watch Now

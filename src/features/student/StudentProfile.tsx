@@ -7,6 +7,8 @@ import Cookies from 'js-cookie';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import useStudentAuthGuard from './hooks/useStudentAuthGuard';
+import { getStudentById, updateStudentById } from './api/student.api';
+import { uploadToCloudinary } from '../school/api/school.api';
 
 const StudentProfilePage = () => {
   useStudentAuthGuard();
@@ -42,25 +44,25 @@ const StudentProfilePage = () => {
       const parsed = JSON.parse(cookieData);
       const id = parsed._id;
 
-      const fetchStudent = async () => {
-        try {
-          const res = await axios.get(`http://student.localhost:5000/api/student/${id}`);
-          const student = res.data.student;
-          setStudent({
-            _id: student._id,
-            fullName: student.fullName,
-            email: student.email,
-            currentPassword: '',
-            newPassword: '',
-            confirmPassword: '',
-            image: student.image || '',
-          });
-          setImagePreview(student.image || null);
-        } catch (error) {
-          console.error('Failed to fetch student', error);
-          toast.error('Failed to load profile');
-        }
-      };
+const fetchStudent = async () => {
+  try {
+    const student = await getStudentById(id);
+    setStudent({
+      _id: student._id,
+      fullName: student.fullName,
+      email: student.email,
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: '',
+      image: student.image || '',
+    });
+    setImagePreview(student.image || null);
+  } catch (error) {
+    console.error('Failed to fetch student', error);
+    toast.error('Failed to load profile');
+  }
+};
+
 
       fetchStudent();
     }
@@ -96,38 +98,24 @@ const StudentProfilePage = () => {
     setStudent({ ...student, [e.target.name]: e.target.value });
   };
 
-  const handleImageChange = async (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setImagePreview(URL.createObjectURL(file));
-      setIsImageUploading(true);
-      try {
-        const url = await uploadToCloudinary(file);
-        setStudent((prev) => ({ ...prev, image: url }));
-      } catch (err) {
-        toast.error("Image upload failed!");
-      } finally {
-        setIsImageUploading(false);
-      }
-    }
-  };
-
-  const uploadToCloudinary = async (file) => {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('upload_preset', 'upskillr');
-
+const handleImageChange = async (e) => {
+  const file = e.target.files?.[0];
+  if (file) {
+    setImagePreview(URL.createObjectURL(file));
+    setIsImageUploading(true);
     try {
-      const response = await axios.post(
-        `https://api.cloudinary.com/v1_1/dgnjzuwqu/image/upload`,
-        formData
-      );
-      return response.data.secure_url;
-    } catch (error) {
-      toast.error('Image upload failed!');
-      throw error;
+      const url = await uploadToCloudinary(file);
+      setStudent((prev) => ({ ...prev, image: url }));
+    } catch (err) {
+      toast.error("Image upload failed!");
+    } finally {
+      setIsImageUploading(false);
     }
-  };
+  }
+};
+
+
+
 
   const toggleShowPassword = (field) => {
     setShowPasswords((prev) => ({
@@ -171,10 +159,7 @@ const StudentProfilePage = () => {
         payload.newPassword = student.newPassword;
       }
 
-      await axios.put(
-        `http://student.localhost:5000/api/students/${student._id}`,
-        payload
-      );
+await updateStudentById(student._id, payload);
 
       toast.success('Profile updated!');
       setEditMode(false);

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 interface Student {
   fullName?: string;
+  image:string;
 }
 
 interface StudentNavbarProps {
@@ -64,9 +65,18 @@ const StudentNavbar: React.FC<StudentNavbarProps> = ({ student, handleLogout }) 
               onClick={toggleDropdown}
             >
               <div className="w-8 h-8 bg-gradient-to-r from-green-400 to-blue-500 rounded-full flex items-center justify-center">
-                <span className="text-white text-sm font-medium">
-                  {student?.fullName?.charAt(0).toLowerCase() || 'g'}
-                </span>
+                {student?.image ? (
+                  <img
+                    src={student.image}
+                    alt="student avatar"
+                    className="w-8 h-8 rounded-full object-cover"
+                  />
+                ) : (
+                  <span className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center text-sm font-medium">
+                    {student?.fullName?.charAt(0).toLowerCase() || 'g'}
+                  </span>
+                )}
+
               </div>
               <div className="text-sm">
                 <p className="font-medium text-gray-900">{student?.fullName?.toLowerCase() || 'guest'}</p>
@@ -82,8 +92,8 @@ const StudentNavbar: React.FC<StudentNavbarProps> = ({ student, handleLogout }) 
                   >
                     Profile
                   </button>
-                       <button
-                    onClick={(()=>navigate('/student/purchased-courses'))}
+                  <button
+                    onClick={(() => navigate('/student/purchased-courses'))}
                     className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm text-gray-700"
                   >
                     My Courses

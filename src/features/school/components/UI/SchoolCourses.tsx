@@ -8,7 +8,12 @@ import EditCourseModal from './EditCourseModal';
 import { Video } from '../../types/Video';
 import { getCoursesBySchool, getSectionsByCourse, getVideoById, updateCourseById, deleteCourseById, softDeleteSectionById, softDeleteVideoById } from '../../api/course.api'
 import Swal from 'sweetalert2';
+import ModalExamSelector from '../Layout/ModalExamSelector';
+
 const SchoolCourses: React.FC<Props> = ({ schoolId, dbname }) => {
+  const [examModalOpen, setExamModalOpen] = useState(false);
+const [examModalCourseId, setExamModalCourseId] = useState<string | null>(null);
+
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
@@ -22,6 +27,15 @@ const SchoolCourses: React.FC<Props> = ({ schoolId, dbname }) => {
   const [editingCourse, setEditingCourse] = useState<Course | null>(null);
 
   const navigate = useNavigate();
+const handleOpenExamModal = (courseId: string) => {
+  setExamModalCourseId(courseId);
+  setExamModalOpen(true);
+};
+
+const handleCloseExamModal = () => {
+  setExamModalCourseId(null);
+  setExamModalOpen(false);
+};
 
   // Load courses
   useEffect(() => {
@@ -291,6 +305,12 @@ const handleDeleteVideo = async (videoId: string) => {
                     >
                       🗑️ Delete
                     </button>
+                    <button
+  onClick={() => handleOpenExamModal(course._id)}
+  className="text-sm bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600"
+>
+  🎓 Manage Exam
+</button>
                   </div>
                 </div>
               ))}
@@ -381,6 +401,16 @@ const handleDeleteVideo = async (videoId: string) => {
           onSave={handleUpdateCourse}
         />
       )}
+      {/* 🎓 Exam Selector Modal */}
+{examModalCourseId && (
+  <ModalExamSelector
+    courseId={examModalCourseId}
+    schoolName={dbname}
+    isOpen={examModalOpen}
+    onClose={handleCloseExamModal}
+  />
+)}
+
     </div>
   );
 };

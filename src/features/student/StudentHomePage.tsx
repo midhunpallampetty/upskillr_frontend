@@ -46,6 +46,7 @@ import useStudentAuthGuard from './hooks/useStudentAuthGuard';
       Cookies.remove('studentAccessToken');
       Cookies.remove('studentRefreshToken');
       localStorage.removeItem('student');
+      
       navigate('/studentlogin');
     };
 const extractSubdomain = (fullUrl: string) => {

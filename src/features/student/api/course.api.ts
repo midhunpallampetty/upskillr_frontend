@@ -1,4 +1,5 @@
 import courseAxios from '../../../utils/axios/course';
+import { CourseType } from '../types/Course';
 export const fetchCoursesBySchool = async (schoolName: string): Promise<{
   success: boolean;
   courses?: any[];
@@ -29,5 +30,16 @@ export const fetchPurchasedCourses = async (studentId: string) => {
   } catch (error) {
     console.error('Failed to fetch purchased courses:', error);
     throw error;
+  }
+};
+export const fetchCourseData = async (schoolName: string, courseId: string): Promise<CourseType> => {
+  try {
+    const response = await courseAxios.get(
+      `/courses/${schoolName}/${courseId}/complete`
+    );
+    return response.data.data;
+  } catch (error) {
+    console.error('Error fetching course details:', error);
+    throw new Error('Failed to fetch course data');
   }
 };

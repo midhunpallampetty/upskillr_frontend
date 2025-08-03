@@ -14,40 +14,42 @@ import {
   Star
 } from 'lucide-react';
 import Cookies from 'js-cookie';
-import axios from 'axios';
 import CommentComponent from './components/Layout/Comment';
 import useStudentAuthGuard from './hooks/useStudentAuthGuard';
-
-type VideoType = {
-  _id: string;
-  videoName: string;
-  duration?: string;
-  url: string;
-  description: string;
-};
-
-type SectionType = {
-  _id: string;
-  sectionName: string;
-  videos: VideoType[];
-};
-
-type CourseType = {
-  _id: string;
-  courseName: string;
-  courseThumbnail: string;
-  description: string;
-  sections: SectionType[];
-};
+import { fetchCourseData } from './api/course.api';
 
 const CourseShowPage = () => {
-  useStudentAuthGuard()
-  const [course, setCourse] = useState<CourseType | null>(null);
+  useStudentAuthGuard();
+  const { courseId, schoolName } = useParams<{ courseId: string, schoolName: string }>();
+  const [course, setCourse] = useState<any | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const [completedVideos, setCompletedVideos] = useState<Set<string>>(new Set());
   const [currentVideoUrl, setCurrentVideoUrl] = useState<string>('');
   const [showCourseCompletion, setShowCourseCompletion] = useState(false);
-  const { courseId, schoolName } = useParams<{ courseId: string, schoolName: string }>();
+
+  useEffect(() => {
+    const loadCourse = async () => {
+      if (!schoolName || !courseId) {
+        setError('Missing schoolName or courseId');
+        return;
+      }
+
+      setLoading(true);
+      try {
+        const courseData = await fetchCourseData(schoolName, courseId);
+        setCourse(courseData);
+        setError(null);
+      } catch (err) {
+        setError('Error fetching course details');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadCourse();
+  }, [schoolName, courseId]);
 
   const toggleSection = (id: string) => {
     setExpandedSection(prev => (prev === id ? null : id));
@@ -57,7 +59,6 @@ const CourseShowPage = () => {
     Cookies.remove('studentAccessToken');
     Cookies.remove('studentRefreshToken');
     localStorage.removeItem('student');
-
     window.location.href = '/studentLogin';
   };
 
@@ -66,15 +67,13 @@ const CourseShowPage = () => {
   };
 
   const isSectionUnlocked = (sectionIndex: number): boolean => {
-    if (sectionIndex === 0) return true; // First section is always unlocked
-
+    if (sectionIndex === 0) return true;
     const previousSection = course?.sections[sectionIndex - 1];
     if (!previousSection) return false;
-
     return previousSection.videos.every(video => completedVideos.has(video._id));
   };
 
-  const isSectionCompleted = (section: SectionType): boolean => {
+  const isSectionCompleted = (section: any): boolean => {
     return section.videos.length > 0 && section.videos.every(video => completedVideos.has(video._id));
   };
 
@@ -97,21 +96,13 @@ const CourseShowPage = () => {
     }
   }, [completedVideos, course]);
 
-  useEffect(() => {
-    const fetchCourse = async () => {
-      if (!schoolName || !courseId) return;
-      try {
-        const res = await axios.get(
-          `http://course.localhost:5000/api/courses/${schoolName}/${courseId}/complete`
-        );
-        setCourse(res.data.data);
-      } catch (error) {
-        console.error('Error fetching course details:', error);
-      }
-    };
+  if (loading) {
+    return <div className="min-h-screen bg-gray-100 flex items-center justify-center">Loading...</div>;
+  }
 
-    fetchCourse();
-  }, [schoolName, courseId]);
+  if (error) {
+    return <div className="min-h-screen bg-gray-100 flex items-center justify-center text-red-600">{error}</div>;
+  }
 
   if (showCourseCompletion) {
     return (
@@ -153,7 +144,6 @@ const CourseShowPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      {/* Navbar */}
       <nav className="bg-indigo-600 py-6 shadow-md">
         <div className="max-w-7xl mx-auto px-6 flex justify-between items-center text-white text-lg">
           <div className="flex items-center gap-3 text-2xl font-semibold">
@@ -169,7 +159,6 @@ const CourseShowPage = () => {
         </div>
       </nav>
 
-      {/* Course Header with Progress */}
       <div className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white p-6 shadow-md">
         <div className="flex items-center gap-6 mb-4">
           <img
@@ -195,7 +184,6 @@ const CourseShowPage = () => {
         </div>
       </div>
 
-      {/* Video Player Area */}
       {currentVideoUrl && (
         <div className="max-w-4xl mx-auto mt-6 p-4">
           <div className="bg-black rounded-lg overflow-hidden shadow-lg">
@@ -204,7 +192,6 @@ const CourseShowPage = () => {
               className="w-full h-96"
               src={currentVideoUrl}
               onEnded={() => {
-                // Auto-mark video as complete when it ends
                 const currentVideo = course?.sections
                   .flatMap(s => s.videos)
                   .find(v => v.url === currentVideoUrl);
@@ -219,14 +206,12 @@ const CourseShowPage = () => {
         </div>
       )}
 
-      {/* Course Content */}
       <div className="max-w-4xl mx-auto mt-10 p-4">
         <h2 className="text-2xl font-semibold flex items-center gap-2 mb-4">
           <BookOpen className="text-purple-600" /> Course Content
         </h2>
         <p className="text-gray-600 mb-8 whitespace-pre-line">{course?.description}</p>
 
-        {/* Sections and Videos */}
         {course?.sections.length ? (
           course.sections.map((section, sectionIndex) => {
             const isUnlocked = isSectionUnlocked(sectionIndex);
@@ -311,10 +296,8 @@ const CourseShowPage = () => {
                                 >
                                   Mark Complete
                                 </button>
-                                
                               )}
                             </div>
-                       
                           </div>
                         );
                       })
@@ -337,9 +320,9 @@ const CourseShowPage = () => {
         )}
       </div>
       <CommentComponent
-  courseId={courseId!}
-  schoolName={schoolName!}
-/>
+        courseId={courseId!}
+        schoolName={schoolName!}
+      />
     </div>
   );
 };

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import CourseSkeleton from './components/UI/CourseSkeleton';
 import { useGlobalState, useSetStudent } from '../../context/GlobalState';
 import StudentNavbar from './components/Layout/StudentNavbar';
@@ -8,33 +8,33 @@ import { getSectionsByCourse } from '../school/api/course.api';
 import { useParams } from 'react-router-dom';
 import { useSetCourse } from '../../context/GlobalState';
 
-
-
 const CourseDetailsPage: React.FC = () => {
   const { courseId } = useParams();
-const setCourse = useSetCourse();
-
+  const setCourse = useSetCourse();
   const { student, schoolName, course } = useGlobalState();
   const setStudent = useSetStudent();
   const [parsedCourse, setParsedCourse] = useState<any>(null);
   const [sections, setSections] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [videocount, setVideoCount] = useState(0);
+  const [isPurchased, setIsPurchased] = useState(false);
   const navigate = useNavigate();
 
   const [imgSrc, setImgSrc] = useState<string>(
     'https://t3.ftcdn.net/jpg/08/06/10/36/360_F_806103697_E9Y1vKhtQimCEIiA75QWEn4NdZe7lQXj.jpg'
   );
 
-  // Navigate to payment page
+  // Navigate to payment page or course page
   const handleClick = (id: string) => {
-     localStorage.removeItem('selectedCourse'); // 👈 force reload fresh
-  window.location.href = `/student/payment/${id}`
-  
-
+    localStorage.removeItem('selectedCourse'); // Force reload fresh
+    if (isPurchased) {
+      window.location.href = `/student/course-page/${schoolName}/${id}`;
+    } else {
+      window.location.href = `/student/payment/${id}`;
+    }
   };
 
-  // ✅ Load student from localStorage into global state
+  // Load student from localStorage into global state
   useEffect(() => {
     const stored = localStorage.getItem('student');
     if (stored) {
@@ -42,7 +42,7 @@ const setCourse = useSetCourse();
     }
   }, [setStudent]);
 
-  // ✅ Count videos across sections
+  // Count videos across sections
   useEffect(() => {
     const totalVideos = sections.reduce((count, section) => {
       return count + (section.videos?.length || 0);
@@ -50,63 +50,96 @@ const setCourse = useSetCourse();
     setVideoCount(totalVideos);
   }, [sections]);
 
-  // ✅ Load course and sections
-useEffect(() => {
-  const loadCourse = async () => {
-    try {
-      setLoading(true);
-
-      let selectedCourse = null;
-
-      // Try localStorage first
-      const local = localStorage.getItem('selectedCourse');
-      if (local) {
-        const parsed = JSON.parse(local);
-        if (parsed._id === courseId) {
-          selectedCourse = parsed;
+  // Check if course is purchased
+  useEffect(() => {
+    const checkPurchaseStatus = async () => {
+      if (student?._id && courseId) {
+        try {
+          const response = await fetch(
+            `http://course.localhost:5000/api/checkprevious-purchase/${courseId}/${student._id}`,
+            {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                // Uncomment if authentication is required
+                // 'Authorization': `Bearer ${Cookies.get('studentAccessToken')}`,
+              },
+            }
+          );
+          if (!response.ok) {
+            throw new Error('Failed to check purchase status');
+          }
+          const data = await response.json();
+          setIsPurchased(data.hasPurchased); // Extract boolean from { hasPurchased: boolean }
+        } catch (err) {
+          console.error('Error checking purchase status:', err);
+          setIsPurchased(false); // Default to false on error
         }
-      }
-
-      // If not in local or mismatched, fallback to context
-      if (!selectedCourse && course) {
-        const parsed = JSON.parse(course);
-        if (parsed._id === courseId) {
-          selectedCourse = parsed;
-          localStorage.setItem('selectedCourse', course);
-        }
-      }
-
-      setParsedCourse(selectedCourse);
-if (selectedCourse) {
-  setCourse(JSON.stringify(selectedCourse));
-}
-      if (selectedCourse?.courseThumbnail) {
-        setImgSrc(selectedCourse.courseThumbnail);
-      }
-
-      if (selectedCourse?.school && selectedCourse?._id) {
-        const sectionList = await getSectionsByCourse(schoolName, selectedCourse._id);
-        setSections(sectionList);
       } else {
-        setSections([]);
+        setIsPurchased(false); // No student or courseId, assume not purchased
       }
-    } catch (err) {
-      console.error('Error loading course or sections:', err);
-    } finally {
-      setTimeout(() => setLoading(false), 1000);
-    }
-  };
+    };
 
-  loadCourse();
-}, [courseId, course, schoolName]); // 👈 crucial dependency!
+    checkPurchaseStatus();
+  }, [courseId, student]);
 
+  // Load course and sections
+  useEffect(() => {
+    const loadCourse = async () => {
+      try {
+        setLoading(true);
 
-  // ✅ Logout handler
+        let selectedCourse = null;
+
+        // Try localStorage first
+        const local = localStorage.getItem('selectedCourse');
+        if (local) {
+          const parsed = JSON.parse(local);
+          if (parsed._id === courseId) {
+            selectedCourse = parsed;
+          }
+        }
+
+        // If not in local or mismatched, fallback to context
+        if (!selectedCourse && course) {
+          const parsed = JSON.parse(course);
+          if (parsed._id === courseId) {
+            selectedCourse = parsed;
+            localStorage.setItem('selectedCourse', course);
+          }
+        }
+
+        setParsedCourse(selectedCourse);
+        if (selectedCourse) {
+          setCourse(JSON.stringify(selectedCourse));
+        }
+        if (selectedCourse?.courseThumbnail) {
+          setImgSrc(selectedCourse.courseThumbnail);
+        }
+
+        if (selectedCourse?.school && selectedCourse?._id) {
+          const sectionList = await getSectionsByCourse(schoolName, selectedCourse._id);
+          setSections(sectionList);
+        } else {
+          setSections([]);
+        }
+      } catch (err) {
+        console.error('Error loading course or sections:', err);
+      } finally {
+        setTimeout(() => setLoading(false), 1000);
+      }
+    };
+
+    loadCourse();
+  }, [courseId, course, schoolName]);
+
+  // Logout handler
   const handleLogout = () => {
     Cookies.remove('studentAccessToken');
     Cookies.remove('studentRefreshToken');
+    
     localStorage.removeItem('student');
-    setStudent(null); // clear from global context
+    setStudent(null);
     navigate('/studentlogin');
   };
 
@@ -145,8 +178,15 @@ if (selectedCourse) {
               Created on {new Date(parsedCourse.createdAt).toLocaleDateString()}
             </p>
 
-            {/* ✅ Buy Now / Enroll Button */}
-            {parsedCourse.fee === 0 ? (
+            {/* Buy Now / Enroll / Open Course Button */}
+            {isPurchased ? (
+              <button
+                onClick={() => handleClick(parsedCourse._id)}
+                className="mt-4 bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition"
+              >
+                Open Course
+              </button>
+            ) : parsedCourse.fee === 0 ? (
               <button
                 onClick={() => handleClick(parsedCourse._id)}
                 className="mt-4 bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 transition"
@@ -206,7 +246,7 @@ if (selectedCourse) {
                 ))}
               </ul>
             ) : (
-              <p className="text-sm text-gray-500">No sections available.</p>
+              <p className="text-sm text-gray-600">No sections available.</p>
             )}
           </div>
         </div>

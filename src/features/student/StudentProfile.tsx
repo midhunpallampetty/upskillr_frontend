@@ -4,7 +4,6 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import StudentNavbar from './components/Layout/StudentNavbar';
 import Cookies from 'js-cookie';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import useStudentAuthGuard from './hooks/useStudentAuthGuard';
 import { getStudentById, updateStudentById } from './api/student.api';

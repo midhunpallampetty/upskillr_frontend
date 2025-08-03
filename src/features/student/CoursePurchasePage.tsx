@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { loadStripe } from '@stripe/stripe-js';
 import axios from 'axios';
+import Swal from 'sweetalert2';
 import { 
   Clock, 
   Users, 
@@ -14,15 +15,14 @@ import {
   Globe,
   Smartphone
 } from 'lucide-react';
-import { useGlobalState } from '../../context/GlobalState';
 
 // ⚠️ Use .env.local to store your public key securely
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_...');
 
 const CoursePaymentPage = () => {
   const { courseId } = useParams();
+  const navigate = useNavigate();
   const [course, setCourse] = useState(null);
-  console.log(course,'course')
   const [loading, setLoading] = useState(false);
   const [fetchLoading, setFetchLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -31,6 +31,9 @@ const CoursePaymentPage = () => {
     const fetchCourse = async () => {
       try {
         const schoolName = localStorage.getItem('schoolname');
+        if (!schoolName) {
+          throw new Error('School name not found in localStorage.');
+        }
         const response = await axios.get(`http://course.localhost:5000/api/${schoolName}/course/${courseId}`);
         
         setCourse(response.data.data);
@@ -44,17 +47,75 @@ const CoursePaymentPage = () => {
   }, [courseId]);
 
 const handlePayment = async () => {
+  if (!course) {
+    Swal.fire({
+      title: 'Error',
+      text: 'Course data is not available. Please try again.',
+      icon: 'error',
+      confirmButtonText: 'OK',
+      confirmButtonColor: '#3085d6',
+    });
+    return;
+  }
+
+  // 🧠 Get studentId from localStorage
+  const studentStr = localStorage.getItem('student');
+  const studentObj = studentStr ? JSON.parse(studentStr) : null;
+  const studentId = studentObj?._id;
+
+  if (!studentId) {
+    Swal.fire({
+      title: 'Error',
+      text: 'Student ID not found. Please log in again.',
+      icon: 'error',
+      confirmButtonText: 'OK',
+      confirmButtonColor: '#3085d6',
+    });
+    return;
+  }
+
+  const examStatusKey = `examPassed-${courseId}-${studentId}`;
+  const examPassed = localStorage.getItem(examStatusKey);
+
+  if (course.isPreliminaryRequired === true && examPassed !== 'true') {
+    Swal.fire({
+      title: 'Preliminary Exam Required',
+      text: 'You need to pass an exam before purchasing this course.',
+      icon: 'info',
+      confirmButtonText: 'Go to Exam',
+      confirmButtonColor: '#3085d6',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        navigate(`/student/exam/take-exam?courseId=${courseId}`);
+      }
+    });
+    return;
+  }
+
+  // ✅ Proceed to payment
   setLoading(true);
   try {
     const stripe = await stripePromise;
     if (!stripe) {
-      alert('Stripe failed to load.');
+      Swal.fire({
+        title: 'Error',
+        text: 'Stripe failed to load. Please try again.',
+        icon: 'error',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#3085d6',
+      });
       return;
     }
 
     const schoolName = localStorage.getItem('schoolname');
     if (!schoolName) {
-      alert('School name not found in localStorage.');
+      Swal.fire({
+        title: 'Error',
+        text: 'School name not found. Please try again.',
+        icon: 'error',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#3085d6',
+      });
       return;
     }
 
@@ -63,16 +124,21 @@ const handlePayment = async () => {
     );
 
     const { url } = response.data;
-
-    // Redirect to Stripe
     window.location.href = url;
   } catch (error) {
     console.error('Payment Error:', error);
-    alert('Payment initiation failed. Please try again.');
+    Swal.fire({
+      title: 'Error',
+      text: 'Payment initiation failed. Please try again.',
+      icon: 'error',
+      confirmButtonText: 'OK',
+      confirmButtonColor: '#3085d6',
+    });
   } finally {
     setLoading(false);
   }
 };
+
 
 
   if (fetchLoading) {
@@ -117,14 +183,14 @@ const handlePayment = async () => {
                   <img
                     src={course.courseThumbnail || "https://images.pexels.com/photos/11035380/pexels-photo-11035380.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop"}
                     alt="Course Thumbnail"
-                    className="w-50   h-50 rounded-xl shadow-md"
+                    className="w-50 h-50 rounded-xl shadow-md"
                   />
                 </div>
                 <div className="md:w-2/3">
                   <h1 className="text-3xl font-bold text-gray-900 mb-4">{course.courseName}</h1>
-<p className="text-gray-600 text-lg mb-6">
-  {course.description?.split(' ').slice(0, 20).join(' ')}{course.description?.split(' ').length > 20 ? '...' : ''}
-</p>
+                  <p className="text-gray-600 text-lg mb-6">
+                    {course.description?.split(' ').slice(0, 20).join(' ')}{course.description?.split(' ').length > 20 ? '...' : ''}
+                  </p>
                   
                   {/* Course Stats */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
@@ -182,39 +248,10 @@ const handlePayment = async () => {
                 </div>
               </div>
             </div>
-<div className="bg-white rounded-2xl shadow-lg p-8">
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">Real-World Projects</h3>
-              {/* Course Info - All Details */}
-<div className="bg-white rounded-2xl shadow-lg p-8">
-  <h3 className="text-2xl font-bold text-gray-900 mb-6">Course Info</h3>
-  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-gray-700">
-    <div>
-      <span className="font-medium text-gray-900">Total Lessons: </span>
-      {course.noOfLessons || 'N/A'}
-    </div>
-    <div>
-      <span className="font-medium text-gray-900">Preliminary Required: </span>
-      {course.isPreliminaryRequired ? 'Yes' : 'No'}
-    </div>
-    <div>
-      <span className="font-medium text-gray-900">Deleted: </span>
-      {course.isDeleted ? 'Yes' : 'No'}
-    </div>
-    <div>
-      <span className="font-medium text-gray-900">School ID: </span>
-      {course.school}
-    </div>
-    <div>
-      <span className="font-medium text-gray-900">Created At: </span>
-      {new Date(course.createdAt).toLocaleString()}
-    </div>
-    <div>
-      <span className="font-medium text-gray-900">Updated At: </span>
-      {new Date(course.updatedAt).toLocaleString()}
-    </div>
-  </div>
-</div>
 
+            {/* Real-World Projects */}
+            <div className="bg-white rounded-2xl shadow-lg p-8">
+              <h3 className="text-2xl font-bold text-gray-900 mb-6">Real-World Projects</h3>
               <div className="space-y-3">
                 {course.projects?.map((project, index) => (
                   <div key={index} className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
@@ -222,6 +259,37 @@ const handlePayment = async () => {
                     <span className="text-gray-700 font-medium">{project}</span>
                   </div>
                 ))}
+              </div>
+            </div>
+
+            {/* Course Info */}
+            <div className="bg-white rounded-2xl shadow-lg p-8">
+              <h3 className="text-2xl font-bold text-gray-900 mb-6">Course Info</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-gray-700">
+                <div>
+                  <span className="font-medium text-gray-900">Total Lessons: </span>
+                  {course.noOfLessons || 'N/A'}
+                </div>
+                <div>
+                  <span className="font-medium text-gray-900">Preliminary Required: </span>
+                  {course.isPreliminaryRequired ? 'Yes' : 'No'}
+                </div>
+                <div>
+                  <span className="font-medium text-gray-900">Deleted: </span>
+                  {course.isDeleted ? 'Yes' : 'No'}
+                </div>
+                <div>
+                  <span className="font-medium text-gray-900">School ID: </span>
+                  {course.school}
+                </div>
+                <div>
+                  <span className="font-medium text-gray-900">Created At: </span>
+                  {new Date(course.createdAt).toLocaleString()}
+                </div>
+                <div>
+                  <span className="font-medium text-gray-900">Updated At: </span>
+                  {new Date(course.updatedAt).toLocaleString()}
+                </div>
               </div>
             </div>
           </div>

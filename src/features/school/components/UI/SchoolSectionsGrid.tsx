@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Props } from '../types/Props';
-import Section from '../../course/types/Section';
-import { Course } from '../types/Course';
+import { Props } from './../../types/Props';
+import Section from '../../../course/types/Section';
+import { Course } from './../../types/Course';
 import { useNavigate } from 'react-router-dom';
 
 const SchoolSectionsGrid: React.FC<Props> = ({ dbname }) => {

@@ -53,6 +53,7 @@ const PurchasedCourses = () => {
     Cookies.remove('studentAccessToken');
     Cookies.remove('studentRefreshToken');
     localStorage.removeItem('student');
+    
     navigate('/studentlogin');
   };
 

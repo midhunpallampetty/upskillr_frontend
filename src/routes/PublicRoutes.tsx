@@ -15,6 +15,7 @@ import PaymentCancel from '../features/student/PaymentCancel';
 import PurchasedCourses from '../features/student/PurchasedCourses';
 import CoursesShowPage from '../features/student/CourseShowPage';
 import ExamManager from '../features/school/ExamManager';
+import { ExamPage } from '../features/student/ExamPage';
 
 const LandingPage = lazy(() => import('../features/shared/Landing'));
 const AdminAuth = lazy(() => import('../features/admin/AdminAuth'));
@@ -64,7 +65,9 @@ const PublicRoutes = () => (
     <Route path='/student/payment-cancelled'element={<PaymentCancel/>}/>
     <Route path='/student/purchased-courses'element={<PurchasedCourses/>}/>
     <Route path='/student/course-page/:schoolName/:courseId'element={<CoursesShowPage/>}/>
-    <Route path='/school/manage-exam'element={<ExamManager/>}/>
+    <Route path='/school/:verifiedSchool/manage-exam'element={<ExamManager/>}/>
+    <Route path='/student/exam/take-exam' element={<ExamPage />} />
+
   </Routes>
 );
 

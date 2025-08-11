@@ -21,14 +21,29 @@ export const approveSchool = async (schoolId: string): Promise<void> => {
     isVerified: true,
   });
 };
-export const getSchoolBySubdomain = async (subDomain: string) => {
+export const getSchoolBySubdomain = async (subDomain: string, token: string) => {
   const url = `/getSchoolBySubDomain?subDomain=http://${subDomain}.localhost:5173`;
-  return schoolAxios.get(url);
-};  
-
-export const createDatabase = async (schoolName: string) => {
-  return schoolAxios.post(`/create-database`, { schoolName });
+console.log(token)
+  return schoolAxios.get(url, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
 };
+
+
+export const createDatabase = async (schoolName: string, token: string) => {
+  return schoolAxios.post(
+    `/create-database`,
+    { schoolName },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+};
+
 
 export const sendForgotPasswordLink = async (email: string) => {
   const response = await schoolAxios.post('/forgot-password', {

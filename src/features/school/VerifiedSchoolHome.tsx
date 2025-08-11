@@ -14,7 +14,7 @@ import QuickStats from './components/Layout/QuickStats';
 import ActionCardsSection from './components/Layout/ActionCardsSection';
 import CoursesSection from './components/Layout/CoursesSection';
 import StudentManagementSection from './components/Layout/StudentManagementSection';
-
+import LoadingSchoolDashboard from './components/UI/LoadingSchoolDashboard';
 const SchoolHome: React.FC = () => {
   const { isDarkMode } = useGlobalState();
   const navigate = useNavigate();
@@ -31,14 +31,15 @@ const SchoolHome: React.FC = () => {
 
       try {
         dispatch({ type: 'FETCH_START' });
-        const res = await getSchoolBySubdomain(verifiedSchool);
+        let token=Cookies.get('accessToken')
+        const res = await getSchoolBySubdomain(verifiedSchool,token);
         const schoolData = res.data.school;
 
         setSchool(schoolData);
         Cookies.set('schoolData', JSON.stringify(schoolData), { expires: 1 });
         Cookies.set('dbname', verifiedSchool);
 
-        await createDatabase(verifiedSchool);
+        await createDatabase(verifiedSchool,token);
       } catch (err) {
         console.error('❌ Error fetching school:', err);
         dispatch({ type: 'FETCH_ERROR', payload: 'Unable to fetch school details. Please try again later.' });
@@ -79,7 +80,7 @@ const SchoolHome: React.FC = () => {
   }
 
   if (!school) {
-    return <LoadingState />;
+    return <LoadingSchoolDashboard />;
   }
 
   return (

@@ -5,6 +5,7 @@ import { Course } from './types/Course';
 import { ChevronLeft, ChevronRight, BookOpen, Clock } from 'lucide-react';
 import useStudentAuthGuard from './hooks/useStudentAuthGuard';
 import { useGlobalDispatch } from '../../context/GlobalState';
+import Cookies from 'js-cookie';
 
 const ITEMS_PER_PAGE = 6;
 
@@ -25,6 +26,7 @@ const CoursesPage: React.FC = () => {
     if (!schoolName) return;
 
     const decodedUrl = decodeURIComponent(schoolName);
+    Cookies.set('dbname',schoolName)
       dispatch({ type: 'SET_SCHOOL_NAME', payload: decodedUrl }); 
     console.log(decodedUrl, "decodedUrl")
     const getCourses = async () => {

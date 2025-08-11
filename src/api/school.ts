@@ -11,9 +11,16 @@ export const registerSchool = async (formData: any) => {
 
 
 export const loginSchool = async (email: string, password: string) => {
-  const res = await axios.post(`${API_BASE}/login`, { email, password });
-  return res.data.school; // return only school for cleaner use
+  const res = await axios.post(
+    `${API_BASE}/login`,
+    { email, password },
+    {
+      withCredentials: true, // ✅ include cookies in request and allow browser to accept Set-Cookie
+    }
+  );
+  return res.data;
 };
+
 
 export const uploadToCloudinary = async (file: File, cloudName: string, uploadPreset: string) => {
   const data = new FormData();

@@ -23,12 +23,14 @@ const CoursePaymentPage = () => {
   const { courseId } = useParams();
   const navigate = useNavigate();
   const [course, setCourse] = useState(null);
+  const [eligibility, setEligibility] = useState(null);
   const [loading, setLoading] = useState(false);
   const [fetchLoading, setFetchLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchCourse = async () => {
+    const fetchData = async () => {
+      setFetchLoading(true);
       try {
         const schoolName = localStorage.getItem('schoolname');
         if (!schoolName) {
@@ -37,109 +39,138 @@ const CoursePaymentPage = () => {
         const response = await axios.get(`http://course.localhost:5000/api/${schoolName}/course/${courseId}`);
         
         setCourse(response.data.data);
-        setFetchLoading(false);
+
+        if (response.data.data.isPreliminaryRequired) {
+          const studentStr = localStorage.getItem('student');
+          const studentObj = studentStr ? JSON.parse(studentStr) : null;
+          const studentId = studentObj?._id;
+
+          if (!studentId) {
+            throw new Error('Student ID not found in localStorage.');
+          }
+
+          const eligResponse = await axios.post('http://exam.localhost:5000/api/check-eligibility', {
+            userId: studentId,
+            courseId,
+            examType: 'final'
+          });
+
+          if (eligResponse.data.success) {
+            setEligibility(eligResponse.data.data);
+          } else {
+            throw new Error('Eligibility check failed.');
+          }
+        }
       } catch (err) {
-        setError('Failed to fetch course data. Please try again.');
+        setError('Failed to fetch course data or check eligibility. Please try again.');
+      } finally {
         setFetchLoading(false);
       }
     };
-    fetchCourse();
+    fetchData();
   }, [courseId]);
 
-const handlePayment = async () => {
-  if (!course) {
-    Swal.fire({
-      title: 'Error',
-      text: 'Course data is not available. Please try again.',
-      icon: 'error',
-      confirmButtonText: 'OK',
-      confirmButtonColor: '#3085d6',
-    });
-    return;
-  }
+  const handlePayment = async () => {
+    if (!course) {
+      Swal.fire({
+        title: 'Error',
+        text: 'Course data is not available. Please try again.',
+        icon: 'error',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#3085d6',
+      });
+      return;
+    }
 
-  // 🧠 Get studentId from localStorage
-  const studentStr = localStorage.getItem('student');
-  const studentObj = studentStr ? JSON.parse(studentStr) : null;
-  const studentId = studentObj?._id;
+    // 🧠 Get studentId from localStorage
+    const studentStr = localStorage.getItem('student');
+    const studentObj = studentStr ? JSON.parse(studentStr) : null;
+    const studentId = studentObj?._id;
 
-  if (!studentId) {
-    Swal.fire({
-      title: 'Error',
-      text: 'Student ID not found. Please log in again.',
-      icon: 'error',
-      confirmButtonText: 'OK',
-      confirmButtonColor: '#3085d6',
-    });
-    return;
-  }
+    if (!studentId) {
+      Swal.fire({
+        title: 'Error',
+        text: 'Student ID not found. Please log in again.',
+        icon: 'error',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#3085d6',
+      });
+      return;
+    }
 
-  const examStatusKey = `examPassed-${courseId}-${studentId}`;
-  const examPassed = localStorage.getItem(examStatusKey);
-
-  if (course.isPreliminaryRequired === true && examPassed !== 'true') {
-    Swal.fire({
-      title: 'Preliminary Exam Required',
-      text: 'You need to pass an exam before purchasing this course.',
-      icon: 'info',
-      confirmButtonText: 'Go to Exam',
-      confirmButtonColor: '#3085d6',
-    }).then((result) => {
-      if (result.isConfirmed) {
-        navigate(`/student/exam/take-exam?courseId=${courseId}`);
+    if (course.isPreliminaryRequired === true) {
+      if (eligibility.eligible) {
+        Swal.fire({
+          title: 'Preliminary Exam Required',
+          text: 'You need to pass an exam before purchasing this course.',
+          icon: 'info',
+          confirmButtonText: 'Go to Exam',
+          confirmButtonColor: '#3085d6',
+        }).then((result) => {
+          if (result.isConfirmed) {
+            navigate(`/student/exam/take-exam?courseId=${courseId}`);
+          }
+        });
+        return;
+      } else if (eligibility.reason === 'lockout') {
+        Swal.fire({
+          title: 'Enrollment Locked',
+          text: `You have exceeded the attempt limit. Please try again in ${eligibility.daysRemaining} days.`,
+          icon: 'error',
+          confirmButtonText: 'OK',
+          confirmButtonColor: '#3085d6',
+        });
+        return;
       }
-    });
-    return;
-  }
+      // If already_passed, proceed to payment
+    }
 
-  // ✅ Proceed to payment
-  setLoading(true);
-  try {
-    const stripe = await stripePromise;
-    if (!stripe) {
+    // ✅ Proceed to payment
+    setLoading(true);
+    try {
+      const stripe = await stripePromise;
+      if (!stripe) {
+        Swal.fire({
+          title: 'Error',
+          text: 'Stripe failed to load. Please try again.',
+          icon: 'error',
+          confirmButtonText: 'OK',
+          confirmButtonColor: '#3085d6',
+        });
+        return;
+      }
+
+      const schoolName = localStorage.getItem('schoolname');
+      if (!schoolName) {
+        Swal.fire({
+          title: 'Error',
+          text: 'School name not found. Please try again.',
+          icon: 'error',
+          confirmButtonText: 'OK',
+          confirmButtonColor: '#3085d6',
+        });
+        return;
+      }
+
+      const response = await axios.post(
+        `http://course.localhost:5000/api/payment/checkout/${schoolName}/${courseId}`
+      );
+
+      const { url } = response.data;
+      window.location.href = url;
+    } catch (error) {
+      console.error('Payment Error:', error);
       Swal.fire({
         title: 'Error',
-        text: 'Stripe failed to load. Please try again.',
+        text: 'Payment initiation failed. Please try again.',
         icon: 'error',
         confirmButtonText: 'OK',
         confirmButtonColor: '#3085d6',
       });
-      return;
+    } finally {
+      setLoading(false);
     }
-
-    const schoolName = localStorage.getItem('schoolname');
-    if (!schoolName) {
-      Swal.fire({
-        title: 'Error',
-        text: 'School name not found. Please try again.',
-        icon: 'error',
-        confirmButtonText: 'OK',
-        confirmButtonColor: '#3085d6',
-      });
-      return;
-    }
-
-    const response = await axios.post(
-      `http://course.localhost:5000/api/payment/checkout/${schoolName}/${courseId}`
-    );
-
-    const { url } = response.data;
-    window.location.href = url;
-  } catch (error) {
-    console.error('Payment Error:', error);
-    Swal.fire({
-      title: 'Error',
-      text: 'Payment initiation failed. Please try again.',
-      icon: 'error',
-      confirmButtonText: 'OK',
-      confirmButtonColor: '#3085d6',
-    });
-  } finally {
-    setLoading(false);
-  }
-};
-
-
+  };
 
   if (fetchLoading) {
     return (
@@ -311,9 +342,9 @@ const handlePayment = async () => {
               {/* Purchase Button */}
               <button
                 onClick={handlePayment}
-                disabled={loading}
+                disabled={loading || (course.isPreliminaryRequired && eligibility?.reason === 'lockout')}
                 className={`w-full py-4 rounded-xl text-white font-bold text-lg transition-all duration-200 transform ${
-                  loading 
+                  loading || (course.isPreliminaryRequired && eligibility?.reason === 'lockout')
                     ? 'bg-gray-500 cursor-not-allowed' 
                     : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 hover:scale-105 shadow-lg hover:shadow-xl'
                 }`}
@@ -327,6 +358,12 @@ const handlePayment = async () => {
                   'Enroll Now'
                 )}
               </button>
+
+              {course.isPreliminaryRequired && eligibility?.reason === 'lockout' && (
+                <p className="text-center text-sm text-red-600 mt-3">
+                  Enrollment locked. Please try again in {eligibility.daysRemaining} days.
+                </p>
+              )}
 
               <p className="text-center text-sm text-gray-500 mt-3">
                 30-day money-back guarantee

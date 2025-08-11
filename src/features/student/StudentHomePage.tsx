@@ -150,10 +150,7 @@ const handleSchoolClick = (schoolUrl: string) => {
                       <span><Clock className="inline w-4 h-4" /> {school.experience} yrs</span>
                       <span><BookOpen className="inline w-4 h-4" /> 0  students</span>
                     </div>
-                    <div className="text-sm text-gray-500 mb-3">
-                      Courses: {school.coursesOffered.slice(0, 3).join(', ')}
-                      {school.coursesOffered.length > 3 && ` +${school.coursesOffered.length - 3} more`}
-                    </div>
+                    
                     <div className="text-sm flex justify-between items-center pt-2 border-t">
                       {/* <span className="text-yellow-500">
                         {'★'.repeat(Math.floor(Number(3)) + '☆'.repeat(5 - Math.floor(5))}

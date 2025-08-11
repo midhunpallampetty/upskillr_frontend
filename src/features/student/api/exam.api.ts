@@ -69,10 +69,39 @@ export const savePayment = async (
     throw new Error('Failed to save payment');
   }
 };
+// export const saveExam = async (
+//   courseId: string | null,
+//   schoolName: string | undefined,
+//   studentId: string | undefined,
+//   studentName: string | undefined,
+//   score: { totalQuestions: number; totalMarks: number; obtainedMarks: number; correctAnswers: number; wrongAnswers: number; percentage: string },
+//   examType: string
+// ): Promise<void> => {
+//   try {
+//     if (!courseId || !schoolName || !studentId || !examType) {
+//       throw new Error('Missing required parameters for saving exam result');
+//     }
+
+//     const isPassed = parseFloat(score.percentage) >= 40;
+
+//     await axios.post(
+//       `${API_BASE_URL}/submit-exam`,
+//       {
+//         userId: studentId,
+//         courseId,
+//         examType,
+//         isPassed,
+//       },
+//       { headers: getAuthHeaders() }
+//     );
+//   } catch (error) {
+//     throw new Error(error instanceof AxiosError ? error.response?.data.error || error.message : 'Failed to save exam result');
+//   }
+// };
 
 
 
-
+    
 
 
 

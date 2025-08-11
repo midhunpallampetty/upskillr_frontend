@@ -10,17 +10,19 @@ import { QuestionNavigation } from './components/UI/QuestionNavigation';
 import { ExamSubmission } from './components/UI/ExamSubmission';
 import { Loader2, AlertCircle, BookOpen } from 'lucide-react';
 import { fetchQuestions, saveExamResult, initiatePayment } from './api/exam.api';
+import { submitExamStatus } from './api/examattempt.api';
 
 const EXAM_DURATION = 60 * 60; // 1 hour
 
 export function ExamPage() {
   const [searchParams] = useSearchParams();
   const courseId = searchParams.get('courseId');
-  
+
   const [questions, setQuestions] = useState<Question[]>([]);
   const [answers, setAnswers] = useState<{ [key: string]: string }>({});
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false); // New state for submission loading
   const [error, setError] = useState<string | null>(null);
   const [showSubmissionDialog, setShowSubmissionDialog] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -37,7 +39,9 @@ export function ExamPage() {
       try {
         setIsLoading(true);
         const schoolName = Cookies.get('dbname');
-        if (!courseId || !schoolName) throw new Error('Missing required parameters');
+        if (!courseId || !schoolName) {
+          throw new Error('Missing courseId or schoolName');
+        }
 
         const fetchedQuestions = await fetchQuestions(courseId, schoolName);
         setQuestions(fetchedQuestions);
@@ -49,6 +53,20 @@ export function ExamPage() {
     };
 
     loadQuestions();
+  }, [courseId]);
+
+  // Check for pending submissions on mount
+  useEffect(() => {
+    const pending = localStorage.getItem(`pending-exam-status-${courseId}`);
+    if (pending) {
+      const { studentId, courseId, status, isPassed } = JSON.parse(pending);
+      retrySubmitExamStatus(studentId, courseId, status, isPassed).then(success => {
+        if (success) {
+          localStorage.removeItem(`pending-exam-status-${courseId}`);
+          console.log('Pending exam status submitted successfully');
+        }
+      });
+    }
   }, [courseId]);
 
   const handleAnswerSelect = (questionId: string, answer: string) => {
@@ -73,7 +91,7 @@ export function ExamPage() {
       }
     });
 
-    const percentage = (obtainedMarks / totalMarks) * 100;
+    const percentage = totalMarks > 0 ? (obtainedMarks / totalMarks) * 100 : 0;
 
     return {
       totalQuestions: questions.length,
@@ -85,51 +103,93 @@ export function ExamPage() {
     };
   };
 
+  const retrySubmitExamStatus = async (studentId: string, courseId: string, status: string, isPassed: boolean, retries = 3) => {
+    for (let i = 0; i < retries; i++) {
+      try {
+        await submitExamStatus(studentId, courseId, status, isPassed);
+        console.log('Exam status submitted successfully:', { studentId, courseId, status, isPassed });
+        return true;
+      } catch (err) {
+        console.warn(`Retry ${i + 1} failed:`, err.message);
+        if (i === retries - 1) {
+          throw err;
+        }
+        await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
+      }
+    }
+    return false;
+  };
+
   const handleSubmitExam = async () => {
+    if (isSubmitting) return; // Prevent multiple submissions
+    setIsSubmitting(true);
     stop();
     setIsSubmitted(true);
     setShowSubmissionDialog(false);
+    setError(null); // Reset error state
 
     const score = calculateScore();
     setResult(score);
 
-    const schoolName = Cookies.get('dbname');
-    const studentId = Cookies.get('studentId');
-    const studentName = Cookies.get('studentName');
+    const student = localStorage.getItem('student');
+    const studentObj = student ? JSON.parse(student) : null;
+    const studentId = studentObj?._id;
+    const isPassed = Number(score.percentage) >= 40;
 
+    // Log for debugging
+    console.log('Submitting exam:', { studentId, courseId, isPassed, score });
+
+    // Submit exam status (for both pass and fail)
     try {
-      await saveExamResult(courseId, schoolName, studentId, studentName, score);
+      if (!studentId || !courseId) {
+        throw new Error('Missing studentId or courseId');
+      }
+      const success = await retrySubmitExamStatus(studentId, courseId, 'final', isPassed);
+      if (!success) {
+        throw new Error('All retries failed for submitExamStatus');
+      }
     } catch (err) {
-      console.error('Failed to save exam result:', err);
+      console.error('Failed to submit exam status:', err.message, err.stack);
+      setError('Failed to save exam results. Please try again.');
+      // Save to localStorage for later retry
+      localStorage.setItem(
+        `pending-exam-status-${courseId}`,
+        JSON.stringify({ studentId, courseId, status: 'final', isPassed })
+      );
+      setIsSubmitting(false);
+      return; // Stop further processing if status submission fails
     }
 
-    if (score.percentage >= 40) {
+    // Handle pass/fail logic
+    if (isPassed) {
       alert(`🎉 Congratulations! You passed with ${score.percentage}%`);
-
-      const studentStr = localStorage.getItem('student');
-      const studentObj = studentStr ? JSON.parse(studentStr) : null;
-      const studentId = studentObj?._id;
 
       if (studentId) {
         localStorage.setItem(`examPassed-${courseId}-${studentId}`, 'true');
-      } else {
-        console.warn('Student ID not found in localStorage. Exam pass flag not saved.');
       }
 
       try {
+        const schoolName = Cookies.get('dbname');
+        if (!schoolName) {
+          throw new Error('Missing schoolName for payment initiation');
+        }
         const paymentUrl = await initiatePayment(schoolName, courseId);
         if (paymentUrl) {
           window.location.href = paymentUrl;
         } else {
-          alert('Something went wrong with payment. Please try again later.');
+          setError('Payment initiation failed. Please try again later.');
         }
       } catch (error) {
         console.error('Payment redirect error:', error);
-        alert('Payment setup failed. Please try again later.');
+        setError('Payment setup failed. Please try again later.');
       }
     } else {
-      alert(`❌ Sorry, you failed with ${score.percentage}%\nCorrect: ${score.correctAnswers}/${score.totalQuestions}, Marks: ${score.obtainedMarks}/${score.totalMarks}`);
+      alert(
+        `❌ Sorry, you failed with ${score.percentage}%\nCorrect: ${score.correctAnswers}/${score.totalQuestions}, Marks: ${score.obtainedMarks}/${score.totalMarks}`
+      );
     }
+
+    setIsSubmitting(false);
   };
 
   if (isLoading) {
@@ -141,7 +201,7 @@ export function ExamPage() {
     );
   }
 
-  if (error) {
+  if (error && !isSubmitted) {
     return (
       <div className="min-h-screen flex items-center justify-center text-center">
         <div>
@@ -169,12 +229,32 @@ export function ExamPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="max-w-md text-center bg-white p-6 rounded-lg shadow">
-          <div className="text-green-500 text-3xl mb-4">
-            {result.percentage >= 40 ? '✅ Exam Passed' : '❌ Exam Failed'}
+          <div className="text-3xl mb-4">
+            {result.percentage >= 40 ? (
+              <span className="text-green-500">✅ Exam Passed</span>
+            ) : (
+              <span className="text-red-500">❌ Exam Failed</span>
+            )}
           </div>
           <p className="text-gray-700">Correct: {result.correctAnswers} / {result.totalQuestions}</p>
           <p className="text-gray-700">Marks: {result.obtainedMarks} / {result.totalMarks}</p>
           <p className="text-gray-700">Percentage: {result.percentage}%</p>
+          {error && (
+            <div className="text-red-500 text-center mt-4">
+              {error}
+              <button
+                onClick={handleSubmitExam}
+                disabled={isSubmitting}
+                className="ml-4 btn bg-blue-500 text-white px-4 py-2 rounded disabled:opacity-50"
+              >
+                {isSubmitting ? (
+                  <Loader2 className="w-5 h-5 animate-spin inline-block mr-2" />
+                ) : (
+                  'Retry Submission'
+                )}
+              </button>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -225,7 +305,8 @@ export function ExamPage() {
                 {currentQuestionIndex === questions.length - 1 && (
                   <button
                     onClick={() => setShowSubmissionDialog(true)}
-                    className="btn px-6 py-3 bg-green-500 text-white rounded hover:bg-green-600"
+                    disabled={isSubmitting}
+                    className="btn px-6 py-3 bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50"
                   >
                     Submit Exam
                   </button>

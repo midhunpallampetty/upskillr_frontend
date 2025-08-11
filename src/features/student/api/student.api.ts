@@ -3,15 +3,15 @@ import { StudentLoginData, StudentLoginResponse } from '../types/StudentData';
 import { School } from '../types/School';
 import schoolAxios from '../../../utils/axios/school';
 import studentAxios from '../../../utils/axios/student';
-export const registerStudent = async (formData: RegisterData) => {
-  try {
-    const res = await studentAxios.post(`/register`, formData);
-    return res.data;
-  } catch (err: any) {
-    const message = err.response?.data?.msg || 'Something went wrong during registration';
-    throw new Error(message);
-  }
-};
+  export const registerStudent = async (formData: RegisterData) => {
+    try {
+      const res = await studentAxios.post(`/register`, formData);
+      return res.data;
+    } catch (err: any) {
+      const message = err.response?.data?.msg || 'Something went wrong during registration';
+      throw new Error(message);
+    }
+  };
 export const loginStudent = async (
   formData: StudentLoginData
 ): Promise<StudentLoginResponse> => {
@@ -44,6 +44,9 @@ export const getAllSchools = async (): Promise<School[]> => {
     return []; 
   }
 };
+// student.api.ts
+export const verifyStudentOtp = (email: string, otp: string) =>
+  studentAxios.post('/verify-otp', { email, otp });
 
 export const sendStudentResetLink = async (email: string): Promise<string> => {
   const response = await studentAxios.post(`/forgot-password`, { email });

@@ -6,3 +6,8 @@ export interface SectionProps {
   sectionId: string;
   schoolDb: string;
 }
+export interface VideoUploadProgress {
+  progress: number;
+  stage: 'preparing' | 'uploading' | 'processing' | 'complete';
+  message: string;
+}

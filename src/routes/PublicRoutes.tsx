@@ -16,6 +16,7 @@ import PurchasedCourses from '../features/student/PurchasedCourses';
 import CoursesShowPage from '../features/student/CourseShowPage';
 import ExamManager from '../features/school/ExamManager';
 import { ExamPage } from '../features/student/ExamPage';
+import ForumPage from '../features/shared/ForumPage';
 
 const LandingPage = lazy(() => import('../features/shared/Landing'));
 const AdminAuth = lazy(() => import('../features/admin/AdminAuth'));
@@ -43,7 +44,7 @@ const PublicRoutes = () => (
    <Route path="/schoolRegister" element={<SchoolRegister />} />
     <Route path="/student/payment/:courseId" element={<CoursePurchasePage />} />
     <Route path="/school/:schoolName/course/:courseId" element={<CourseDetailsPage />} />
-
+<Route path='/forum'element={<ForumPage/>}/>
     <Route path="/schoolLogin" element={<SchoolLogin />} />
     <Route path="/loginSelection" element={<LoginSelection />} />
     <Route path="/signupSelection" element={<SignupSelection />} />

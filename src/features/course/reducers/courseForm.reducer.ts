@@ -30,6 +30,7 @@ export const initialCourseFormState: CourseFormState = {
     {
       title: '',
       sectionName: '',
+      description:'',
       examRequired: false,
       _id: '',
       videos: [],

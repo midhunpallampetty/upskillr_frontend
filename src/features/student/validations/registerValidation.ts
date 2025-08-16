@@ -1,7 +1,7 @@
 import {RegisterData,RegisterFormErrors} from "../types/RegisterData";
 
 export const validateStudentRegister = (formData: RegisterData): RegisterFormErrors => {
-  const newErrors: RegisterFormErrors = {};
+  const newErrors:any = {};
 
   if (!formData.fullName.trim()) {
     newErrors.fullName = 'Full name is required';

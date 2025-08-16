@@ -43,3 +43,77 @@ export const fetchCourseData = async (schoolName: string, courseId: string): Pro
     throw new Error('Failed to fetch course data');
   }
 };
+
+// Updated API functions (with minor improvements for consistency and error handling)
+export const fetchStudentProgress = async (schoolName: string, courseId: string, studentId: string) => {
+  try {
+    const response = await courseAxios.get(
+      `/${schoolName}/courses/${courseId}/progress?studentId=${studentId}`
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Failed to fetch student progress:', error);
+    throw new Error('Failed to fetch student progress');
+  }
+};
+
+// NEW: Save video progress
+export const saveVideoProgress = async (
+  schoolName: string, 
+  courseId: string, 
+  videoId: string, 
+  progressData: { studentId: string; completed?: boolean; lastPosition?: number }
+) => {
+  try {
+    const response = await courseAxios.post(
+      `/${schoolName}/courses/${courseId}/videos/${videoId}/progress`,
+      progressData
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Failed to save video progress:', error);
+    throw new Error('Failed to save video progress');
+  }
+};
+
+// NEW: Issue certificate
+export const issueCertificate = async (schoolName: string, courseId: string, studentId: string) => {
+  try {
+    const response = await courseAxios.get(
+      `/${schoolName}/courses/${courseId}/certificate?studentId=${studentId}`
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Failed to issue certificate:', error);
+    throw new Error('Failed to issue certificate');
+  }
+};
+
+export const checkSectionExamCompletionApi = async (schoolName: string, courseId: string, studentId: string, sectionId: string) => {
+  const response = await courseAxios.get(`/${schoolName}/${courseId}/${studentId}/${sectionId}/completion`);
+  return response.data;
+};
+
+export const saveExamProgress = async (schoolName: string, courseId: string, sectionId: string, studentId: string, score: number) => {
+  const response = await courseAxios.post(`/${schoolName}/courses/${courseId}/sections/${sectionId}/progress`, {
+    studentId,
+    score,
+  });
+  return response.data;
+};
+export const addCertificate = async (schoolName: string, courseId: string, studentId: string) => {
+  const response = await courseAxios.post(
+    `/${schoolName}/courses/${courseId}/certificates`,
+    { studentId }
+  );
+  return response.data.certificateUrl;
+};
+
+// NEW: API function to update an existing certificate
+export  const updateCertificate = async (schoolName: string, courseId: string, studentId: string, dateIssued: string) => {
+  const response = await courseAxios.put(
+    `/${schoolName}/courses/${courseId}/certificates`,
+    { studentId, dateIssued }
+  );
+  return response.data.certificateUrl;
+};

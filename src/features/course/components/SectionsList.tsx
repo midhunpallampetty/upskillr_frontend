@@ -8,9 +8,20 @@ const SectionsList: React.FC<SectionsListProps> = ({ sections, setSections }) =>
     setSections(updatedSections);
   };
 
-  const addSection = () => {
-    setSections([...sections, { title: '' }]);
-  };
+const addSection = () => {
+  setSections([
+    ...sections,
+    {
+      title: '',  // If 'title' is actually part of Section, keep it; otherwise, map it to 'sectionName'
+      sectionName: '',  // e.g., default to empty string
+      examRequired: false,  // Default based on your logic (e.g., false if not required)
+      _id: '',  // Or generate a temporary ID, e.g., crypto.randomUUID() if available
+      videos: [],  // Empty array for videos
+      description: ''  // Empty description
+    }
+  ]);
+};
+
 
   const removeSection = (index: number) => {
     const updatedSections = sections.filter((_, i) => i !== index);

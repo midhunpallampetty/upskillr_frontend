@@ -1,5 +1,14 @@
 import React from 'react';
-import { NumberInputProps } from '../types/NumberInputProps';
+
+export interface NumberInputProps {
+  label: string;
+  id: string;
+  value: number | '';
+  onChange: (val: number | '') => void;
+  min?: number;
+  placeholder?: string;
+  required?: boolean;
+}
 
 const NumberInput: React.FC<NumberInputProps> = ({
   label,
@@ -7,6 +16,9 @@ const NumberInput: React.FC<NumberInputProps> = ({
   value,
   onChange,
   min = 0,
+  placeholder,
+  required,
+  ...rest
 }) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
@@ -15,7 +27,9 @@ const NumberInput: React.FC<NumberInputProps> = ({
 
   return (
     <div>
-      <label htmlFor={id} className="block font-medium">{label}</label>
+      <label htmlFor={id} className="block font-medium">
+        {label}
+      </label>
       <input
         id={id}
         type="number"
@@ -23,6 +37,9 @@ const NumberInput: React.FC<NumberInputProps> = ({
         onChange={handleChange}
         className="w-full border px-3 py-2 rounded"
         min={min}
+        placeholder={placeholder}
+        required={required}
+        {...rest}
       />
     </div>
   );

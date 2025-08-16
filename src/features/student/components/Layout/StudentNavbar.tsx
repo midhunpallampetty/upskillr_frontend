@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 interface Student {
   fullName?: string;
-  image:string;
+  image: string;
 }
 
 interface StudentNavbarProps {
@@ -64,20 +64,24 @@ const StudentNavbar: React.FC<StudentNavbarProps> = ({ student, handleLogout }) 
               className="relative hidden md:flex items-center space-x-3 cursor-pointer"
               onClick={toggleDropdown}
             >
-              <div className="w-8 h-8 bg-gradient-to-r from-green-400 to-blue-500 rounded-full flex items-center justify-center">
-                {student?.image ? (
-                  <img
-                    src={student.image}
-                    alt="student avatar"
-                    className="w-8 h-8 rounded-full object-cover"
-                  />
-                ) : (
-                  <span className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center text-sm font-medium">
-                    {student?.fullName?.charAt(0).toLowerCase() || 'g'}
-                  </span>
-                )}
+<div className="w-8 h-8 bg-gradient-to-r from-green-400 to-blue-500 rounded-full flex items-center justify-center">
+  {student ? (
+    <img
+      src={student.image || 'https://as1.ftcdn.net/jpg/01/68/80/20/1000_F_168802075_Il6LeUG0NCK4JOELmkC7Ki81g0CiLpxU.jpg'}
+      alt="student avatar"
+      className="w-8 h-8 rounded-full object-cover"
+      onError={(e) => {
+        e.currentTarget.src =
+          'https://as1.ftcdn.net/jpg/01/68/80/20/1000_F_168802075_Il6LeUG0NCK4JOELmkC7Ki81g0CiLpxU.jpg';
+      }}
+    />
+  ) : (
+    <span className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center text-sm font-medium">
+      g
+    </span>
+  )}
+</div>
 
-              </div>
               <div className="text-sm">
                 <p className="font-medium text-gray-900">{student?.fullName?.toLowerCase() || 'guest'}</p>
                 <p className="text-gray-500">Student</p>

@@ -3,16 +3,17 @@ import { Course } from '../../types/Course';
 import { Props } from '../../types/Props';
 import { useNavigate } from 'react-router-dom';
 import VideoModal from '../../components/UI/VideoModal';
-import Section from '../../../course/types/Section';
+import Section from '../../../course/types/Section'; // Adjust path if needed
 import EditCourseModal from './EditCourseModal';
 import { Video } from '../../types/Video';
-import { getCoursesBySchool, getSectionsByCourse, getVideoById, updateCourseById, deleteCourseById, softDeleteSectionById, softDeleteVideoById } from '../../api/course.api'
+import { getCoursesBySchool, getSectionsByCourse, getVideoById, updateCourseById, deleteCourseById, softDeleteSectionById, softDeleteVideoById } from '../../api/course.api';
 import Swal from 'sweetalert2';
 import ModalExamSelector from '../Layout/ModalExamSelector';
+import AddExamToSectionModal from '../Layout/AddExamSection'; // Updated import for consistency
 
 const SchoolCourses: React.FC<Props> = ({ schoolId, dbname }) => {
   const [examModalOpen, setExamModalOpen] = useState(false);
-const [examModalCourseId, setExamModalCourseId] = useState<string | null>(null);
+  const [examModalCourseId, setExamModalCourseId] = useState<string | null>(null);
 
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
@@ -26,16 +27,27 @@ const [examModalCourseId, setExamModalCourseId] = useState<string | null>(null);
   const [loadingVideo, setLoadingVideo] = useState(false);
   const [editingCourse, setEditingCourse] = useState<Course | null>(null);
 
-  const navigate = useNavigate();
-const handleOpenExamModal = (courseId: string) => {
-  setExamModalCourseId(courseId);
-  setExamModalOpen(true);
-};
+  // New state for add exam modal
+  const [addExamModalOpen, setAddExamModalOpen] = useState(false);
+  const [selectedSectionIdForExam, setSelectedSectionIdForExam] = useState<string | null>(null);
 
-const handleCloseExamModal = () => {
-  setExamModalCourseId(null);
-  setExamModalOpen(false);
-};
+  const navigate = useNavigate();
+
+  const handleOpenExamModal = (courseId: string) => {
+    setExamModalCourseId(courseId);
+    setExamModalOpen(true);
+  };
+
+  const handleCloseExamModal = () => {
+    setExamModalCourseId(null);
+    setExamModalOpen(false);
+  };
+
+  // New handler to open add exam modal
+  const handleOpenAddExamModal = (sectionId: string) => {
+    setSelectedSectionIdForExam(sectionId);
+    setAddExamModalOpen(true);
+  };
 
   // Load courses
   useEffect(() => {
@@ -55,15 +67,12 @@ const handleCloseExamModal = () => {
     }
   }, [schoolId, dbname]);
 
-  // Load sections
-  const handleCourseClick = async (course: Course) => {
-    setSelectedCourse(course);
+  // Load sections (refactored to be reusable for refresh after adding exam)
+  const fetchSections = async (courseId: string) => {
     setLoadingSections(true);
     try {
-      // New:
-      const fetchedSections = await getSectionsByCourse(dbname, course._id);
+      const fetchedSections = await getSectionsByCourse(dbname, courseId);
       setSections(fetchedSections);
-
     } catch (err) {
       console.error('❌ Failed to fetch sections:', err);
     } finally {
@@ -71,44 +80,50 @@ const handleCloseExamModal = () => {
     }
   };
 
+  const handleCourseClick = async (course: Course) => {
+    setSelectedCourse(course);
+    await fetchSections(course._id); // Use reusable fetch
+  };
+
   const handleBack = () => {
     setSelectedCourse(null);
     setSections([]);
   };
-const handleDeleteVideo = async (videoId: string) => {
-  const result = await Swal.fire({
-    title: 'Are you sure?',
-    text: 'This video will be soft-deleted!',
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonColor: '#d33',
-    cancelButtonColor: '#3085d6',
-    confirmButtonText: 'Yes, delete it!',
-  });
 
-  if (!result.isConfirmed) return;
-
-  try {
-    await softDeleteVideoById(dbname, videoId);
-
-    setVideoIds((prev) => prev.filter((id) => id !== videoId));
-    setCurrentVideoIndex(0);
-    setCurrentVideo(null);
-
-    await Swal.fire({
-      title: 'Deleted!',
-      text: 'Video has been soft-deleted.',
-      icon: 'success',
+  const handleDeleteVideo = async (videoId: string) => {
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: 'This video will be soft-deleted!',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, delete it!',
     });
-  } catch (err) {
-    console.error('❌ Failed to delete video:', err);
-    Swal.fire({
-      title: 'Error!',
-      text: 'Failed to delete the video.',
-      icon: 'error',
-    });
-  }
-};
+
+    if (!result.isConfirmed) return;
+
+    try {
+      await softDeleteVideoById(dbname, videoId);
+
+      setVideoIds((prev) => prev.filter((id) => id !== videoId));
+      setCurrentVideoIndex(0);
+      setCurrentVideo(null);
+
+      await Swal.fire({
+        title: 'Deleted!',
+        text: 'Video has been soft-deleted.',
+        icon: 'success',
+      });
+    } catch (err) {
+      console.error('❌ Failed to delete video:', err);
+      Swal.fire({
+        title: 'Error!',
+        text: 'Failed to delete the video.',
+        icon: 'error',
+      });
+    }
+  };
 
   const handleDeleteCourse = async (courseId: string) => {
     const result = await Swal.fire({
@@ -143,6 +158,7 @@ const handleDeleteVideo = async (videoId: string) => {
       });
     }
   };
+
   const handleDeleteSection = async (sectionId: string) => {
     const result = await Swal.fire({
       title: 'Are you sure?',
@@ -176,7 +192,6 @@ const handleDeleteVideo = async (videoId: string) => {
     }
   };
 
-
   const handleShowVideos = (section: Section) => {
     if (!section.videos || section.videos.length === 0) {
       alert('⚠️ No videos in this section.');
@@ -206,9 +221,7 @@ const handleDeleteVideo = async (videoId: string) => {
       setLoadingVideo(true);
       try {
         const videoId = videoIds[currentVideoIndex];
-        // New:
         const videoData = await getVideoById(dbname, videoId);
-
 
         if (!isCancelled) {
           if (Array.isArray(videoData)) {
@@ -246,9 +259,7 @@ const handleDeleteVideo = async (videoId: string) => {
   const handleUpdateCourse = async (updatedData: Partial<Course>) => {
     if (!editingCourse) return;
     try {
-      // New:
       await updateCourseById(dbname, editingCourse._id, updatedData);
-
 
       setCourses((prev) =>
         prev.map((course) =>
@@ -261,6 +272,12 @@ const handleDeleteVideo = async (videoId: string) => {
       console.error('❌ Failed to update course:', err);
       alert('Something went wrong while updating course.');
     }
+  };
+
+  // New: Handler to refresh courses after updating exams in modal
+  const handleExamUpdateSuccess = async () => {
+    const courseList = await getCoursesBySchool(schoolId, dbname);
+    setCourses(courseList);
   };
 
   return (
@@ -306,11 +323,11 @@ const handleDeleteVideo = async (videoId: string) => {
                       🗑️ Delete
                     </button>
                     <button
-  onClick={() => handleOpenExamModal(course._id)}
-  className="text-sm bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600"
->
-  🎓 Manage Exam
-</button>
+                      onClick={() => handleOpenExamModal(course._id)}
+                      className="text-sm bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600"
+                    >
+                      🎓 Manage Exam
+                    </button>
                   </div>
                 </div>
               ))}
@@ -344,7 +361,10 @@ const handleDeleteVideo = async (videoId: string) => {
                     <p className="text-sm text-gray-500">
                       {section.examRequired ? '📝 Exam Required' : '✅ No Exam'}
                     </p>
-                
+                    {/* New: Display attached exam if any */}
+                    {section.exam && (
+                      <p className="text-sm text-gray-500">Attached Exam: {section.exam.examName}</p> // Adjust field if populated
+                    )}
                   </div>
                   <div className="flex gap-2">
                     <button
@@ -361,7 +381,14 @@ const handleDeleteVideo = async (videoId: string) => {
                     >
                       ▶️ Show Videos
                     </button>
-                        <button
+                    {/* New: Add Exam button */}
+                    <button
+                      onClick={() => handleOpenAddExamModal(section._id)}
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm shadow"
+                    >
+                      ➕ Add Exam
+                    </button>
+                    <button
                       onClick={() => handleDeleteSection(section._id)}
                       className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded text-sm shadow"
                     >
@@ -376,22 +403,21 @@ const handleDeleteVideo = async (videoId: string) => {
       )}
 
       {/* 🎬 Video Modal */}
-  <VideoModal
-  open={videoModalOpen}
-  currentVideo={currentVideo}
-  currentVideoIndex={currentVideoIndex}
-  videoCount={videoIds.length}
-  loadingVideo={loadingVideo}
-  onClose={closeModal}
-  onDelete={() => currentVideo && handleDeleteVideo(currentVideo._id)}
-  onNext={() =>
-    setCurrentVideoIndex((prev) => Math.min(prev + 1, videoIds.length - 1))
-  }
-  onPrev={() =>
-    setCurrentVideoIndex((prev) => Math.max(prev - 1, 0))
-  }
-/>
-
+      <VideoModal
+        open={videoModalOpen}
+        currentVideo={currentVideo}
+        currentVideoIndex={currentVideoIndex}
+        videoCount={videoIds.length}
+        loadingVideo={loadingVideo}
+        onClose={closeModal}
+        onDelete={() => currentVideo && handleDeleteVideo(currentVideo._id)}
+        onNext={() =>
+          setCurrentVideoIndex((prev) => Math.min(prev + 1, videoIds.length - 1))
+        }
+        onPrev={() =>
+          setCurrentVideoIndex((prev) => Math.max(prev - 1, 0))
+        }
+      />
 
       {/* ✏️ Edit Course Modal */}
       {editingCourse && (
@@ -402,15 +428,30 @@ const handleDeleteVideo = async (videoId: string) => {
         />
       )}
       {/* 🎓 Exam Selector Modal */}
-{examModalCourseId && (
-  <ModalExamSelector
-    courseId={examModalCourseId}
-    schoolName={dbname}
-    isOpen={examModalOpen}
-    onClose={handleCloseExamModal}
-  />
-)}
-
+      {examModalCourseId && (
+        <ModalExamSelector
+          courseId={examModalCourseId}
+          schoolName={dbname}
+          isOpen={examModalOpen}
+          onClose={handleCloseExamModal}
+          onSuccess={handleExamUpdateSuccess} // Refresh courses after update
+          currentPreliminaryExam={courses.find(c => c._id === examModalCourseId)?.preliminaryExam || null}
+          currentFinalExam={courses.find(c => c._id === examModalCourseId)?.finalExam || null}
+        />
+      )}
+      {/* New: Add Exam to Section Modal */}
+      {selectedSectionIdForExam && (
+        <AddExamToSectionModal
+          isOpen={addExamModalOpen}
+          onClose={() => {
+            setAddExamModalOpen(false);
+            setSelectedSectionIdForExam(null);
+          }}
+          schoolName={dbname}
+          sectionId={selectedSectionIdForExam}
+          onSuccess={() => selectedCourse && fetchSections(selectedCourse._id)} // Refresh sections
+        />
+      )}
     </div>
   );
 };

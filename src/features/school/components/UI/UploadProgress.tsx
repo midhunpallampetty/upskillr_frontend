@@ -1,9 +1,9 @@
 import React from 'react';
-import { CheckCircle, Upload, Settings, Zap } from 'lucide-react';
+import { CheckCircle, Upload, Settings, Zap, AlertTriangle } from 'lucide-react';
 
 interface UploadProgressProps {
   progress: number;
-  stage: 'preparing' | 'uploading' | 'processing' | 'complete';
+  stage: 'preparing' | 'uploading' | 'processing' | 'complete' | 'error';
   message: string;
   isVisible: boolean;
 }
@@ -24,6 +24,8 @@ const UploadProgress: React.FC<UploadProgressProps> = ({
         return <Zap className="w-6 h-6 text-yellow-500 animate-pulse" />;
       case 'complete':
         return <CheckCircle className="w-6 h-6 text-green-500" />;
+      case 'error':
+        return <AlertTriangle className="w-6 h-6 text-red-500 animate-pulse" />;
       default:
         return <Upload className="w-6 h-6 text-blue-500" />;
     }
@@ -39,6 +41,8 @@ const UploadProgress: React.FC<UploadProgressProps> = ({
         return 'bg-yellow-500';
       case 'complete':
         return 'bg-green-500';
+      case 'error':
+        return 'bg-red-500';
       default:
         return 'bg-blue-500';
     }
@@ -82,7 +86,8 @@ const UploadProgress: React.FC<UploadProgressProps> = ({
                 strokeDashoffset={`${2 * Math.PI * 50 * (1 - progress / 100)}`}
                 className={`transition-all duration-500 ease-out ${
                   stage === 'complete' ? 'text-green-500' : 
-                  stage === 'processing' ? 'text-yellow-500' : 'text-blue-500'
+                  stage === 'processing' ? 'text-yellow-500' : 
+                  stage === 'error' ? 'text-red-500' : 'text-blue-500'
                 }`}
                 style={{
                   filter: stage === 'complete' ? 'drop-shadow(0 0 8px rgba(34, 197, 94, 0.4))' : 'none'
@@ -104,6 +109,7 @@ const UploadProgress: React.FC<UploadProgressProps> = ({
               {stage === 'uploading' && 'Uploading Video'}
               {stage === 'processing' && 'Processing Video'}
               {stage === 'complete' && 'Upload Complete!'}
+              {stage === 'error' && 'Upload Failed'}
             </h3>
             <p className="text-gray-600">{message}</p>
           </div>

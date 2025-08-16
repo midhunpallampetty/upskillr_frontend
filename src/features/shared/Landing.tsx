@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 
 const subjects: string[] = [
   'Playlist',
@@ -12,175 +13,402 @@ const subjects: string[] = [
   'Computing',
 ];
 
+const features = [
+  {
+    title: 'Certified Schools',
+    description: 'Every school is verified and certified before onboarding.',
+    icon: (
+      <svg className="w-8 h-8 text-indigo-600 mb-2" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+        <path d="M12 2l7 6-7 6-7-6 7-6z" />
+        <path d="M2 8v6a10 10 0 0020 0V8" />
+      </svg>
+    ),
+  },
+  {
+    title: 'Expert Teachers',
+    description: 'Live classes by highly qualified teachers with years of experience.',
+    icon: (
+      <svg className="w-8 h-8 text-indigo-600 mb-2" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+        <circle cx="12" cy="7" r="4" />
+        <path d="M5.5 21h13a2.5 2.5 0 00-13 0z" />
+      </svg>
+    ),
+  },
+  {
+    title: '24/7 Support',
+    description: 'Dedicated support team available around the clock for all students.',
+    icon: (
+      <svg className="w-8 h-8 text-indigo-600 mb-2" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+        <path d="M18 10c0-3.314-2.686-6-6-6S6 6.686 6 10c0 2.21 1.343 4.104 3.293 5.093L12 21l2.707-5.907C16.657 14.104 18 12.21 18 10z" />
+      </svg>
+    ),
+  },
+];
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 40 },
+  visible: { opacity: 1, y: 0 },
+};
+
 const LandingPage: React.FC = () => {
-    const navigate=useNavigate()
+  const navigate = useNavigate();
+  const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
+  const [contactForm, setContactForm] = useState({ name: '', email: '', message: '' });
+  const [formSent, setFormSent] = useState(false);
+
+  const handleSubjectClick = (subject: string) => {
+    setSelectedSubject(subject);
+    // Example: navigate to subject page
+    // navigate(`/subjects/${subject.toLowerCase()}`);
+  };
+
+  const handleContactChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setContactForm({ ...contactForm, [e.target.name]: e.target.value });
+  };
+
+  const handleContactSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormSent(true);
+    setTimeout(() => setFormSent(false), 2000);
+    setContactForm({ name: '', email: '', message: '' });
+  };
+
   return (
-    <div className="font-sans bg-gray-50">
+    <div className="font-sans bg-gradient-to-br from-pink-100 via-indigo-100 to-yellow-100 min-h-screen">
       {/* Header */}
-      <header className="bg-white shadow-md py-4 px-4 md:px-8 flex flex-col md:flex-row justify-between items-center">
-        <div className="text-2xl md:text-3xl font-bold text-indigo-700 mb-4 md:mb-0">Upskillr</div>
-        <nav className="flex space-x-4 md:space-x-6 mb-4 md:mb-0">
-          <a href="#" className="text-gray-700 hover:text-indigo-600 transition">Home</a>
-          <a href="#" className="text-gray-700 hover:text-indigo-600 transition">Courses</a>
-          <a href="#" className="text-gray-700 hover:text-indigo-600 transition">About</a>
-          <a href="#" className="text-gray-700 hover:text-indigo-600 transition">Contact us</a>
+      <motion.header
+        initial="hidden"
+        animate="visible"
+        variants={fadeUp}
+        transition={{ duration: 0.7 }}
+        className="bg-white shadow-md py-4 px-4 md:px-8 flex flex-col md:flex-row justify-between items-center sticky top-0 z-30"
+      >
+        <div className="text-3xl font-extrabold text-indigo-700 flex items-center gap-2">
+          <img src="/images/logo.png" alt="Upskillr" className="w-10 h-10" />
+          Upskillr
+        </div>
+        <nav className="flex space-x-4 md:space-x-6 mb-4 md:mb-0 text-lg">
+          <a href="#" className="text-gray-700 hover:text-pink-600 transition font-medium">Home</a>
+          <a href="#" className="text-gray-700 hover:text-yellow-500 transition font-medium">Courses</a>
+          <a href="#" className="text-gray-700 hover:text-indigo-600 transition font-medium">About</a>
+          <a href="#" className="text-gray-700 hover:text-green-500 transition font-medium">Contact</a>
         </nav>
         <div className="flex space-x-3">
-          <button  onClick={()=>navigate('/signupSelection')} className="px-4 py-2 text-sm border rounded text-indigo-600 border-indigo-600 hover:bg-indigo-50 transition">Sign up</button>
-          <button onClick={()=>navigate('/loginSelection')} className="px-4 py-2 text-sm bg-indigo-600 text-white rounded hover:bg-indigo-700 transition">Login</button>
+          <motion.button
+            whileHover={{ scale: 1.08, backgroundColor: "#f472b6", color: "#fff" }}
+            onClick={() => navigate('/signupSelection')}
+            className="px-5 py-2 text-sm border rounded text-indigo-600 border-indigo-600 hover:bg-indigo-50 transition font-semibold"
+          >
+            Sign up
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.08, backgroundColor: "#6366f1", color: "#fff" }}
+            onClick={() => navigate('/loginSelection')}
+            className="px-5 py-2 text-sm bg-indigo-600 text-white rounded hover:bg-indigo-700 transition font-semibold"
+          >
+            Login
+          </motion.button>
         </div>
-      </header>
+      </motion.header>
 
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-indigo-900 to-indigo-700 text-white py-12 md:py-20">
-        <div className="container mx-auto px-4 text-center">
-          <h1 className="text-3xl md:text-5xl font-bold mb-6 max-w-3xl mx-auto">
+      <section className="bg-gradient-to-br from-indigo-900 to-pink-600 text-white py-16 md:py-24 relative overflow-hidden">
+        <div className="container mx-auto px-4 text-center relative z-10">
+          <motion.h1
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8 }}
+            className="text-4xl md:text-6xl font-extrabold mb-6 max-w-3xl mx-auto drop-shadow-lg"
+          >
             Online Teaching Platform For Schools
-          </h1>
-          <div className=" rounded-lg p-4 max-w-2xl mx-auto h-64 flex items-center justify-center">
-            <div className="text-xl text-indigo-200">
-            <img className='w-96 h-80' src='/images/schools/school1.png'/>
-            </div>
-            s
-          </div>
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.7 }}
+            className="text-lg md:text-2xl mb-8 max-w-xl mx-auto opacity-90"
+          >
+            Empowering students and teachers with interactive live classes, certified schools, and 24/7 support.
+          </motion.p>
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={{
+              hidden: { opacity: 0, y: 40 },
+              visible: { opacity: 1, y: 0 },
+            }}
+            transition={{ delay: 0.5, duration: 0.7 }}
+            className="flex justify-center gap-4 mb-8"
+          >
+            <motion.button
+              whileHover={{ scale: 1.1, backgroundColor: "#f472b6" }}
+              onClick={() => navigate('/signupSelection')}
+              className="bg-pink-600 hover:bg-pink-700 text-white font-bold px-6 py-3 rounded-lg shadow-lg transition"
+            >
+              Get Started
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.1, backgroundColor: "#fff", color: "#6366f1" }}
+              onClick={() => navigate('/courses')}
+              className="bg-white text-indigo-700 font-bold px-6 py-3 rounded-lg shadow-lg hover:bg-indigo-50 transition"
+            >
+              Browse Courses
+            </motion.button>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.7, duration: 0.7 }}
+            className="rounded-lg p-4 max-w-2xl mx-auto h-64 flex items-center justify-center bg-indigo-800/30 shadow-lg"
+          >
+            <img className="w-96 h-80 object-cover rounded-xl" src="/images/schools/school1.png" alt="School" />
+          </motion.div>
         </div>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 0.6 }}
+          transition={{ duration: 1 }}
+          className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-indigo-900/60 to-pink-600/60 pointer-events-none"
+        ></motion.div>
+        <motion.div
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 0.2 }}
+          transition={{ delay: 0.5, duration: 1 }}
+          className="absolute -bottom-16 -right-16 w-72 h-72 bg-yellow-400 rounded-full blur-2xl"
+        ></motion.div>
       </section>
 
-      {/* Why Choose Us */}
-      <section className="py-16 bg-white">
+      {/* Features Section */}
+      <section className="py-16 bg-gradient-to-br from-pink-50 via-yellow-50 to-indigo-50">
         <div className="container mx-auto px-4">
-          <h2 className="text-2xl font-bold text-center text-pink-600 mb-12">Why you choose us</h2>
+          <motion.h2
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={fadeUp}
+            transition={{ duration: 0.7 }}
+            className="text-3xl font-extrabold text-center text-pink-600 mb-12"
+          >
+            Why Choose Us
+          </motion.h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {[
-              {
-                title: 'Certified Schools',
-                description: 'Every school is verified and certified before onboarding.',
-              },
-              {
-                title: 'Highly Qualified Live Class Teachers',
-                description: 'All classes are conducted by experts with years of teaching experience.',
-              },
-              {
-                title: '24/7 Student Support',
-                description: 'Dedicated support team available around the clock for all students.',
-              },
-            ].map((item, idx) => (
-              <div
+            {features.map((item, idx) => (
+              <motion.div
                 key={idx}
-                className="bg-gray-50 p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition"
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: idx * 0.2, duration: 0.7 }}
+                className="bg-gradient-to-br from-indigo-100 via-pink-100 to-yellow-100 p-8 rounded-xl shadow-md border border-gray-100 hover:shadow-lg transition flex flex-col items-center text-center"
               >
-                <h3 className="font-bold text-xl mb-3 text-indigo-800">{item.title}</h3>
+                {item.icon}
+                <h3 className="font-bold text-xl mb-2 text-indigo-800">{item.title}</h3>
                 <p className="text-gray-600">{item.description}</p>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>
       </section>
 
       {/* Subjects Section */}
-      <section className="bg-gradient-to-br from-indigo-800 to-indigo-900 text-white py-16">
+      <section className="bg-gradient-to-br from-indigo-800 via-pink-600 to-yellow-500 text-white py-16">
         <div className="container mx-auto px-4">
-          <h2 className="text-2xl font-bold text-center mb-12">Find your Subject</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-4 max-w-5xl mx-auto">
+          <motion.h2
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={fadeUp}
+            transition={{ duration: 0.7 }}
+            className="text-3xl font-extrabold text-center mb-12"
+          >
+            Find Your Subject
+          </motion.h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-6 max-w-5xl mx-auto">
             {subjects.map((subject, index) => (
-              <div
+              <motion.button
                 key={index}
-                className="bg-indigo-700 p-4 rounded-lg text-center hover:bg-indigo-600 transition cursor-pointer"
+                whileHover={{
+                  scale: 1.1,
+                  backgroundColor: "#f472b6",
+                  boxShadow: "0 0 0 8px #f472b633",
+                }}
+                whileTap={{ scale: 0.95 }}
+                className={`bg-indigo-700 p-5 rounded-lg text-center font-semibold text-lg shadow-md hover:bg-pink-600 transition cursor-pointer outline-none focus:ring-2 focus:ring-pink-400 ${
+                  selectedSubject === subject ? 'ring-4 ring-yellow-400' : ''
+                }`}
+                onClick={() => handleSubjectClick(subject)}
+                aria-pressed={selectedSubject === subject}
               >
                 {subject}
-              </div>
+              </motion.button>
+            ))}
+          </div>
+          {selectedSubject && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="mt-8 text-center"
+            >
+              <span className="inline-block bg-pink-600 text-white px-6 py-2 rounded-full shadow-lg font-bold animate-bounce">
+                Selected: {selectedSubject}
+              </span>
+            </motion.div>
+          )}
+        </div>
+      </section>
+
+      {/* About Section */}
+      <section className="py-16 bg-gradient-to-br from-yellow-50 via-pink-50 to-indigo-50">
+        <div className="container mx-auto px-4 max-w-4xl">
+          <motion.h2
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={fadeUp}
+            transition={{ duration: 0.7 }}
+            className="text-3xl font-extrabold text-center mb-8 text-gray-800"
+          >
+            About Us
+          </motion.h2>
+          <motion.p
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7 }}
+            className="text-gray-600 text-center text-lg leading-relaxed mb-6"
+          >
+            Welcome to Upskillr! We are a team of passionate MCA students, bridging the gap between schools and eager learners. Our platform delivers the latest learning tools and resources to foster academic growth and success.
+          </motion.p>
+          <div className="flex justify-center gap-6">
+            {['team1', 'team2', 'team3'].map((img, i) => (
+              <motion.img
+                key={img}
+                src={`/images/${img}.png`}
+                alt="Team"
+                initial={{ opacity: 0, scale: 0.8 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.2, duration: 0.7 }}
+                className="w-24 h-24 rounded-full object-cover shadow-md"
+              />
             ))}
           </div>
         </div>
       </section>
 
-      {/* About Section */}
-      <section className="py-16 bg-white">
-        <div className="container mx-auto px-4 max-w-4xl">
-          <h2 className="text-2xl font-bold text-center mb-8 text-gray-800">About Us</h2>
-          <p className="text-gray-600 text-center text-lg leading-relaxed">
-            Welcome to our platform! We are a team of hard-working students pursuing our Master's in
-            Computer Applications (MCA) with a shared passion for education and technology. This
-            platform is a bridge between schools and eager students, providing the latest learning
-            tools and resources to foster academic growth.
-          </p>
-        </div>
-      </section>
-
       {/* Contact Section */}
-      <section className="bg-gradient-to-br from-indigo-900 to-indigo-800 text-white py-16">
+      <section className="bg-gradient-to-br from-indigo-900 via-pink-600 to-yellow-500 text-white py-16">
         <div className="container mx-auto px-4">
-          <h2 className="text-2xl font-bold text-center mb-12">Contact Us</h2>
+          <motion.h2
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={fadeUp}
+            transition={{ duration: 0.7 }}
+            className="text-3xl font-extrabold text-center mb-12"
+          >
+            Contact Us
+          </motion.h2>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-5xl mx-auto">
-            <div className="flex flex-col items-center">
-              <div className="bg-indigo-700 rounded-xl w-full h-64 flex items-center justify-center">
-                <div className="text-xl text-indigo-200">          
-                      <img className='w-96 h-80' src='/images/schools/school2.png'/>
-                </div>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7 }}
+              className="flex flex-col items-center"
+            >
+              <div className="bg-indigo-700 rounded-xl w-full h-64 flex items-center justify-center shadow-lg">
+                <img className="w-96 h-80 object-cover rounded-xl" src="/images/schools/school2.png" alt="Contact" />
               </div>
-            </div>
-            <div className="bg-white p-8 rounded-xl shadow-lg">
-              <h3 className="text-xl font-bold text-gray-800 mb-6">Send a message</h3>
-              <form className="space-y-5">
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7 }}
+              className="bg-white p-8 rounded-xl shadow-lg"
+            >
+              <h3 className="text-xl font-bold text-gray-800 mb-6">Send a Message</h3>
+              <form className="space-y-5" onSubmit={handleContactSubmit}>
                 <div>
                   <input
                     type="text"
+                    name="name"
+                    value={contactForm.name}
+                    onChange={handleContactChange}
                     placeholder="Your Name"
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    required
                   />
                 </div>
                 <div>
                   <input
                     type="email"
+                    name="email"
+                    value={contactForm.email}
+                    onChange={handleContactChange}
                     placeholder="Email Address"
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    required
                   />
                 </div>
                 <div>
                   <textarea
+                    name="message"
+                    value={contactForm.message}
+                    onChange={handleContactChange}
                     placeholder="Your Message"
                     rows={4}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    required
                   ></textarea>
                 </div>
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.05, backgroundColor: "#22c55e" }}
                   type="submit"
                   className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-6 rounded-lg transition"
                 >
-                  Send a message
-                </button>
+                  Send Message
+                </motion.button>
+                {formSent && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="text-green-600 font-semibold text-center mt-2 animate-pulse"
+                  >
+                    Message sent! We'll get back to you soon.
+                  </motion.div>
+                )}
               </form>
-            </div>
+            </motion.div>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12">
+      <footer className="bg-gradient-to-br from-indigo-900 via-pink-600 to-yellow-500 text-white py-12">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             <div>
-              <div className="text-2xl font-bold mb-4">Landscape Software</div>
-              <p className="text-gray-400">Content © 2004 Landscape Software</p>
+              <div className="text-2xl font-bold mb-4">Upskillr</div>
+              <p className="text-gray-200">Content © 2024 Upskillr</p>
             </div>
             <div className="md:col-span-2">
               <div className="flex flex-wrap gap-4 mb-6">
-                <a href="#" className="text-gray-300 hover:text-white transition">Home</a>
-                <a href="#" className="text-gray-300 hover:text-white transition">Courses</a>
-                <a href="#" className="text-gray-300 hover:text-white transition">Contact us</a>
-                <a href="#" className="text-gray-300 hover:text-white transition">Privacy Policy</a>
+                <a href="#" className="text-gray-300 hover:text-pink-300 transition">Home</a>
+                <a href="#" className="text-gray-300 hover:text-yellow-300 transition">Courses</a>
+                <a href="#" className="text-gray-300 hover:text-indigo-300 transition">Contact</a>
+                <a href="#" className="text-gray-300 hover:text-green-300 transition">Privacy Policy</a>
               </div>
               <div className="flex space-x-4">
-                {/* Social icons - Facebook and Twitter */}
-                {/* Use real links and aria-labels for accessibility */}
-                <a href="#" aria-label="Facebook" className="bg-gray-800 w-10 h-10 rounded-full flex items-center justify-center hover:bg-indigo-600 transition">
+                <a href="#" aria-label="Facebook" className="bg-gray-800 w-10 h-10 rounded-full flex items-center justify-center hover:bg-pink-600 transition">
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path fillRule="evenodd" clipRule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2..."></path>
+                    <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 5.019 3.676 9.163 8.438 9.877v-6.987h-2.54v-2.89h2.54V9.797c0-2.507 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.242 0-1.63.771-1.63 1.562v1.875h2.773l-.443 2.89h-2.33v6.987C18.324 21.163 22 17.019 22 12z"/>
                   </svg>
                 </a>
-                <a href="#" aria-label="Twitter" className="bg-gray-800 w-10 h-10 rounded-full flex items-center justify-center hover:bg-indigo-600 transition">
+                <a href="#" aria-label="Twitter" className="bg-gray-800 w-10 h-10 rounded-full flex items-center justify-center hover:bg-yellow-400 transition">
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M8.29 20.251c7.547 0 11.675-6.253..."></path>
+                    <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743A11.65 11.65 0 013.15 4.57a4.106 4.106 0 001.27 5.482A4.073 4.073 0 012.8 9.713v.052a4.108 4.108 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84"/>
                   </svg>
                 </a>
               </div>

@@ -26,24 +26,7 @@ export const loginStudent = async (
   }
 };
 
-export const getAllSchools = async (): Promise<School[]> => {
-  try {
-    const res = await schoolAxios.get(`/getSchools`);
 
-    const schoolList = Array.isArray(res.data)
-      ? res.data
-      : Array.isArray(res.data.schools)
-      ? res.data.schools
-      : Array.isArray(res.data.data)
-      ? res.data.data
-      : [];
-
-    return schoolList;
-  } catch (err) {
-    console.error('❌ Error fetching schools:', err);
-    return []; 
-  }
-};
 // student.api.ts
 export const verifyStudentOtp = (email: string, otp: string) =>
   studentAxios.post('/verify-otp', { email, otp });
@@ -67,4 +50,62 @@ export const getStudentById = async (id: string) => {
 
 export const updateStudentById = async (id: string, payload: any) => {
   return await studentAxios.put(`/students/${id}`, payload);
+};
+
+
+
+import { AxiosResponse } from 'axios'; // Import if not already (for type safety)
+
+// Assuming schoolAxios is your configured Axios instance
+export const getAllSchools = async (filters: {
+  search?: string;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+  page?: number;
+  limit?: number;
+  fromDate?: string; // ISO date string, e.g., '2025-01-01'
+  toDate?: string;   // ISO date string, e.g., '2025-12-31'
+} = {}): Promise<{
+  schools: any[]; // Replace 'any' with your School type if defined
+  total: number;
+  totalPages: number;
+  currentPage: number;
+  count: number;
+  msg: string;
+}> => {
+  try {
+    // Build query string from filters
+    const params = new URLSearchParams();
+    if (filters.search) params.append('search', filters.search);
+    if (filters.sortBy) params.append('sortBy', filters.sortBy);
+    if (filters.sortOrder) params.append('sortOrder', filters.sortOrder);
+    if (filters.page) params.append('page', filters.page.toString());
+    if (filters.limit) params.append('limit', filters.limit.toString());
+    if (filters.fromDate) params.append('fromDate', filters.fromDate);
+    if (filters.toDate) params.append('toDate', filters.toDate);
+
+    const res: AxiosResponse = await schoolAxios.get(`/getSchools?${params.toString()}`);
+
+    // Extract and return the structured response data
+    const data = res.data;
+    return {
+      schools: Array.isArray(data.schools) ? data.schools : [],
+      total: data.total || 0,
+      totalPages: data.totalPages || 1,
+      currentPage: data.currentPage || 1,
+      count: data.count || 0,
+      msg: data.msg || 'Success',
+    };
+  } catch (err) {
+    console.error('❌ Error fetching schools:', err);
+    // Return a default structure on error
+    return {
+      schools: [],
+      total: 0,
+      totalPages: 1,
+      currentPage: 1,
+      count: 0,
+      msg: 'Error fetching schools',
+    };
+  }
 };

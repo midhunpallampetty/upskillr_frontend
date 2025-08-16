@@ -2,6 +2,7 @@ import { useReducer, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   adminDashboardReducer,
+  AdminSection,
   initialAdminDashboardState,
 } from '../../reducers/adminDashboardReducer';
 import { 
@@ -260,13 +261,19 @@ const AdminDashboard = () => {
     dispatch({ type: 'RESET' });
     navigate('/adminRegister');
   };
+type NavItem = {
+  id: AdminSection;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>; // Assumes Lucide icons (adjust if needed)
+};
 
-  const navigationItems = [
-    { id: 'welcome', label: 'Dashboard', icon: Home },
-    { id: 'students', label: 'Students', icon: Users },
-    { id: 'schools', label: 'Schools', icon: School },
-    { id: 'content', label: 'Content', icon: BookOpen },
-  ];
+const navigationItems: NavItem[] = [
+  { id: 'welcome', label: 'Dashboard', icon: Home },
+  { id: 'students', label: 'Students', icon: Users },
+  { id: 'schools', label: 'Schools', icon: School },
+  { id: 'content', label: 'Content', icon: BookOpen },
+];
+
 
   const renderContent = () => {
     return (

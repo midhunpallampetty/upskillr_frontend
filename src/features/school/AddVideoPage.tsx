@@ -56,16 +56,17 @@ const AddVideoToSection: React.FC<SectionProps> = ({ sectionId, schoolDb }) => {
     setShowProgress(true);
 
     try {
-      const videoUrl = await uploadVideoToCloudinary(
-        videoFile!,
-        (progress, stage, message) => {
-          setUploadProgress({
-            progress,
-            stage: stage as VideoUploadProgress['stage'],
-            message
-          });
-        }
-      );
+const videoUrl = await uploadVideoToCloudinary(
+  videoFile!,
+  (progress: number, stage: VideoUploadProgress['stage'], message: string) => {
+    setUploadProgress({
+      progress,
+      stage,
+      message
+    });
+  }
+);
+
 
       if (!videoUrl) {
         toast.error('❌ Video upload failed');

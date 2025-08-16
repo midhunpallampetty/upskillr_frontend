@@ -7,6 +7,10 @@ export interface School {
     isVerified: boolean;
     url:string;
     subDomain:string;
+    address:string;
+    city:string;
+    state:string;
+    country:string;
     
   }
   export interface Student{

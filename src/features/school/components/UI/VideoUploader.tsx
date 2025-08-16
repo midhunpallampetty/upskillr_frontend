@@ -18,7 +18,7 @@ const VideoUploader: React.FC<VideoUploaderProps> = ({
 
   const handleFileSelect = (selectedFile: File) => {
     const allowedTypes = ['video/mp4', 'video/webm', 'video/ogg', 'video/avi', 'video/mov'];
-    
+
     if (!allowedTypes.includes(selectedFile.type)) {
       setError('Please select a valid video file (MP4, WebM, OGG, AVI, MOV).');
       return;
@@ -37,7 +37,7 @@ const VideoUploader: React.FC<VideoUploaderProps> = ({
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragOver(false);
-    
+
     const files = Array.from(e.dataTransfer.files);
     if (files.length > 0) {
       handleFileSelect(files[0]);
@@ -85,7 +85,7 @@ const VideoUploader: React.FC<VideoUploaderProps> = ({
         Upload Video
         <span className="text-red-500 ml-1">*</span>
       </label>
-      
+
       {file ? (
         <div className="relative group">
           <div className="bg-gray-50 border-2 border-gray-200 rounded-xl p-6">
@@ -123,29 +123,28 @@ const VideoUploader: React.FC<VideoUploaderProps> = ({
           onDrop={handleDrop}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
-          className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-all duration-200 cursor-pointer hover:border-blue-400 hover:bg-blue-50 ${
-            isDragOver
+          className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-all duration-200 cursor-pointer hover:border-blue-400 hover:bg-blue-50 ${isDragOver
               ? 'border-blue-500 bg-blue-50 scale-105'
               : 'border-gray-300 bg-gray-50'
-          }`}
+            }`}
           onClick={() => fileInputRef.current?.click()}
         >
           <input
             ref={fileInputRef}
             type="file"
-            accept="video/mp4,video/webm,video/ogg,video/avi,video/mov"
+            accept="video/mp4,video/webm,video/ogg,.avi,.mov"
             onChange={(e) => {
               const file = e.target.files?.[0];
               if (file) handleFileSelect(file);
             }}
             className="hidden"
           />
-          
+
+
           <div className="space-y-4">
             <div className="flex justify-center">
-              <div className={`p-4 rounded-full transition-all duration-300 ${
-                isDragOver ? 'bg-blue-100 scale-110' : 'bg-gray-100'
-              }`}>
+              <div className={`p-4 rounded-full transition-all duration-300 ${isDragOver ? 'bg-blue-100 scale-110' : 'bg-gray-100'
+                }`}>
                 {isDragOver ? (
                   <Upload className="w-10 h-10 text-blue-500" />
                 ) : (

@@ -5,6 +5,10 @@ import type { SchoolFormData } from './types/SchoolForm';
 import { useFormReducer } from './reducers/useFormReducer';
 import { useRegisterReducer } from './reducers/useRegisterReducer';
 import useNavigateToSchool from './hooks/useNavigateIntoSchool';
+
+import { Country, State, City } from 'country-state-city';
+import Select from 'react-select';
+
 const LoadingButton = lazy(() => import('../shared/components/UI/Loader'));
 
 const CLOUD_NAME = import.meta.env.VITE_CLOUD_NAME;
@@ -15,9 +19,14 @@ const SchoolRegister = () => {
   useNavigateToSchool();
 
   const [currentStep, setCurrentStep] = useState(0);
-const [formData, dispatchForm] = useFormReducer();
-const [state, dispatch] = useRegisterReducer();
-const { imageFile, coverImageFile, fieldErrors, loading, message, isLoading } = state;
+  const [formData, dispatchForm] = useFormReducer();
+  const [state, dispatch] = useRegisterReducer();
+  const { imageFile, coverImageFile, fieldErrors, loading, message, isLoading } = state;
+
+  // Country/State/City selections
+  const [selectedCountry, setSelectedCountry] = useState<any>(null);
+  const [selectedStateVal, setSelectedStateVal] = useState<any>(null);
+  const [selectedCityVal, setSelectedCityVal] = useState<any>(null);
 
   const allowedImageTypes = ['image/jpeg', 'image/png', 'image/webp'];
 
@@ -90,10 +99,9 @@ const { imageFile, coverImageFile, fieldErrors, loading, message, isLoading } = 
       if (!/^\d+$/.test(formData.experience) || parseInt(formData.experience) <= 0) {
         errors.experience = 'Experience must be a positive number';
       }
-
       const addressRegex = /^[a-zA-Z0-9\s,'-]{10,}$/;
       if (!addressRegex.test(formData.address)) {
-        errors.address = 'Address must be at least 10 characters and valid format';
+        errors.address = 'Address must be at least 10 characters';
       }
     }
 
@@ -101,13 +109,9 @@ const { imageFile, coverImageFile, fieldErrors, loading, message, isLoading } = 
       if (!/^\d{10}$/.test(formData.officialContact)) {
         errors.officialContact = 'Must be a valid 10-digit phone number';
       }
-
-      const alphaRegex = /^[A-Za-z\s]+$/;
-      ['city', 'state', 'country'].forEach((field) => {
-        if (!alphaRegex.test(formData[field])) {
-          errors[field] = `${field.charAt(0).toUpperCase() + field.slice(1)} must contain only letters`;
-        }
-      });
+      if (!formData.country) errors.country = 'Country is required';
+      if (!formData.state) errors.state = 'State is required';
+      if (!formData.city) errors.city = 'City is required';
     }
 
     if (currentStep === 2) {
@@ -120,12 +124,11 @@ const { imageFile, coverImageFile, fieldErrors, loading, message, isLoading } = 
       if (!emailRegex.test(formData.email)) {
         errors.email = 'Must be a valid email address';
       }
-
       const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\-+={}[\]|\\:;"'<>,.?/~`]).{6,}$/;
       if (!passwordRegex.test(formData.password)) {
-        errors.password = 'Password must be stronger (6+ chars, 1 uppercase, 1 lowercase, 1 number, 1 symbol)';
+        errors.password =
+          'Password must have 6+ chars, 1 uppercase, 1 lowercase, 1 number, 1 symbol';
       }
-
       if (formData.password !== formData.confirmPassword) {
         errors.confirmPassword = 'Passwords do not match';
       }
@@ -167,7 +170,7 @@ const { imageFile, coverImageFile, fieldErrors, loading, message, isLoading } = 
 
       dispatch({ type: 'SET_MESSAGE', payload: '✅ Registered successfully! Redirecting...' });
       setTimeout(() => navigate('/schoolLogin'), 2000);
-    } catch (err) {
+    } catch (err: any) {
       dispatch({
         type: 'SET_MESSAGE',
         payload: `❌ ${err.response?.data?.msg || 'Registration failed'}`,
@@ -188,12 +191,7 @@ const { imageFile, coverImageFile, fieldErrors, loading, message, isLoading } = 
     },
     {
       title: 'Contact Info',
-      fields: [
-        { name: 'officialContact', label: 'Official Contact', type: 'text' },
-        { name: 'city', label: 'City', type: 'text' },
-        { name: 'state', label: 'State', type: 'text' },
-        { name: 'country', label: 'Country', type: 'text' },
-      ],
+      fields: [{ name: 'officialContact', label: 'Official Contact', type: 'text' }], // rest via Select components
     },
     {
       title: 'Images',
@@ -216,7 +214,11 @@ const { imageFile, coverImageFile, fieldErrors, loading, message, isLoading } = 
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-gray-800 to-blue-800 px-4 py-6">
       <div className="bg-white w-full max-w-6xl rounded-xl overflow-hidden shadow-lg flex flex-col md:flex-row">
         <div className="w-full md:w-1/2 bg-blue-500 flex items-center justify-center p-6">
-          <img src="/images/schools/schools.png" alt="illustration" className="w-full max-w-xs rounded-3xl" />
+          <img
+            src="/images/schools/schools.png"
+            alt="illustration"
+            className="w-full max-w-xs rounded-3xl"
+          />
         </div>
 
         <div className="w-full md:w-1/2 p-6 md:p-10">
@@ -228,7 +230,9 @@ const { imageFile, coverImageFile, fieldErrors, loading, message, isLoading } = 
                 key={index}
                 className={`flex-1 text-center py-2 text-sm ${
                   index <= currentStep ? 'bg-blue-100 text-blue-700' : 'bg-gray-200 text-gray-500'
-                } ${index === 0 ? 'rounded-l-lg' : ''} ${index === steps.length - 1 ? 'rounded-r-lg' : ''}`}
+                } ${index === 0 ? 'rounded-l-lg' : ''} ${
+                  index === steps.length - 1 ? 'rounded-r-lg' : ''
+                }`}
               >
                 {step.title}
               </div>
@@ -270,6 +274,96 @@ const { imageFile, coverImageFile, fieldErrors, loading, message, isLoading } = 
                 </p>
               </div>
             ))}
+
+            {/* Dynamic Country/State/City for Step 1 */}
+            {currentStep === 1 && (
+              <>
+                <div>
+                  <label className="block mb-1 font-semibold">Country</label>
+                  <Select
+                    options={Country.getAllCountries().map((c) => ({
+                      value: c.isoCode,
+                      label: c.name,
+                    }))}
+                    value={selectedCountry}
+                    onChange={(val) => {
+                      setSelectedCountry(val);
+                      setSelectedStateVal(null);
+                      setSelectedCityVal(null);
+                      dispatchForm({
+                        type: 'UPDATE_FIELD',
+                        field: 'country',
+                        value: val?.label || '',
+                      });
+                    }}
+                    placeholder="Select Country"
+                  />
+                  <p className="text-red-600 text-sm mt-1 min-h-[1.25rem]">
+                    {fieldErrors.country || '\u00A0'}
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block mb-1 font-semibold">State</label>
+                  <Select
+                    options={
+                      selectedCountry
+                        ? State.getStatesOfCountry(selectedCountry.value).map((s) => ({
+                            value: s.isoCode,
+                            label: s.name,
+                          }))
+                        : []
+                    }
+                    value={selectedStateVal}
+                    onChange={(val) => {
+                      setSelectedStateVal(val);
+                      setSelectedCityVal(null);
+                      dispatchForm({
+                        type: 'UPDATE_FIELD',
+                        field: 'state',
+                        value: val?.label || '',
+                      });
+                    }}
+                    placeholder="Select State"
+                    isDisabled={!selectedCountry}
+                  />
+                  <p className="text-red-600 text-sm mt-1 min-h-[1.25rem]">
+                    {fieldErrors.state || '\u00A0'}
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block mb-1 font-semibold">City</label>
+                  <Select
+                    options={
+                      selectedCountry && selectedStateVal
+                        ? City.getCitiesOfState(
+                            selectedCountry.value,
+                            selectedStateVal.value
+                          ).map((city) => ({
+                            value: city.name,
+                            label: city.name,
+                          }))
+                        : []
+                    }
+                    value={selectedCityVal}
+                    onChange={(val) => {
+                      setSelectedCityVal(val);
+                      dispatchForm({
+                        type: 'UPDATE_FIELD',
+                        field: 'city',
+                        value: val?.label || '',
+                      });
+                    }}
+                    placeholder="Select City"
+                    isDisabled={!selectedStateVal}
+                  />
+                  <p className="text-red-600 text-sm mt-1 min-h-[1.25rem]">
+                    {fieldErrors.city || '\u00A0'}
+                  </p>
+                </div>
+              </>
+            )}
 
             <div className="md:col-span-2 flex justify-between mt-4">
               {currentStep > 0 && (

@@ -183,6 +183,7 @@ const AddCoursePage: React.FC = () => {
                       required
                     />
 
+
                     <Checkbox
                       label="Preliminary Assessment Required"
                       id="isPreliminary"
@@ -215,6 +216,7 @@ const AddCoursePage: React.FC = () => {
                     isLoading={isLoading} 
                     text="Create Course" 
                     type="submit"
+                    className=''
                     variant="primary"
                   />
                 </div>

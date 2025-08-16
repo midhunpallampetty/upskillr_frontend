@@ -62,10 +62,14 @@
     "typescript-eslint": "^8.30.1",
     "vite": "^6.3.5"
   },
-  "overrides": {
+"overrides": {
   "@emoji-mart/react": {
+    "react": "^19.1.0"
+  },
+  "volkeno-react-country-state-city": {
     "react": "^19.1.0"
   }
 }
+
 
 }

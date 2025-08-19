@@ -68,7 +68,7 @@ export default function ForumChatUI() {
       })
       .finally(() => setLoading(false));
 
-    socketRef.current = io('http://localhost:5000');
+    socketRef.current = io('https://upskillr.online');
 
     socketRef.current.on('connect', () => {
       addToast('Connected to real-time updates', 'success');

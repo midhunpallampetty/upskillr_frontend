@@ -16,7 +16,7 @@ const EditSchoolForm: React.FC<EditSchoolFormProps> = ({ schoolId, onSuccess }) 
     const fetchSchool = async () => {
       try {
         const res = await axios.get<{ schools: School[] }>(
-          `http://school.localhost:5000/api/getSchools`
+          `https://school.upskillr.online/api/getSchools`
         );
         const school = res.data.schools.find((s) => s._id === schoolId);
         if (school) setFormData(school);
@@ -49,7 +49,7 @@ const EditSchoolForm: React.FC<EditSchoolFormProps> = ({ schoolId, onSuccess }) 
       };
 
       const res = await axios.post(
-        'http://school.localhost:5000/api/updateSchoolData',
+        'https://school.upskillr.online/api/updateSchoolData',
         payload
       );
 

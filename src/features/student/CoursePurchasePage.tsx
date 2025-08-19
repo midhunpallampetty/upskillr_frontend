@@ -36,7 +36,7 @@ const CoursePaymentPage = () => {
         if (!schoolName) {
           throw new Error('School name not found in localStorage.');
         }
-        const response = await axios.get(`http://course.localhost:5000/api/${schoolName}/course/${courseId}`);
+        const response = await axios.get(`https://course.upskillr.online/api/${schoolName}/course/${courseId}`);
         
         setCourse(response.data.data);
 
@@ -49,7 +49,7 @@ const CoursePaymentPage = () => {
             throw new Error('Student ID not found in localStorage.');
           }
 
-          const eligResponse = await axios.post('http://exam.localhost:5000/api/check-eligibility', {
+          const eligResponse = await axios.post('https://exam.upskillr.online/api/check-eligibility', {
             userId: studentId,
             courseId,
             examType: 'final'
@@ -153,7 +153,7 @@ const CoursePaymentPage = () => {
       }
 
       const response = await axios.post(
-        `http://course.localhost:5000/api/payment/checkout/${schoolName}/${courseId}`
+        `https://course.upskillr.online/api/payment/checkout/${schoolName}/${courseId}`
       );
 
       const { url } = response.data;

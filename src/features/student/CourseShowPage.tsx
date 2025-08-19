@@ -191,7 +191,7 @@ const CourseShowPage = () => {
   };
   // NEW: Function to save final exam progress
   const saveFinalExamProgress = async (schoolName: string, courseId: string, studentId: string, score: number) => {
-    const response = await fetch(`http://course.localhost:5000/api/${schoolName}/courses/${courseId}/final-exam/progress`, {
+    const response = await fetch(`https://course.upskillr.online/api/${schoolName}/courses/${courseId}/final-exam/progress`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ studentId, score })
@@ -201,7 +201,7 @@ const CourseShowPage = () => {
   };
   // NEW: Function to check final exam status
   const checkFinalExamStatus = async (schoolName: string, courseId: string, studentId: string) => {
-    const response = await fetch(`http://course.localhost:5000/api/${schoolName}/courses/${courseId}/final-exam/status/${studentId}`, {
+    const response = await fetch(`https://course.upskillr.online/api/${schoolName}/courses/${courseId}/final-exam/status/${studentId}`, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' }
     });

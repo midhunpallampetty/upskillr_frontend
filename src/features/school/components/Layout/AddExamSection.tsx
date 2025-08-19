@@ -20,7 +20,7 @@ const AddExamToSectionModal: React.FC<AddExamToSectionModalProps> = ({
       const fetchExams = async () => {
         setLoading(true);
         try {
-          const { data } = await axios.get(`http://exam.localhost:5000/api/exam/all-exams?schoolName=${schoolName}`);
+          const { data } = await axios.get(`https://exam.upskillr.online/api/exam/all-exams?schoolName=${schoolName}`);
           setExams(data); // Assume API returns array of exams
         } catch (err) {
           console.error('❌ Failed to fetch exams:', err);
@@ -52,7 +52,7 @@ const AddExamToSectionModal: React.FC<AddExamToSectionModalProps> = ({
     if (!result.isConfirmed) return;
 
     try {
-      await axios.post(`http://course.localhost:5000/api/${schoolName}/sections/${sectionId}/exam`, {
+      await axios.post(`https://course.upskillr.online/api/${schoolName}/sections/${sectionId}/exam`, {
         examId: selectedExamId,
       });
       await Swal.fire({ title: 'Success!', text: 'Exam added to section.', icon: 'success' });

@@ -20,7 +20,7 @@ const ModalExamSelector: React.FC<Props> = ({
 
   const fetchExams = async () => {
     try {
-      const { data } = await axios.get('http://exam.localhost:5000/api/exam/all-exams', { params: { schoolName } });
+      const { data } = await axios.get('https://exam.upskillr.online/api/exam/all-exams', { params: { schoolName } });
       setExams(data);
     } catch (err) {
       console.error('Error fetching exams:', err);
@@ -39,7 +39,7 @@ const ModalExamSelector: React.FC<Props> = ({
 
     try {
       setLoading(true);
-      await axios.put(`http://course.localhost:5000/api/${schoolName}/courses/${courseId}/exams`, {
+      await axios.put(`https://course.upskillr.online/api/${schoolName}/courses/${courseId}/exams`, {
         examId: selectedExam,
         examType,
       });

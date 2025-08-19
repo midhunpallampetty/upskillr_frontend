@@ -739,7 +739,7 @@ const ReplyRenderer = ({
   );
 };
 
-const API = 'http://localhost:5000/api';
+const API = 'https://upskillr.online/api';
 
 // --- Main Enhanced Component ---
 export default function ForumChatUI() {
@@ -806,7 +806,7 @@ export default function ForumChatUI() {
       .finally(() => setLoading(false));
 
     // Initialize socket connection
-    socketRef.current = io('http://localhost:5000');
+    socketRef.current = io('https://upskillr.online');
 
     socketRef.current.on('connect', () => {
       addToast('Connected to real-time updates', 'success');

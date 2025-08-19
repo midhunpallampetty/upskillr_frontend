@@ -56,7 +56,7 @@ const CourseDetailsPage: React.FC = () => {
       if (student?._id && courseId) {
         try {
           const response = await fetch(
-            `http://course.localhost:5000/api/checkprevious-purchase/${courseId}/${student._id}`,
+            `https://course.upskillr.online/api/checkprevious-purchase/${courseId}/${student._id}`,
             {
               method: 'GET',
               headers: {

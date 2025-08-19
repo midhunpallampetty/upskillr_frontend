@@ -37,7 +37,7 @@ export const initiatePayment = async (schoolName: string | undefined, courseId: 
 
 export const getPaymentSession = async (sessionId: string) => {
   try {
-    const { data } = await axios.get(`http://course.localhost:5000/api/payment/session/${sessionId}`);
+    const { data } = await axios.get(`https://course.upskillr.online/api/payment/session/${sessionId}`);
     return data;
   } catch (error) {
     throw new Error('Failed to fetch payment session');

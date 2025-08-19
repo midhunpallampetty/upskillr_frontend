@@ -44,7 +44,7 @@ const VerificationStatus = () => {
       const parsedSchoolData = JSON.parse(schoolData);
       const schoolId = parsedSchoolData.id;
 
-      const { data } = await axios.get(`http://school.localhost:5000/api/school/${schoolId}/check-status`);
+      const { data } = await axios.get(`https://school.upskillr.online/api/school/${schoolId}/check-status`);
 
       clearInterval(progressInterval);
       setProgress(100);

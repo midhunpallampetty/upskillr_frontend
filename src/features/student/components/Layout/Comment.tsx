@@ -89,7 +89,7 @@ const CommentComponent = ({
     setLoading(true);
     try {
       const res = await axios.get(
-        `http://comment.localhost:5000/api/${courseId}`
+        `https://comment.upskillr.online/api/${courseId}`
       );
       setComments(res.data.comments || res.data);
     } catch (err) {
@@ -102,7 +102,7 @@ const CommentComponent = ({
   const postComment = async () => {
     if (!content.trim() || !userId) return;
     try {
-      await axios.post('http://comment.localhost:5000/api/add-comment', {
+      await axios.post('https://comment.upskillr.online/api/add-comment', {
         userId,
         text: content,
         parentId: null,
@@ -121,7 +121,7 @@ const CommentComponent = ({
     const replyContent = replyTexts[parentId]?.trim();
     if (!replyContent || !userId) return;
     try {
-      await axios.post('http://comment.localhost:5000/api/add-comment', {
+      await axios.post('https://comment.upskillr.online/api/add-comment', {
         userId,
         text: replyContent,
         parentId,
@@ -150,7 +150,7 @@ const CommentComponent = ({
     });
     if (!result.isConfirmed) return;
     try {
-      await axios.delete(`http://comment.localhost:5000/api/${commentId}`, {
+      await axios.delete(`https://comment.upskillr.online/api/${commentId}`, {
         data: { userId },
       });
       toast.success('Comment deleted.');

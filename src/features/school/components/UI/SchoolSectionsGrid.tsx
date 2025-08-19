@@ -15,7 +15,7 @@ const SchoolSectionsGrid: React.FC<Props> = ({ dbname }) => {
     const fetchSectionsGroupedByCourses = async () => {
       try {
         const coursesRes = await axios.get(
-          `http://course.localhost:5000/api/schools/${dbname}/courses`
+          `https://course.upskillr.online/api/schools/${dbname}/courses`
         );
         const courseList: Course[] = coursesRes.data.courses;
         setCourses(courseList);
@@ -25,7 +25,7 @@ const SchoolSectionsGrid: React.FC<Props> = ({ dbname }) => {
         await Promise.all(
           courseList.map(async (course) => {
             const sectionsRes = await axios.get(
-              `http://course.localhost:5000/api/schools/${dbname}/courses/${course._id}/sections`
+              `https://course.upskillr.online/api/schools/${dbname}/courses/${course._id}/sections`
             );
             allSections[course._id] = sectionsRes.data.data;
           })

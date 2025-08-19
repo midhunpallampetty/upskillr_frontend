@@ -3,7 +3,7 @@ import Cookies from 'js-cookie';
 import { useNavigate } from 'react-router-dom';
 import { Clock, CheckCircle, RefreshCw, LogOut, Shield, Bell } from 'lucide-react';
 import Swal from 'sweetalert2';
-import axios from 'axios';
+import { checkSchoolStatus } from './api/shared.api'; // Adjust path if needed (e.g., relative to your component's location)
 
 const VerificationStatus = () => {
   const [isVerified, setIsVerified] = useState(false);
@@ -44,7 +44,7 @@ const VerificationStatus = () => {
       const parsedSchoolData = JSON.parse(schoolData);
       const schoolId = parsedSchoolData.id;
 
-      const { data } = await axios.get(`https://school.upskillr.online/api/school/${schoolId}/check-status`);
+      const data = await checkSchoolStatus(schoolId);
 
       clearInterval(progressInterval);
       setProgress(100);

@@ -148,7 +148,7 @@ const QuestionForm = ({ onSubmit }: { onSubmit: (q: string, imgs: string[], cate
   const [category, setCategory] = useState('general');
   const [uploading, setUploading] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
-const navigate=useNavigate()
+  const navigate=useNavigate()
   const CLOUD_NAME = import.meta.env.VITE_CLOUD_NAME;
   const UPLOAD_PRESET = import.meta.env.VITE_UPLOAD_PRESET;
   const categories = [
@@ -169,11 +169,7 @@ const navigate=useNavigate()
     formData.append('upload_preset', UPLOAD_PRESET);
 
     try {
-      const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
-        method: 'POST',
-        body: formData,
-      });
-      const data = await res.json();
+      const { data } = await axios.post(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, formData);
       if (data.secure_url) {
         setImgs(prev => [...prev, data.secure_url]);
       }
@@ -218,7 +214,6 @@ const navigate=useNavigate()
             rows={isExpanded ? 4 : 2}
           />
         </div>
-
         {isExpanded && (
           <div className="space-y-4 animate-in slide-in-from-top-2 duration-200">
             <div className="grid grid-cols-2 gap-4">
@@ -327,11 +322,7 @@ const ResponseForm = ({
     formData.append('upload_preset', UPLOAD_PRESET);
 
     try {
-      const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
-        method: 'POST',
-        body: formData,
-      });
-      const data = await res.json();
+      const { data } = await axios.post(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, formData);
       if (data.secure_url) {
         setImgs(prev => [...prev, data.secure_url]);
       }
@@ -453,7 +444,6 @@ const ResponseForm = ({
   );
 };
 
-// --- Enhanced Message Component ---
 // --- Enhanced Message Component (with safe author handling) ---
 const Message = ({
   author,
@@ -604,7 +594,6 @@ const Message = ({
   );
 };
 
-
 // --- Enhanced Question List Item ---
 const QuestionListItem = ({ 
   question, 
@@ -688,7 +677,6 @@ const QuestionListItem = ({
   );
 };
 
-// --- Enhanced Recursive Reply Renderer ---
 // --- Enhanced Recursive Reply Renderer (with safe author access) ---
 const ReplyRenderer = ({
   replies,
@@ -750,7 +738,6 @@ const ReplyRenderer = ({
     </div>
   );
 };
-
 
 const API = 'http://localhost:5000/api';
 
@@ -1115,7 +1102,6 @@ export default function ForumChatUI() {
               })
           }
         />
-
         {/* Search and Filter Section */}
         <div className="border-b border-gray-200 p-4 space-y-3">
           <div className="relative">
@@ -1220,7 +1206,6 @@ export default function ForumChatUI() {
                   currentUserId={user._id}
                   itemId={selected.author._id}
                 />
-
                 {/* Question Replies */}
                 <ReplyRenderer
                   replies={selected.replies}

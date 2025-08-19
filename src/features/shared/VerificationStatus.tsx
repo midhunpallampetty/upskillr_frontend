@@ -3,6 +3,7 @@ import Cookies from 'js-cookie';
 import { useNavigate } from 'react-router-dom';
 import { Clock, CheckCircle, RefreshCw, LogOut, Shield, Bell } from 'lucide-react';
 import Swal from 'sweetalert2';
+import axios from 'axios';
 
 const VerificationStatus = () => {
   const [isVerified, setIsVerified] = useState(false);
@@ -28,7 +29,7 @@ const VerificationStatus = () => {
 
     // Progress animation
     const progressInterval = setInterval(() => {
-      setProgress(prev => {
+      setProgress((prev) => {
         if (prev >= 90) {
           clearInterval(progressInterval);
           return 90;
@@ -43,10 +44,7 @@ const VerificationStatus = () => {
       const parsedSchoolData = JSON.parse(schoolData);
       const schoolId = parsedSchoolData.id;
 
-      const response = await fetch(
-        `http://school.localhost:5000/api/school/${schoolId}/check-status`
-      );
-      const data = await response.json();
+      const { data } = await axios.get(`http://school.localhost:5000/api/school/${schoolId}/check-status`);
 
       clearInterval(progressInterval);
       setProgress(100);

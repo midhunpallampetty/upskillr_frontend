@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
+import axios from 'axios';
 import { Exam } from '../../types/Exam'; // Adjust path; define Exam type if needed (e.g., { _id: string, examName: string })
 import { AddExamToSectionModalProps } from '../../types/AddExamToSectionModalProps';
-
 
 const AddExamToSectionModal: React.FC<AddExamToSectionModalProps> = ({
   isOpen,
@@ -20,9 +20,7 @@ const AddExamToSectionModal: React.FC<AddExamToSectionModalProps> = ({
       const fetchExams = async () => {
         setLoading(true);
         try {
-          const response = await fetch(`http://exam.localhost:5000/api/exam/all-exams?schoolName=${schoolName}`);
-          if (!response.ok) throw new Error('Failed to fetch exams');
-          const data = await response.json();
+          const { data } = await axios.get(`http://exam.localhost:5000/api/exam/all-exams?schoolName=${schoolName}`);
           setExams(data); // Assume API returns array of exams
         } catch (err) {
           console.error('❌ Failed to fetch exams:', err);
@@ -54,12 +52,9 @@ const AddExamToSectionModal: React.FC<AddExamToSectionModalProps> = ({
     if (!result.isConfirmed) return;
 
     try {
-      const response = await fetch(`http://course.localhost:5000/api/${schoolName}/sections/${sectionId}/exam`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ examId: selectedExamId }),
+      await axios.post(`http://course.localhost:5000/api/${schoolName}/sections/${sectionId}/exam`, {
+        examId: selectedExamId,
       });
-      if (!response.ok) throw new Error('Failed to add exam');
       await Swal.fire({ title: 'Success!', text: 'Exam added to section.', icon: 'success' });
       onSuccess(); // Refresh sections
       onClose();

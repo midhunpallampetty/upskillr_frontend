@@ -1,21 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { Props,Exam } from '../../types/Props';
 
-interface Exam {
-  _id: string;
-  title: string;
-  createdAt: string;
-}
 
-interface Props {
-  schoolName: string;
-  courseId: string;
-  isOpen: boolean;
-  onClose: () => void;
-  onSuccess: () => void; // New: Callback to refresh parent after update
-  currentPreliminaryExam: Exam | null; // Passed from parent
-  currentFinalExam: Exam | null; // Passed from parent
-}
 
 const ModalExamSelector: React.FC<Props> = ({ 
   schoolName, 

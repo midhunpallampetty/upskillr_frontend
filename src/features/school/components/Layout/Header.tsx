@@ -2,14 +2,8 @@
 import React from 'react';
 import { ArrowLeft, Building2, LogOut } from 'lucide-react';
 import Button from '../UI/Button';
+import { HeaderProps } from '../../types/HeaderProps';
 
-interface HeaderProps {
-  isDarkMode: boolean;
-  onBack: () => void;
-  onLogout: () => void;
-  title: string;
-  subtitle: string;
-}
 
 const Header: React.FC<HeaderProps> = ({ isDarkMode, onBack, onLogout, title, subtitle }) => {
   return (

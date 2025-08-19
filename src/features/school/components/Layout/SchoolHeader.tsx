@@ -3,11 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { GraduationCap, User, LogOut } from 'lucide-react';
 import Cookies from 'js-cookie';
 import { useGlobalState } from '../../../../context/GlobalState';
+import { SchoolHeaderProps } from '../../types/SchoolHeaderProps';
 
-interface SchoolHeaderProps {
-  school: { name: string } | null;
-  setSchool: (school: any) => void;
-}
 
 const SchoolHeader: React.FC<SchoolHeaderProps> = ({ school, setSchool }) => {
   const { isDarkMode } = useGlobalState();

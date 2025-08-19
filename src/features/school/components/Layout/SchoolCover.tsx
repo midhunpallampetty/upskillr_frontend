@@ -1,10 +1,8 @@
 import React from 'react';
 import { Users, BookOpen, TrendingUp } from 'lucide-react';
 import { useGlobalState } from '../../../../context/GlobalState';
+import { SchoolCoverProps } from '../../types/SchoolCoverProps';
 
-interface SchoolCoverProps {
-  school: { coverImage?: string; image?: string; name: string };
-}
 
 const SchoolCover: React.FC<SchoolCoverProps> = ({ school }) => {
   const { isDarkMode } = useGlobalState();

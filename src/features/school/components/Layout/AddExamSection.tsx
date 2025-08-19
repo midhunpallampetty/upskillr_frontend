@@ -1,14 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
 import { Exam } from '../../types/Exam'; // Adjust path; define Exam type if needed (e.g., { _id: string, examName: string })
+import { AddExamToSectionModalProps } from '../../types/AddExamToSectionModalProps';
 
-interface AddExamToSectionModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  schoolName: string; // dbname from props
-  sectionId: string;
-  onSuccess: () => void; // Callback to refresh sections after update
-}
 
 const AddExamToSectionModal: React.FC<AddExamToSectionModalProps> = ({
   isOpen,

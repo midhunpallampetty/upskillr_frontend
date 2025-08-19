@@ -4,4 +4,5 @@ export interface TextInputProps {
     value: string;
     onChange: (val: string) => void;
     required?: boolean;
+    placeholder?: string; 
   }

@@ -1,10 +1,4 @@
-export interface AdminAuthState {
-  email: string;
-  password: string;
-  confirmPassword: string;
-  isLogin: boolean;
-  message: string;
-}
+import { AdminAuthState } from '../types/AdminAuthState';
 
 export type AdminAuthAction =
   | { type: 'SET_EMAIL'; payload: string }

@@ -1,14 +1,6 @@
 import Section from "../types/Section";
+import { CourseFormState } from "../types/CourseFormState";
 
-export type CourseFormState = {
-  courseName: string;
-  isPreliminary: boolean;
-  courseThumbnail: File | null;
-  previewURL: string | null;
-  fee: number | '';
-  sections: Section[];
-  isLoading: boolean;
-};
 
 export type CourseFormAction =
   | { type: 'SET_COURSE_NAME'; payload: string }

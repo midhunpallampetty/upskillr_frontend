@@ -21,8 +21,8 @@ const NumberInput = lazy(() => import('./components/NumberInput'));
 const Checkbox = lazy(() => import('./components/Checkbox'));
 const LoadingButton = lazy(() => import('../shared/components/UI/Loader'));
 
-const CLOUD_NAME = import.meta.env.VITE_CLOUD_NAME || 'demo';
-const UPLOAD_PRESET = import.meta.env.VITE_UPLOAD_PRESET || 'demo';
+const CLOUD_NAME = import.meta.env.VITE_CLOUD_NAME;
+const UPLOAD_PRESET = import.meta.env.VITE_UPLOAD_PRESET;
 
 const AddCoursePage: React.FC = () => {
   useSchoolAuthGuard();

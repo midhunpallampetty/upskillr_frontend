@@ -4,5 +4,8 @@ export interface NumberInputProps {
   value: number | '';
   onChange: (val: number | '') => void;
   min?: number;
+  placeholder?: string;
   required?: boolean;
 }
+
+

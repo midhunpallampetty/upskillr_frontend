@@ -1,17 +1,10 @@
 // ./components/Checkbox.tsx (or wherever it's located)
 import React from 'react';
-
+import { CheckboxProps } from '../types/CheckboxProps'; // Adjust the import path as necessary
 // Explicitly define the props interface here (or export from '../types/CheckboxProps')
 // Added 'description' to match your usage in AddCoursePage.
 // Made it optional (?) since it's not always needed.
-export interface CheckboxProps {
-  label: string;
-  id: string;
-  checked: boolean;
-  onChange: (val: boolean) => void;
-  description?: string;  // New: Optional description text
-  // Add other optional props as needed (e.g., disabled?: boolean;)
-}
+
 
 const Checkbox: React.FC<CheckboxProps> = ({
   label,

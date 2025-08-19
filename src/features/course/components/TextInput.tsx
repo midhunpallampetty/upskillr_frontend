@@ -1,19 +1,11 @@
 // ./components/TextInput.tsx (or wherever it's located)
 import React from 'react';
-
+import { TextInputProps } from '../types/TextInputProps'; // Adjust the import path as necessary
 // Explicitly define the props interface here (or export from '../types/TextInputProps')
 // I've added 'placeholder' to match your usage in AddCoursePage.
 // Made it optional (?) since it's not always needed.
 // Kept 'required' as optional with default true, per your original code.
-export interface TextInputProps {
-  label: string;
-  id: string;
-  value: string;  // Explicitly type as string
-  onChange: (val: string) => void;
-  required?: boolean;    // Optional, defaults to true in component
-  placeholder?: string;  // New: Optional placeholder text
-  // Add other optional props as needed (e.g., maxLength?: number;)
-}
+
 
 const TextInput: React.FC<TextInputProps> = ({
   label,

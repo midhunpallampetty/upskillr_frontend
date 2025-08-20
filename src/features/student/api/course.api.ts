@@ -1,5 +1,7 @@
-import courseAxios from '../../../utils/axios/course';
-import { CourseType } from '../types/Course';
+import courseAxios from '../../../utils/axios/course'; // Adjusted path to match provided code
+import { CourseType } from '../types/Course'; // Adjusted path to match provided code
+
+// Fetch all courses by school
 export const fetchCoursesBySchool = async (schoolName: string): Promise<{
   success: boolean;
   courses?: any[];
@@ -9,7 +11,6 @@ export const fetchCoursesBySchool = async (schoolName: string): Promise<{
     const res = await courseAxios.post(`/courses`, {
       schoolName,
     });
-
     return {
       success: true,
       courses: res.data.courses,
@@ -23,20 +24,22 @@ export const fetchCoursesBySchool = async (schoolName: string): Promise<{
     };
   }
 };
+
+// Fetch purchased courses for a student
 export const fetchPurchasedCourses = async (studentId: string) => {
   try {
     const response = await courseAxios.get(`/course/school-info/${studentId}`);
     return response.data;
   } catch (error) {
     console.error('Failed to fetch purchased courses:', error);
-    throw error;
+    throw new Error('Failed to fetch purchased courses');
   }
 };
+
+// Fetch course data
 export const fetchCourseData = async (schoolName: string, courseId: string): Promise<CourseType> => {
   try {
-    const response = await courseAxios.get(
-      `/courses/${schoolName}/${courseId}/complete`
-    );
+    const response = await courseAxios.get(`/courses/${schoolName}/${courseId}/complete`);
     return response.data.data;
   } catch (error) {
     console.error('Error fetching course details:', error);
@@ -44,12 +47,10 @@ export const fetchCourseData = async (schoolName: string, courseId: string): Pro
   }
 };
 
-// Updated API functions (with minor improvements for consistency and error handling)
+// Fetch student progress
 export const fetchStudentProgress = async (schoolName: string, courseId: string, studentId: string) => {
   try {
-    const response = await courseAxios.get(
-      `/${schoolName}/courses/${courseId}/progress?studentId=${studentId}`
-    );
+    const response = await courseAxios.get(`/${schoolName}/courses/${courseId}/progress?studentId=${studentId}`);
     return response.data;
   } catch (error) {
     console.error('Failed to fetch student progress:', error);
@@ -57,7 +58,7 @@ export const fetchStudentProgress = async (schoolName: string, courseId: string,
   }
 };
 
-// NEW: Save video progress
+// Save video progress
 export const saveVideoProgress = async (
   schoolName: string, 
   courseId: string, 
@@ -76,11 +77,12 @@ export const saveVideoProgress = async (
   }
 };
 
-// NEW: Issue certificate
+// Issue certificate
 export const issueCertificate = async (schoolName: string, courseId: string, studentId: string) => {
   try {
-    const response = await courseAxios.get(
-      `/${schoolName}/courses/${courseId}/certificate?studentId=${studentId}`
+    const response = await courseAxios.post(
+      `/${schoolName}/courses/${courseId}/certificate`,
+      { studentId }
     );
     return response.data;
   } catch (error) {
@@ -89,31 +91,79 @@ export const issueCertificate = async (schoolName: string, courseId: string, stu
   }
 };
 
+// Check section exam completion
 export const checkSectionExamCompletionApi = async (schoolName: string, courseId: string, studentId: string, sectionId: string) => {
-  const response = await courseAxios.get(`/${schoolName}/${courseId}/${studentId}/${sectionId}/completion`);
-  return response.data;
+  try {
+    const response = await courseAxios.get(`/${schoolName}/${courseId}/${studentId}/${sectionId}/completion`);
+    return response.data;
+  } catch (error) {
+    console.error('Failed to check section exam completion:', error);
+    throw new Error('Failed to check section exam completion');
+  }
 };
 
+// Save exam progress
 export const saveExamProgress = async (schoolName: string, courseId: string, sectionId: string, studentId: string, score: number) => {
-  const response = await courseAxios.post(`/${schoolName}/courses/${courseId}/sections/${sectionId}/progress`, {
-    studentId,
-    score,
-  });
-  return response.data;
-};
-export const addCertificate = async (schoolName: string, courseId: string, studentId: string) => {
-  const response = await courseAxios.post(
-    `/${schoolName}/courses/${courseId}/certificates`,
-    { studentId }
-  );
-  return response.data.certificateUrl;
+  try {
+    const response = await courseAxios.post(`/${schoolName}/courses/${courseId}/sections/${sectionId}/progress`, {
+      studentId,
+      score,
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Failed to save exam progress:', error);
+    throw new Error('Failed to save exam progress');
+  }
 };
 
-// NEW: API function to update an existing certificate
-export  const updateCertificate = async (schoolName: string, courseId: string, studentId: string, dateIssued: string) => {
-  const response = await courseAxios.put(
-    `/${schoolName}/courses/${courseId}/certificates`,
-    { studentId, dateIssued }
-  );
-  return response.data.certificateUrl;
+// Save final exam progress
+export const saveFinalExamProgress = async (schoolName: string, courseId: string, studentId: string, percentage: number) => {
+  try {
+    const response = await courseAxios.post(`/${schoolName}/courses/${courseId}/final-exam/progress`, {
+      studentId,
+      score: percentage,
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Failed to save final exam progress:', error);
+    throw new Error('Failed to save final exam progress');
+  }
+};
+
+// Check final exam status
+export const checkFinalExamStatus = async (schoolName: string, courseId: string, studentId: string) => {
+  try {
+    const response = await courseAxios.get(`/${schoolName}/courses/${courseId}/final-exam/status/${studentId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Failed to check final exam status:', error);
+    throw new Error('Failed to check final exam status');
+  }
+};
+
+// Add certificate
+export const addCertificate = async (schoolName: string, courseId: string, studentId: string) => {
+  try {
+    const response = await courseAxios.post(`/${schoolName}/courses/${courseId}/certificates`, {
+      studentId,
+    });
+    return response.data.certificateUrl;
+  } catch (error) {
+    console.error('Failed to add certificate:', error);
+    throw new Error('Failed to add certificate');
+  }
+};
+
+// Update certificate
+export const updateCertificate = async (schoolName: string, courseId: string, studentId: string, dateIssued: string) => {
+  try {
+    const response = await courseAxios.put(`/${schoolName}/courses/${courseId}/certificates`, {
+      studentId,
+      dateIssued,
+    });
+    return response.data.certificateUrl;
+  } catch (error) {
+    console.error('Failed to update certificate:', error);
+    throw new Error('Failed to update certificate');
+  }
 };

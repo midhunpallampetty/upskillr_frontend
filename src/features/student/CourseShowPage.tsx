@@ -30,7 +30,19 @@ import CourseHeader from './components/UI/CourseHeader';
 import CommentComponent from './components/Layout/Comment';
 import FinalExamComponent from './components/UI/FinalExam';  // NEW: Import
 import useStudentAuthGuard from './hooks/useStudentAuthGuard';
-import { addCertificate, updateCertificate ,fetchCourseData, fetchStudentProgress, saveVideoProgress, issueCertificate, checkSectionExamCompletionApi, saveExamProgress } from './api/course.api';  // Adjust path if in separate folder, e.g., '../api/course.api'
+import { 
+  addCertificate, 
+  updateCertificate,
+  fetchCourseData, 
+  fetchStudentProgress, 
+  saveVideoProgress, 
+  issueCertificate, 
+  checkSectionExamCompletionApi, 
+  saveExamProgress,
+  saveFinalExamProgress, 
+  checkFinalExamStatus   
+} from './api/course.api'; 
+
 interface ExamType {
   _id: string;
   title: string;
@@ -56,6 +68,7 @@ interface SectionType {
   }>;
   exam?: ExamType | null;  // Make it optional to handle sections without exams
 }
+
 const ExamComponent = ({ exam, onSubmit, onCancel }: { exam: any; onSubmit: (passed: boolean, score: number, total: number) => void; onCancel: () => void }) => {
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, string>>({});
   
@@ -129,6 +142,7 @@ const ExamComponent = ({ exam, onSubmit, onCancel }: { exam: any; onSubmit: (pas
     </motion.div>
   );
 };
+
 const CourseShowPage = () => {
   useStudentAuthGuard();
   const { courseId, schoolName } = useParams<{ courseId: string; schoolName: string }>();
@@ -169,11 +183,13 @@ const CourseShowPage = () => {
       setToasts(prev => prev.filter(toast => toast.id !== id));
     }, 4000);
   };
+
   // Get student ID from localStorage or cookies
   const getStudentId = () => {
     const student = localStorage.getItem('student');
     return student ? JSON.parse(student).id || JSON.parse(student)._id : null;
   };
+
   // NEW: Function to check if a section's exam is completed via API
   // (Assumes the API returns { isCompleted: boolean } for the section's exam status;
   // Adjust if your API response is different)
@@ -189,25 +205,7 @@ const CourseShowPage = () => {
       return false;
     }
   };
-  // NEW: Function to save final exam progress
-  const saveFinalExamProgress = async (schoolName: string, courseId: string, studentId: string, score: number) => {
-    const response = await fetch(`https://course.upskillr.online/api/${schoolName}/courses/${courseId}/final-exam/progress`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ studentId, score })
-    });
-    if (!response.ok) throw new Error('Failed to save final exam progress');
-    return response.json();
-  };
-  // NEW: Function to check final exam status
-  const checkFinalExamStatus = async (schoolName: string, courseId: string, studentId: string) => {
-    const response = await fetch(`https://course.upskillr.online/api/${schoolName}/courses/${courseId}/final-exam/status/${studentId}`, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' }
-    });
-    if (!response.ok) throw new Error('Failed to check final exam status');
-    return response.json();
-  };
+
   useEffect(() => {
     const loadCourseAndProgress = async () => {
       if (!schoolName || !courseId) {
@@ -284,6 +282,7 @@ const CourseShowPage = () => {
     };
     loadCourseAndProgress();
   }, [schoolName, courseId]);
+
   // Resume video from last position when currentVideoUrl changes
   useEffect(() => {
     if (currentVideoUrl && videoRef.current) {
@@ -300,6 +299,7 @@ const CourseShowPage = () => {
       }
     }
   }, [currentVideoUrl, videoPositions, course]);
+
   // NEW: Effect to automatically show final exam if all sections are completed but final not passed
   useEffect(() => {
     if (course && course.finalExam && !finalExamPassed) {
@@ -316,6 +316,7 @@ const CourseShowPage = () => {
       }
     }
   }, [course, finalExamPassed, completedVideos, passedSections]);
+
   // NEW: Effect to automatically set currentExamSection for the active (expanded) section if videos are completed and exam not passed
   useEffect(() => {
     if (expandedSection && course) {
@@ -335,6 +336,7 @@ const CourseShowPage = () => {
       }
     }
   }, [expandedSection, completedVideos, passedSections, course]);
+
   const toggleSection = (id: string) => {
     const sectionIndex = course?.sections.findIndex(s => s._id === id);
     if (sectionIndex === undefined || sectionIndex < 0) return;
@@ -351,12 +353,14 @@ const CourseShowPage = () => {
     }
     setExpandedSection(prev => (prev === id ? null : id));
   };
+
   const handleLogout = () => {
     Cookies.remove('studentAccessToken');
     Cookies.remove('studentRefreshToken');
     localStorage.removeItem('student');
     window.location.href = '/studentLogin';
   };
+
   const markVideoComplete = async (videoId: string) => {
     const studentId = getStudentId();
     if (!studentId || !schoolName || !courseId) return;
@@ -398,6 +402,7 @@ const CourseShowPage = () => {
       setProgressLoading(false);
     }
   };
+
   const handleVideoProgress = async (videoId: string, lastPosition: number) => {
     const studentId = getStudentId();
     if (!studentId || !schoolName || !courseId) return;
@@ -412,6 +417,7 @@ const CourseShowPage = () => {
       console.error('Error saving video position:', error);
     }
   };
+
   const handleExamSubmit = async (sectionId: string, passed: boolean, score: number, total: number) => {
     const studentId = getStudentId();
     if (!studentId || !schoolName || !courseId) return;
@@ -463,6 +469,7 @@ const CourseShowPage = () => {
     }
     setCurrentExamSection(null);
   };
+
   // NEW: Handler for final exam submit (now with backend save)
   const handleFinalExamSubmit = async (passed: boolean, score: number, total: number) => {
     const studentId = getStudentId();
@@ -486,6 +493,7 @@ const CourseShowPage = () => {
       addToast('error', 'Failed to save final exam progress. Please try again.');
     }
   };
+
   const handleCertificateRequest = async () => {
     const studentId = getStudentId();
     if (!studentId || !schoolName || !courseId) return;
@@ -501,6 +509,7 @@ const CourseShowPage = () => {
       setProgressLoading(false);
     }
   };
+
   // NEW: Handler for adding a new certificate
   const handleAddCertificate = async () => {
     const studentId = getStudentId();
@@ -517,6 +526,7 @@ const CourseShowPage = () => {
       setProgressLoading(false);
     }
   };
+
   // NEW: Handler for updating an existing certificate
   const handleUpdateCertificate = async (dateIssued: string) => {
     const studentId = getStudentId();
@@ -533,6 +543,7 @@ const CourseShowPage = () => {
       setProgressLoading(false);
     }
   };
+
   const isSectionUnlocked = (sectionIndex: number): boolean => {
     if (sectionIndex === 0) return true;
     const prevSection = course?.sections[sectionIndex - 1];
@@ -547,18 +558,21 @@ const CourseShowPage = () => {
     // For non-exam sections, require videos completed
     return videosCompleted;
   };
+
   const isSectionCompleted = (section: any): boolean => {
     const videosCompleted = section.videos.length > 0 && section.videos.every(video => completedVideos.has(video._id));
     const examPassed = !section.exam || passedSections.has(section._id);
     // UPDATED: Section is completed only if videos are done AND exam is passed (if present)
     return videosCompleted && examPassed;
   };
+
   const getCompletionPercentage = (): number => {
     if (!course) return 0;
     const totalVideos = course.sections.reduce((acc, section) => acc + section.videos.length, 0);
     if (totalVideos === 0) return 0;
     return Math.round((completedVideos.size / totalVideos) * 100);
   };
+
   const getTotalDuration = (): string => {
     if (!course) return '0 min';
     const totalMinutes = course.sections.reduce((acc, section) => {
@@ -577,6 +591,7 @@ const CourseShowPage = () => {
     }
     return `${minutes} min`;
   };
+
   const checkCourseCompletion = () => {
     if (!course) return false;
     const allSections = course.sections;
@@ -587,15 +602,18 @@ const CourseShowPage = () => {
     }
     return allSectionsCompleted;
   };
+
   useEffect(() => {
     if (checkCourseCompletion() && !showCourseCompletion) {
       setShowCourseCompletion(true);
       addToast('success', 'Congratulations! Course completed! 🎊');
     }
   }, [completedVideos, passedSections, finalExamPassed, course]);
+
   if (loading) {
     return <LoadingSkeleton />;
   }
+
   if (error) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
@@ -613,6 +631,7 @@ const CourseShowPage = () => {
       </div>
     );
   }
+
   if (showCourseCompletion) {
     return (
       <CompletionCelebration
@@ -626,6 +645,7 @@ const CourseShowPage = () => {
       />
     );
   }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Navigation */}
@@ -656,6 +676,7 @@ const CourseShowPage = () => {
           </motion.button>
         </div>
       </nav>
+
       <div className="flex">
         {/* Sidebar */}
         <CourseSidebar
@@ -676,6 +697,7 @@ const CourseShowPage = () => {
           passedSections={passedSections}
           onTakeExam={setCurrentExamSection}
         />
+
         {/* Main Content */}
         <main className={`flex-1 transition-all duration-300 ${sidebarCollapsed ? 'ml-16' : 'ml-80'}`}>
           {/* Course Header */}
@@ -687,6 +709,7 @@ const CourseShowPage = () => {
             completedVideos={completedVideos.size}
             totalVideos={course?.sections.reduce((acc, section) => acc + section.videos.length, 0) || 0}
           />
+
           {/* Video Player */}
           {currentVideoUrl && (
             <div className="p-6">
@@ -705,6 +728,7 @@ const CourseShowPage = () => {
               />
             </div>
           )}
+
           {/* Section Exam Component */}
           {currentExamSection && course?.sections.find(s => s._id === currentExamSection)?.exam && (
             <div ref={examRef} className="p-6">
@@ -715,6 +739,7 @@ const CourseShowPage = () => {
               />
             </div>
           )}
+
           {/* NEW: Final Exam Component */}
           {showFinalExam && course?.finalExam && (
             <div ref={finalExamRef} className="p-6">
@@ -725,6 +750,7 @@ const CourseShowPage = () => {
               />
             </div>
           )}
+
           {/* Course Description */}
           {!currentVideoUrl && !currentExamSection && !showFinalExam && (
             <div className="p-6">
@@ -765,6 +791,7 @@ const CourseShowPage = () => {
               </motion.div>
             </div>
           )}
+
           {/* Comments */}
           <div className="p-6">
             <CommentComponent
@@ -774,6 +801,7 @@ const CourseShowPage = () => {
           </div>
         </main>
       </div>
+
       {/* Toast Notifications */}
       <AnimatePresence>
         {toasts.map((toast) => (
@@ -788,4 +816,5 @@ const CourseShowPage = () => {
     </div>
   );
 };
+
 export default CourseShowPage;

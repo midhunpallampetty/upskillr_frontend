@@ -10,8 +10,6 @@ import {ReplyRenderer} from './components/UI/ReplyRender';
 import {ResponseForm} from './components/UI/QuestionResponse';
 import { User, Question, Answer, Reply, Toast, API } from './types/ImportsAndTypes';
 
-
-
 export default function ForumChatUI() {
   const studentData = JSON.parse(localStorage.getItem('student') || '{}');
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
@@ -29,48 +27,34 @@ export default function ForumChatUI() {
   const socketRef = useRef<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-
-
   const addToast = useCallback((message: string, type: Toast['type'] = 'info') => {
     const id = Date.now().toString();
     const newToast: Toast = { id, message, type };
     setToasts(prev => [...prev, newToast]);
-
-
 
     setTimeout(() => {
       setToasts(prev => prev.filter(toast => toast.id !== id));
     }, 5000);
   }, []);
 
-
-
   const removeToast = useCallback((id: string) => {
     setToasts(prev => prev.filter(toast => toast.id !== id));
   }, []);
-
-
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, []);
 
-
-
   const filteredQuestions = questions.filter(q => {
     const matchesSearch = q.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         q.author.fullName.toLowerCase().includes(searchQuery.toLowerCase());
+                         (q.author?.fullName?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false);
     const matchesCategory = selectedCategory === 'all' || q.category === selectedCategory;
     return !q.isDeleted && matchesSearch && matchesCategory;
   });
 
-
-
   useEffect(() => {
     scrollToBottom();
   }, [selected?.answers, selected?.replies, scrollToBottom]);
-
-
 
   useEffect(() => {
     setLoading(true);
@@ -84,17 +68,11 @@ export default function ForumChatUI() {
       })
       .finally(() => setLoading(false));
 
-
-
     socketRef.current = io(import.meta.env.VITE_SOCKET_URL);
-
-
 
     socketRef.current.on('connect', () => {
       addToast('Connected to real-time updates', 'success');
     });
-
-
 
     socketRef.current.on('new_question', (qDoc: Question) => {
       setQuestions(prevQuestions => [qDoc, ...prevQuestions]);
@@ -103,13 +81,11 @@ export default function ForumChatUI() {
       }
     });
 
-
-
     socketRef.current.on('new_answer', (aDoc: Answer) => {
       if (selected && selected._id === aDoc.forum_question_id) {
         selectQuestion(selected._id, true);
-        if (String(aDoc.author._id) !== String(user._id)) {
-          addToast(`${aDoc.author.fullName || 'Someone'} responded to the question`, 'success');
+        if (String(aDoc.author?._id) !== String(user._id)) {
+          addToast(`${aDoc.author?.fullName || 'Someone'} responded to the question`, 'success');
         }
       } else {
         setQuestions(prevQuestions =>
@@ -121,13 +97,11 @@ export default function ForumChatUI() {
       }
     });
 
-
-
     socketRef.current.on('new_reply', (rDoc: Reply) => {
       if (selected && selected._id === rDoc.forum_question_id) {
         selectQuestion(selected._id, true);
-        if (String(rDoc.author._id) !== String(user._id)) {
-          addToast(`${rDoc.author.fullName || 'Someone'} replied to a message`, 'info');
+        if (String(rDoc.author?._id) !== String(user._id)) {
+          addToast(`${rDoc.author?.fullName || 'Someone'} replied to a message`, 'info');
         }
       } else {
         // Minimal update for non-selected questions
@@ -164,8 +138,6 @@ export default function ForumChatUI() {
       }
     });
 
-
-
     socketRef.current.on('typing', ({ threadId, userName }: { threadId: string; userName: string }) => {
       if (selected && selected._id === threadId && userName !== user.fullName) {
         setTypingUsers(prevUsers =>
@@ -174,15 +146,11 @@ export default function ForumChatUI() {
       }
     });
 
-
-
     socketRef.current.on('stop_typing', ({ threadId, userName }: { threadId: string; userName: string }) => {
       if (selected && selected._id === threadId) {
         setTypingUsers(prevUsers => prevUsers.filter(name => name !== userName));
       }
     });
-
-
 
     socketRef.current.on('question_deleted', ({ id }: { id: string }) => {
       setQuestions(prevQuestions => prevQuestions.filter(q => q._id !== id));
@@ -191,8 +159,6 @@ export default function ForumChatUI() {
       }
       addToast('Question deleted', 'info');
     });
-
-
 
     socketRef.current.on('answer_deleted', ({ id, questionId }: { id: string; questionId: string }) => {
       if (selected && selected._id === questionId) {
@@ -206,8 +172,6 @@ export default function ForumChatUI() {
         );
       }
     });
-
-
 
     socketRef.current.on('reply_deleted', ({ id, questionId, answerId }: { id: string; questionId: string; answerId?: string }) => {
       if (selected && selected._id === questionId) {
@@ -238,14 +202,10 @@ export default function ForumChatUI() {
       }
     });
 
-
-
     socketRef.current.on('connect_error', (err: any) => {
       console.error('Socket connection error:', err);
       addToast('Failed to connect to real-time updates. Please refresh.', 'error');
     });
-
-
 
     return () => {
       if (socketRef.current) {
@@ -254,16 +214,12 @@ export default function ForumChatUI() {
     };
   }, [user.fullName, user._id, addToast, selected]);
 
-
-
   useEffect(() => {
     setTypingUsers([]);
     if (selected?._id && socketRef.current) {
       socketRef.current.emit('join_thread', selected._id);
     }
   }, [selected]);
-
-
 
   const selectQuestion = (qid: string, force: boolean = false) => {
     if (!force && selected?._id === qid) return;
@@ -279,7 +235,12 @@ export default function ForumChatUI() {
           answerId: ans._id,
           replyCount: ans.replies?.length || 0
         }))); // Debug: Check if replies are nested under answers
-        setSelected(res.data);
+        // Ensure author exists; set defaults if missing
+        const questionData = {
+          ...res.data,
+          author: res.data.author || { fullName: 'Anonymous', role: 'Unknown', _id: null },
+        };
+        setSelected(questionData);
       })
       .catch(err => {
         console.error('Failed to fetch question:', err);
@@ -287,8 +248,6 @@ export default function ForumChatUI() {
       })
       .finally(() => setLoading(false));
   };
-
-
 
   const deleteQuestion = (questionId: string) => {
     if (!confirm('Are you sure you want to delete this question?')) return;
@@ -304,8 +263,6 @@ export default function ForumChatUI() {
         addToast('Failed to delete question. Please try again.', 'error');
       });
   };
-
-
 
   const deleteAnswer = (answerId: string, questionId: string) => {
     if (!confirm('Are you sure you want to delete this answer?')) return;
@@ -325,8 +282,6 @@ export default function ForumChatUI() {
       });
   };
 
-
-
   const deleteReply = (replyId: string, questionId: string, answerId?: string) => {
     if (!confirm('Are you sure you want to delete this reply?')) return;
     
@@ -345,8 +300,6 @@ export default function ForumChatUI() {
       });
   };
 
-
-
   const categories = [
     { value: 'all', label: 'All Categories' },
     { value: 'general', label: '🔍 General' },
@@ -355,8 +308,6 @@ export default function ForumChatUI() {
     { value: 'history', label: '📚 History' },
     { value: 'other', label: '🎯 Other' }
   ];
-
-
 
   return (
     <div className="flex md:flex-row flex-col h-screen bg-gray-50">
@@ -454,7 +405,7 @@ export default function ForumChatUI() {
                   <div className="mt-1 flex items-center gap-4 text-sm text-gray-500">
                     <span className="flex items-center gap-1">
                       <UserCircleIcon className="h-4 w-4" />
-                      {selected.author.fullName} ({selected.author.role})
+                      {selected.author?.fullName || 'Anonymous'} ({selected.author?.role || 'Unknown'})
                     </span>
                     <span>•</span>
                     <span>Category: {selected.category}</span>
@@ -467,10 +418,10 @@ export default function ForumChatUI() {
             <div className="flex-1 overflow-y-auto bg-gray-50 p-6">
               <div className="max-w-4xl mx-auto space-y-6">
                 <Message
-                  author={selected.author.fullName}
+                  author={selected.author?.fullName || 'Anonymous'}
                   text={selected.question}
                   assets={selected.assets}
-                  role={selected.author.role}
+                  role={selected.author?.role || 'Unknown'}
                   createdAt={selected.createdAt}
                   isQuestion={true}
                   socket={socketRef.current}
@@ -478,7 +429,7 @@ export default function ForumChatUI() {
                   userName={user.fullName}
                   onDelete={() => deleteQuestion(selected._id)}
                   currentUserId={user._id}
-                  itemId={selected.author._id}
+                  itemId={selected.author?._id}
                 />
                 <ReplyRenderer
                   replies={selected.replies}
@@ -508,10 +459,10 @@ export default function ForumChatUI() {
                 {(selected.answers || []).map(ans => (
                   <div key={ans._id}>
                     <Message
-                      author={ans.author.fullName}
+                      author={ans.author?.fullName || 'Anonymous'}
                       text={ans.text}
                       assets={ans.assets}
-                      role={ans.author.role}
+                      role={ans.author?.role || 'Unknown'}
                       createdAt={ans.createdAt}
                       onReply={(text, imgs) =>
                         axios.post(`${API}/forum/replies`, {
@@ -530,7 +481,7 @@ export default function ForumChatUI() {
                       }
                       onDelete={() => deleteAnswer(ans._id, selected._id)}
                       currentUserId={user._id}
-                      itemId={ans.author._id}
+                      itemId={ans.author?._id}
                       socket={socketRef.current}
                       threadId={selected._id}
                       userName={user.fullName}

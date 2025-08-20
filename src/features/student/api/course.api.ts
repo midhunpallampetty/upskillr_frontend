@@ -81,7 +81,7 @@ export const saveVideoProgress = async (
 export const issueCertificate = async (schoolName: string, courseId: string, studentId: string) => {
   try {
     const response = await courseAxios.post(
-      `/${schoolName}/courses/${courseId}/certificate`,
+      `/${schoolName}/courses/${courseId}/certificates`,
       { studentId }
     );
     return response.data;

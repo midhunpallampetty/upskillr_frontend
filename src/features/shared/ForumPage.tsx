@@ -11,6 +11,7 @@ import {ResponseForm} from './components/UI/QuestionResponse';
 import { User, Question, Answer, Reply, Toast, API } from './types/ImportsAndTypes';
 
 
+
 export default function ForumChatUI() {
   const studentData = JSON.parse(localStorage.getItem('student') || '{}');
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
@@ -29,10 +30,12 @@ export default function ForumChatUI() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
 
+
   const addToast = useCallback((message: string, type: Toast['type'] = 'info') => {
     const id = Date.now().toString();
     const newToast: Toast = { id, message, type };
     setToasts(prev => [...prev, newToast]);
+
 
 
     setTimeout(() => {
@@ -41,14 +44,17 @@ export default function ForumChatUI() {
   }, []);
 
 
+
   const removeToast = useCallback((id: string) => {
     setToasts(prev => prev.filter(toast => toast.id !== id));
   }, []);
 
 
+
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, []);
+
 
 
   const filteredQuestions = questions.filter(q => {
@@ -59,9 +65,11 @@ export default function ForumChatUI() {
   });
 
 
+
   useEffect(() => {
     scrollToBottom();
   }, [selected?.answers, selected?.replies, scrollToBottom]);
+
 
 
   useEffect(() => {
@@ -77,12 +85,15 @@ export default function ForumChatUI() {
       .finally(() => setLoading(false));
 
 
+
     socketRef.current = io(import.meta.env.VITE_SOCKET_URL);
+
 
 
     socketRef.current.on('connect', () => {
       addToast('Connected to real-time updates', 'success');
     });
+
 
 
     socketRef.current.on('new_question', (qDoc: Question) => {
@@ -93,183 +104,140 @@ export default function ForumChatUI() {
     });
 
 
+
     socketRef.current.on('new_answer', (aDoc: Answer) => {
-      setQuestions(prevQuestions =>
-        prevQuestions.map(q => q._id === aDoc.forum_question_id
-          ? { ...q, answers: [...(q.answers || []), aDoc] }
-          : q
-        )
-      );
-
-
-      setSelected(prevSelected => {
-        if (prevSelected && prevSelected._id === aDoc.forum_question_id) {
-          const answerAuthorId = String(aDoc.author._id);
-          const currentUserId = String(user._id);
-          
-          if (answerAuthorId !== currentUserId) {
-            addToast(`someone responded to the question`, 'success');
-          }
-          return { ...prevSelected, answers: [...(prevSelected.answers || []), aDoc] };
+      if (selected && selected._id === aDoc.forum_question_id) {
+        selectQuestion(selected._id, true);
+        if (String(aDoc.author._id) !== String(user._id)) {
+          addToast(`${aDoc.author.fullName || 'Someone'} responded to the question`, 'success');
         }
-        return prevSelected;
-      });
+      } else {
+        setQuestions(prevQuestions =>
+          prevQuestions.map(q => q._id === aDoc.forum_question_id
+            ? { ...q, answers: [...(q.answers || []), aDoc] }
+            : q
+          )
+        );
+      }
     });
+
 
 
     socketRef.current.on('new_reply', (rDoc: Reply) => {
-      console.log('New reply received:', rDoc); // Debug: Check forum_answer_id
-
-
-      const updateNestedReplies = (replies: Reply[], newReply: Reply): Reply[] => {
-        if (!newReply.parent_reply_id) {
-          return [...replies, { ...newReply, replies: [] }];
+      if (selected && selected._id === rDoc.forum_question_id) {
+        selectQuestion(selected._id, true);
+        if (String(rDoc.author._id) !== String(user._id)) {
+          addToast(`${rDoc.author.fullName || 'Someone'} replied to a message`, 'info');
         }
-        return replies.map(r => {
-          if (r._id === newReply.parent_reply_id) {
-            return { ...r, replies: [...(r.replies || []), { ...newReply, replies: [] }] };
+      } else {
+        // Minimal update for non-selected questions
+        const updateNestedReplies = (replies: Reply[], newReply: Reply): Reply[] => {
+          if (!newReply.parent_reply_id) {
+            return [...replies, { ...newReply, replies: [] }];
           }
-          if (r.replies) {
-            return { ...r, replies: updateNestedReplies(r.replies, newReply) };
-          }
-          return r;
-        });
-      };
-
-
-      setQuestions(prevQuestions =>
-        prevQuestions.map(q => {
-          if (rDoc.forum_question_id === q._id && !rDoc.forum_answer_id) {
-            console.log('Updating question-level replies for:', q._id); // Debug
-            return { ...q, replies: updateNestedReplies(q.replies || [], rDoc) };
-          }
-          return {
-            ...q,
-            answers: q.answers?.map(a =>
-              a._id === rDoc.forum_answer_id
-                ? { ...a, replies: updateNestedReplies(a.replies || [], rDoc) }
-                : a
-            ) || []
-          };
-        })
-      );
-
-
-      setSelected(prevSelected => {
-        if (!prevSelected || prevSelected._id !== rDoc.forum_question_id) return prevSelected;
-
-
-        const replyAuthorId = String(rDoc.author._id);
-        const currentUserId = String(user._id);
-        
-        if (replyAuthorId !== currentUserId) {
-          addToast(`${rDoc.author.fullName} replied to a message`, 'info');
-        }
-
-
-        if (!rDoc.forum_answer_id) {
-          console.log('Updating selected question-level replies'); // Debug
-          return { ...prevSelected, replies: updateNestedReplies(prevSelected.replies || [], rDoc) };
-        }
-
-
-        return {
-          ...prevSelected,
-          answers: prevSelected.answers?.map(a =>
-            a._id === rDoc.forum_answer_id
-              ? { ...a, replies: updateNestedReplies(a.replies || [], rDoc) }
-              : a
-          ) || []
+          return replies.map(r => {
+            if (r._id === newReply.parent_reply_id) {
+              return { ...r, replies: [...(r.replies || []), { ...newReply, replies: [] }] };
+            }
+            if (r.replies) {
+              return { ...r, replies: updateNestedReplies(r.replies, newReply) };
+            }
+            return r;
+          });
         };
-      });
+
+        setQuestions(prevQuestions =>
+          prevQuestions.map(q => {
+            if (rDoc.forum_question_id === q._id && !rDoc.forum_answer_id) {
+              return { ...q, replies: updateNestedReplies(q.replies || [], rDoc) };
+            }
+            return {
+              ...q,
+              answers: q.answers?.map(a =>
+                a._id === rDoc.forum_answer_id
+                  ? { ...a, replies: updateNestedReplies(a.replies || [], rDoc) }
+                  : a
+              ) || []
+            };
+          })
+        );
+      }
     });
+
 
 
     socketRef.current.on('typing', ({ threadId, userName }: { threadId: string; userName: string }) => {
-      setSelected(prevSelected => {
-        if (prevSelected && prevSelected._id === threadId && userName !== user.fullName) {
-          setTypingUsers(prevUsers =>
-            prevUsers.includes(userName) ? prevUsers : [...prevUsers, userName]
-          );
-        }
-        return prevSelected;
-      });
+      if (selected && selected._id === threadId && userName !== user.fullName) {
+        setTypingUsers(prevUsers =>
+          prevUsers.includes(userName) ? prevUsers : [...prevUsers, userName]
+        );
+      }
     });
+
 
 
     socketRef.current.on('stop_typing', ({ threadId, userName }: { threadId: string; userName: string }) => {
-      setSelected(prevSelected => {
-        if (prevSelected && prevSelected._id === threadId) {
-          setTypingUsers(prevUsers => prevUsers.filter(name => name !== userName));
-        }
-        return prevSelected;
-      });
+      if (selected && selected._id === threadId) {
+        setTypingUsers(prevUsers => prevUsers.filter(name => name !== userName));
+      }
     });
+
 
 
     socketRef.current.on('question_deleted', ({ id }: { id: string }) => {
       setQuestions(prevQuestions => prevQuestions.filter(q => q._id !== id));
-      setSelected(prevSelected => prevSelected?._id === id ? null : prevSelected);
+      if (selected?._id === id) {
+        setSelected(null);
+      }
       addToast('Question deleted', 'info');
     });
 
 
+
     socketRef.current.on('answer_deleted', ({ id, questionId }: { id: string; questionId: string }) => {
-      setQuestions(prevQuestions =>
-        prevQuestions.map(q => q._id === questionId
-          ? { ...q, answers: q.answers?.filter(a => a._id !== id) || [] }
-          : q
-        )
-      );
-      setSelected(prevSelected => {
-        if (prevSelected?._id === questionId) {
-          return { ...prevSelected, answers: prevSelected.answers?.filter(a => a._id !== id) || [] };
-        }
-        return prevSelected;
-      });
+      if (selected && selected._id === questionId) {
+        selectQuestion(questionId, true);
+      } else {
+        setQuestions(prevQuestions =>
+          prevQuestions.map(q => q._id === questionId
+            ? { ...q, answers: q.answers?.filter(a => a._id !== id) || [] }
+            : q
+          )
+        );
+      }
     });
+
 
 
     socketRef.current.on('reply_deleted', ({ id, questionId, answerId }: { id: string; questionId: string; answerId?: string }) => {
-      const removeNestedReply = (replies: Reply[]): Reply[] => {
-        return replies.reduce((acc, r) => {
-          if (r._id === id) return acc;
-          return [...acc, { ...r, replies: removeNestedReply(r.replies || []) }];
-        }, [] as Reply[]);
-      };
+      if (selected && selected._id === questionId) {
+        selectQuestion(questionId, true);
+      } else {
+        const removeNestedReply = (replies: Reply[]): Reply[] => {
+          return replies.reduce((acc, r) => {
+            if (r._id === id) return acc;
+            return [...acc, { ...r, replies: removeNestedReply(r.replies || []) }];
+          }, [] as Reply[]);
+        };
 
-
-      setQuestions(prevQuestions =>
-        prevQuestions.map(q => {
-          if (q._id === questionId) {
-            if (answerId) {
-              return {
-                ...q,
-                answers: q.answers?.map(a => a._id === answerId ? { ...a, replies: removeNestedReply(a.replies || []) } : a) || []
-              };
-            } else {
-              return { ...q, replies: removeNestedReply(q.replies || []) };
+        setQuestions(prevQuestions =>
+          prevQuestions.map(q => {
+            if (q._id === questionId) {
+              if (answerId) {
+                return {
+                  ...q,
+                  answers: q.answers?.map(a => a._id === answerId ? { ...a, replies: removeNestedReply(a.replies || []) } : a) || []
+                };
+              } else {
+                return { ...q, replies: removeNestedReply(q.replies || []) };
+              }
             }
-          }
-          return q;
-        })
-      );
-
-
-      setSelected(prevSelected => {
-        if (prevSelected?._id === questionId) {
-          if (answerId) {
-            return {
-              ...prevSelected,
-              answers: prevSelected.answers?.map(a => a._id === answerId ? { ...a, replies: removeNestedReply(a.replies || []) } : a) || []
-            };
-          } else {
-            return { ...prevSelected, replies: removeNestedReply(prevSelected.replies || []) };
-          }
-        }
-        return prevSelected;
-      });
+            return q;
+          })
+        );
+      }
     });
+
 
 
     socketRef.current.on('connect_error', (err: any) => {
@@ -278,12 +246,14 @@ export default function ForumChatUI() {
     });
 
 
+
     return () => {
       if (socketRef.current) {
         socketRef.current.disconnect();
       }
     };
-  }, [user.fullName, user._id, addToast]);
+  }, [user.fullName, user._id, addToast, selected]);
+
 
 
   useEffect(() => {
@@ -294,8 +264,9 @@ export default function ForumChatUI() {
   }, [selected]);
 
 
-  const selectQuestion = (qid: string) => {
-    if (selected?._id === qid) return;
+
+  const selectQuestion = (qid: string, force: boolean = false) => {
+    if (!force && selected?._id === qid) return;
     
     setLoading(true);
     axios.get(`${API}/forum/questions/${qid}`)
@@ -318,6 +289,7 @@ export default function ForumChatUI() {
   };
 
 
+
   const deleteQuestion = (questionId: string) => {
     if (!confirm('Are you sure you want to delete this question?')) return;
     
@@ -334,6 +306,7 @@ export default function ForumChatUI() {
   };
 
 
+
   const deleteAnswer = (answerId: string, questionId: string) => {
     if (!confirm('Are you sure you want to delete this answer?')) return;
     
@@ -342,12 +315,16 @@ export default function ForumChatUI() {
         if (socketRef.current) {
           socketRef.current.emit('delete_answer', { answerId, questionId });
         }
+        if (selected?._id === questionId) {
+          selectQuestion(questionId, true);
+        }
       })
       .catch(err => {
         console.error('Failed to delete answer:', err);
         addToast('Failed to delete answer. Please try again.', 'error');
       });
   };
+
 
 
   const deleteReply = (replyId: string, questionId: string, answerId?: string) => {
@@ -358,12 +335,16 @@ export default function ForumChatUI() {
         if (socketRef.current) {
           socketRef.current.emit('delete_reply', { replyId, questionId, answerId });
         }
+        if (selected?._id === questionId) {
+          selectQuestion(questionId, true);
+        }
       })
       .catch(err => {
         console.error('Failed to delete reply:', err);
         addToast('Failed to delete reply. Please try again.', 'error');
       });
   };
+
 
 
   const categories = [
@@ -374,6 +355,7 @@ export default function ForumChatUI() {
     { value: 'history', label: '📚 History' },
     { value: 'other', label: '🎯 Other' }
   ];
+
 
 
   return (
@@ -509,6 +491,8 @@ export default function ForumChatUI() {
                       authorType: user.role,
                       imageUrls: imgs,
                       parent_reply_id: parentReplyId
+                    }).then(() => {
+                      selectQuestion(selected._id, true);
                     }).catch(err => {
                       console.error('Failed to post reply:', err);
                       addToast('Failed to post reply. Please try again.', 'error');
@@ -537,6 +521,8 @@ export default function ForumChatUI() {
                           author: user._id,
                           authorType: user.role,
                           imageUrls: imgs
+                        }).then(() => {
+                          selectQuestion(selected._id, true);
                         }).catch(err => {
                           console.error('Failed to post reply:', err);
                           addToast('Failed to post reply. Please try again.', 'error');
@@ -560,6 +546,8 @@ export default function ForumChatUI() {
                           authorType: user.role,
                           imageUrls: imgs,
                           parent_reply_id: parentReplyId
+                        }).then(() => {
+                          selectQuestion(selected._id, true);
                         }).catch(err => {
                           console.error('Failed to post reply:', err);
                           addToast('Failed to post reply. Please try again.', 'error');
@@ -604,6 +592,7 @@ export default function ForumChatUI() {
                   imageUrls: imgs
                 }).then(() => {
                   addToast('Answer posted successfully!', 'success');
+                  selectQuestion(selected._id, true);
                 }).catch(err => {
                   console.error('Failed to post answer:', err);
                   addToast('Failed to post answer. Please try again.', 'error');

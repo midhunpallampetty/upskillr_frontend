@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import axios from 'axios';
 import io from 'socket.io-client';
-import { MagnifyingGlassIcon, FunnelIcon, UserCircleIcon, ChatBubbleLeftIcon } from '@heroicons/react/24/outline';
+import { MagnifyingGlassIcon, FunnelIcon, UserCircleIcon, ChatBubbleLeftIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
 import {QuestionForm} from './components/UI/QuestionForm';
 import {ToastContainer} from './components/UI/ToastContainer';
 import {QuestionListItem} from './components/UI/QuestionListItem';
@@ -9,6 +9,7 @@ import {Message} from './components/UI/Message';
 import {ReplyRenderer} from './components/UI/ReplyRender';
 import {ResponseForm} from './components/UI/QuestionResponse';
 import { User, Question, Answer, Reply, Toast, API } from './types/ImportsAndTypes';
+
 
 export default function ForumChatUI() {
   const studentData = JSON.parse(localStorage.getItem('student') || '{}');
@@ -27,23 +28,28 @@ export default function ForumChatUI() {
   const socketRef = useRef<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+
   const addToast = useCallback((message: string, type: Toast['type'] = 'info') => {
     const id = Date.now().toString();
     const newToast: Toast = { id, message, type };
     setToasts(prev => [...prev, newToast]);
+
 
     setTimeout(() => {
       setToasts(prev => prev.filter(toast => toast.id !== id));
     }, 5000);
   }, []);
 
+
   const removeToast = useCallback((id: string) => {
     setToasts(prev => prev.filter(toast => toast.id !== id));
   }, []);
 
+
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, []);
+
 
   const filteredQuestions = questions.filter(q => {
     const matchesSearch = q.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -52,9 +58,11 @@ export default function ForumChatUI() {
     return !q.isDeleted && matchesSearch && matchesCategory;
   });
 
+
   useEffect(() => {
     scrollToBottom();
   }, [selected?.answers, selected?.replies, scrollToBottom]);
+
 
   useEffect(() => {
     setLoading(true);
@@ -68,11 +76,14 @@ export default function ForumChatUI() {
       })
       .finally(() => setLoading(false));
 
+
     socketRef.current = io(import.meta.env.VITE_SOCKET_URL);
+
 
     socketRef.current.on('connect', () => {
       addToast('Connected to real-time updates', 'success');
     });
+
 
     socketRef.current.on('new_question', (qDoc: Question) => {
       setQuestions(prevQuestions => [qDoc, ...prevQuestions]);
@@ -81,6 +92,7 @@ export default function ForumChatUI() {
       }
     });
 
+
     socketRef.current.on('new_answer', (aDoc: Answer) => {
       setQuestions(prevQuestions =>
         prevQuestions.map(q => q._id === aDoc.forum_question_id
@@ -88,6 +100,7 @@ export default function ForumChatUI() {
           : q
         )
       );
+
 
       setSelected(prevSelected => {
         if (prevSelected && prevSelected._id === aDoc.forum_question_id) {
@@ -103,8 +116,10 @@ export default function ForumChatUI() {
       });
     });
 
+
     socketRef.current.on('new_reply', (rDoc: Reply) => {
       console.log('New reply received:', rDoc); // Debug: Check forum_answer_id
+
 
       const updateNestedReplies = (replies: Reply[], newReply: Reply): Reply[] => {
         if (!newReply.parent_reply_id) {
@@ -120,6 +135,7 @@ export default function ForumChatUI() {
           return r;
         });
       };
+
 
       setQuestions(prevQuestions =>
         prevQuestions.map(q => {
@@ -138,8 +154,10 @@ export default function ForumChatUI() {
         })
       );
 
+
       setSelected(prevSelected => {
         if (!prevSelected || prevSelected._id !== rDoc.forum_question_id) return prevSelected;
+
 
         const replyAuthorId = String(rDoc.author._id);
         const currentUserId = String(user._id);
@@ -148,10 +166,12 @@ export default function ForumChatUI() {
           addToast(`${rDoc.author.fullName} replied to a message`, 'info');
         }
 
+
         if (!rDoc.forum_answer_id) {
           console.log('Updating selected question-level replies'); // Debug
           return { ...prevSelected, replies: updateNestedReplies(prevSelected.replies || [], rDoc) };
         }
+
 
         return {
           ...prevSelected,
@@ -164,6 +184,7 @@ export default function ForumChatUI() {
       });
     });
 
+
     socketRef.current.on('typing', ({ threadId, userName }: { threadId: string; userName: string }) => {
       setSelected(prevSelected => {
         if (prevSelected && prevSelected._id === threadId && userName !== user.fullName) {
@@ -175,6 +196,7 @@ export default function ForumChatUI() {
       });
     });
 
+
     socketRef.current.on('stop_typing', ({ threadId, userName }: { threadId: string; userName: string }) => {
       setSelected(prevSelected => {
         if (prevSelected && prevSelected._id === threadId) {
@@ -184,11 +206,13 @@ export default function ForumChatUI() {
       });
     });
 
+
     socketRef.current.on('question_deleted', ({ id }: { id: string }) => {
       setQuestions(prevQuestions => prevQuestions.filter(q => q._id !== id));
       setSelected(prevSelected => prevSelected?._id === id ? null : prevSelected);
       addToast('Question deleted', 'info');
     });
+
 
     socketRef.current.on('answer_deleted', ({ id, questionId }: { id: string; questionId: string }) => {
       setQuestions(prevQuestions =>
@@ -205,6 +229,7 @@ export default function ForumChatUI() {
       });
     });
 
+
     socketRef.current.on('reply_deleted', ({ id, questionId, answerId }: { id: string; questionId: string; answerId?: string }) => {
       const removeNestedReply = (replies: Reply[]): Reply[] => {
         return replies.reduce((acc, r) => {
@@ -212,6 +237,7 @@ export default function ForumChatUI() {
           return [...acc, { ...r, replies: removeNestedReply(r.replies || []) }];
         }, [] as Reply[]);
       };
+
 
       setQuestions(prevQuestions =>
         prevQuestions.map(q => {
@@ -229,6 +255,7 @@ export default function ForumChatUI() {
         })
       );
 
+
       setSelected(prevSelected => {
         if (prevSelected?._id === questionId) {
           if (answerId) {
@@ -244,10 +271,12 @@ export default function ForumChatUI() {
       });
     });
 
+
     socketRef.current.on('connect_error', (err: any) => {
       console.error('Socket connection error:', err);
       addToast('Failed to connect to real-time updates. Please refresh.', 'error');
     });
+
 
     return () => {
       if (socketRef.current) {
@@ -256,12 +285,14 @@ export default function ForumChatUI() {
     };
   }, [user.fullName, user._id, addToast]);
 
+
   useEffect(() => {
     setTypingUsers([]);
     if (selected?._id && socketRef.current) {
       socketRef.current.emit('join_thread', selected._id);
     }
   }, [selected]);
+
 
   const selectQuestion = (qid: string) => {
     if (selected?._id === qid) return;
@@ -286,6 +317,7 @@ export default function ForumChatUI() {
       .finally(() => setLoading(false));
   };
 
+
   const deleteQuestion = (questionId: string) => {
     if (!confirm('Are you sure you want to delete this question?')) return;
     
@@ -300,6 +332,7 @@ export default function ForumChatUI() {
         addToast('Failed to delete question. Please try again.', 'error');
       });
   };
+
 
   const deleteAnswer = (answerId: string, questionId: string) => {
     if (!confirm('Are you sure you want to delete this answer?')) return;
@@ -316,6 +349,7 @@ export default function ForumChatUI() {
       });
   };
 
+
   const deleteReply = (replyId: string, questionId: string, answerId?: string) => {
     if (!confirm('Are you sure you want to delete this reply?')) return;
     
@@ -331,6 +365,7 @@ export default function ForumChatUI() {
       });
   };
 
+
   const categories = [
     { value: 'all', label: 'All Categories' },
     { value: 'general', label: '🔍 General' },
@@ -340,10 +375,11 @@ export default function ForumChatUI() {
     { value: 'other', label: '🎯 Other' }
   ];
 
+
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex md:flex-row flex-col h-screen bg-gray-50">
       <ToastContainer toasts={toasts} removeToast={removeToast} />
-      <div className="w-96 flex flex-col bg-white shadow-xl border-r border-gray-200">
+      <div className={`w-full md:w-96 flex flex-col bg-white shadow-xl border-r border-gray-200 ${selected ? 'hidden md:flex' : 'flex'}`}>
         <QuestionForm
           onSubmit={(text, imgs, category) =>
             axios.post(`${API}/forum/questions`, {
@@ -418,12 +454,18 @@ export default function ForumChatUI() {
           )}
         </div>
       </div>
-      <div className="flex flex-1 flex-col">
+      <div className={`flex flex-1 flex-col ${selected ? 'flex' : 'hidden md:flex'}`}>
         {selected ? (
           <>
             <div className="border-b border-gray-200 bg-white px-6 py-4 shadow-sm">
               <div className="flex items-center justify-between">
-                <div>
+                <button 
+                  onClick={() => setSelected(null)} 
+                  className="md:hidden mr-4 text-gray-600 hover:text-gray-900"
+                >
+                  <ArrowLeftIcon className="h-6 w-6" />
+                </button>
+                <div className="flex-1">
                   <h1 className="text-xl font-semibold text-gray-900 line-clamp-2">
                     {selected.question}
                   </h1>

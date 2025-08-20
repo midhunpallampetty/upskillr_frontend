@@ -8,13 +8,26 @@ export const getSchools = async (
   sortBy: string = 'createdAt',
   sortOrder: 'asc' | 'desc' = 'desc',
   page: number = 1,
-  limit: number = 6
+  limit: number = 6,
+  verified?: boolean // Optional: true for verified, false for unverified, undefined for all
 ): Promise<{ schools: School[]; total: number; totalPages: number }> => {
-  const res = await schoolAxios.get(`/getSchools`, {
-    params: { search, sortBy, sortOrder, page, limit },
-  });
-  return res.data;
+  const params: any = { search, sortBy, sortOrder, page, limit };
+
+  // Conditionally add isVerified param as string ('true' or 'false')
+  if (verified !== undefined) {
+    params.isVerified = verified ? 'true' : 'false';
+  }
+
+  const res = await schoolAxios.get(`/getSchools`, { params });
+
+  // Extract and return only the needed fields to match the return type
+  return {
+    schools: res.data.schools,
+    total: res.data.total,
+    totalPages: res.data.totalPages,
+  };
 };
+
 
 export const approveSchool = async (schoolId: string): Promise<void> => {
   await schoolAxios.post(`/updateSchoolData`, {

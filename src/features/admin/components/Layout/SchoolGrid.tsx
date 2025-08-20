@@ -25,7 +25,9 @@ import {
 import type { School } from '../../../school/types/School';
 import { getSchools, approveSchool } from '../../../school/api/school.api';
 
+
 const EditSchoolForm = lazy(() => import('../../../school/components/UI/EditSchoolForm'));
+
 
 const SchoolGrid: React.FC = () => {
   const [schools, setSchools] = useState<School[] | any[]>([]);
@@ -36,6 +38,7 @@ const SchoolGrid: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
+
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [sortBy, setSortBy] = useState('createdAt');
@@ -45,20 +48,28 @@ const SchoolGrid: React.FC = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [totalSchools, setTotalSchools] = useState(0);
 
+  // New state for verification filter: 'all' (undefined in API), 'true', or 'false'
+  const [filterVerified, setFilterVerified] = useState<'all' | 'true' | 'false'>('all');
+
+
   useEffect(() => {
     const handler = setTimeout(() => setDebouncedSearch(search), 400);
     return () => clearTimeout(handler);
   }, [search]);
 
+
   const fetchSchools = async () => {
     setLoading(true);
     try {
+      // Pass verified as boolean or undefined based on filter
+      const verified = filterVerified === 'all' ? undefined : filterVerified === 'true';
       const { schools, totalPages, total } = await getSchools(
         debouncedSearch,
         sortBy,
         sortOrder,
         page,
-        limit
+        limit,
+        verified // Pass the optional verified param
       );
       setSchools(schools);
       setTotalPages(totalPages);
@@ -71,9 +82,11 @@ const SchoolGrid: React.FC = () => {
     }
   };
 
+
   useEffect(() => {
     fetchSchools();
-  }, [debouncedSearch, sortBy, sortOrder, page]);
+  }, [debouncedSearch, sortBy, sortOrder, page, filterVerified]); // Added filterVerified to dependencies
+
 
   const handleEditClick = (school: School) => setEditSchool(school);
   const handleViewClick = (school: School) => setSelectedSchool(school);
@@ -82,6 +95,7 @@ const SchoolGrid: React.FC = () => {
     fetchSchools();
   };
 
+
   const handleApprove = async (schoolId: string) => {
     try {
       setModalLoading(true);
@@ -89,11 +103,14 @@ const SchoolGrid: React.FC = () => {
       const school = schools.find((s) => s._id === schoolId);
       if (!school) return;
 
+
       await approveSchool(schoolId);
+
 
       setSchools((prev) =>
         prev.map((s) => (s._id === schoolId ? { ...s, isVerified: true } : s))
       );
+
 
       setSuccessMessage('School approved successfully!');
       setTimeout(() => {
@@ -108,9 +125,11 @@ const SchoolGrid: React.FC = () => {
     }
   };
 
+
   const getSortIcon = () => {
     return sortOrder === 'asc' ? <SortAsc className="w-4 h-4" /> : <SortDesc className="w-4 h-4" />;
   };
+
 
   const getStatusBadge = (isVerified: boolean) => {
     return isVerified ? (
@@ -126,19 +145,23 @@ const SchoolGrid: React.FC = () => {
     );
   };
 
+
   const renderPagination = () => {
     const pages = [];
     const maxVisiblePages = 7;
     let startPage = Math.max(1, page - Math.floor(maxVisiblePages / 2));
     let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
 
+
     if (endPage - startPage + 1 < maxVisiblePages) {
       startPage = Math.max(1, endPage - maxVisiblePages + 1);
     }
 
+
     for (let i = startPage; i <= endPage; i++) {
       pages.push(i);
     }
+
 
     return (
       <div className="flex items-center justify-between px-6 py-4 bg-gray-50 border-t border-gray-200 sm:px-8">
@@ -204,6 +227,7 @@ const SchoolGrid: React.FC = () => {
     );
   };
 
+
   return (
     <div className="space-y-6">
       {/* Header with Stats */}
@@ -232,6 +256,7 @@ const SchoolGrid: React.FC = () => {
             </div>
           </div>
         </div>
+
 
         {/* Search and Filters */}
         <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
@@ -264,6 +289,23 @@ const SchoolGrid: React.FC = () => {
               </select>
             </div>
             
+            {/* New: Verification Status Filter */}
+            <div className="flex items-center gap-2">
+              <Filter className="w-4 h-4 text-gray-500" />
+              <select
+                value={filterVerified}
+                onChange={(e) => {
+                  setFilterVerified(e.target.value as 'all' | 'true' | 'false');
+                  setPage(1); // Reset to first page on filter change
+                }}
+                className="border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="all">All Statuses</option>
+                <option value="true">Verified</option>
+                <option value="false">Pending</option>
+              </select>
+            </div>
+            
             <button
               onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
               className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
@@ -274,6 +316,7 @@ const SchoolGrid: React.FC = () => {
           </div>
         </div>
       </div>
+
 
       {/* School Grid */}
       <div className="bg-white rounded-lg border border-gray-200">
@@ -380,6 +423,7 @@ const SchoolGrid: React.FC = () => {
         )}
       </div>
 
+
       {/* View Modal */}
       <Transition appear show={!!selectedSchool} as={Fragment}>
         <Dialog
@@ -420,6 +464,7 @@ const SchoolGrid: React.FC = () => {
                       </div>
                     </div>
 
+
                     <div className="p-8">
                       {successMessage && (
                         <div className="mb-6 p-4 bg-green-100 border border-green-200 text-green-700 rounded-lg">
@@ -438,6 +483,7 @@ const SchoolGrid: React.FC = () => {
                           </div>
                         </div>
                       )}
+
 
                       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         <div className="lg:col-span-2 space-y-6">
@@ -555,6 +601,7 @@ const SchoolGrid: React.FC = () => {
         </Dialog>
       </Transition>
 
+
       {/* Edit Modal */}
       <Transition appear show={!!editSchool} as={Fragment}>
         <Dialog
@@ -610,4 +657,5 @@ const SchoolGrid: React.FC = () => {
   );
 };
 
-export default React.memo(SchoolGrid);  
+
+export default React.memo(SchoolGrid);

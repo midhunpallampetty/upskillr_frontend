@@ -55,6 +55,7 @@ const StudentHomePage: React.FC = () => {
           limit: ITEMS_PER_PAGE,
           fromDate,
           toDate,
+           // Only fetch verified schools
         });
 
         // For extra safety: Validate and apply client-side sorting if sorting by name (case-insensitive fallback)

@@ -1,3 +1,4 @@
+// frontend/src/features/school/api/school.api.ts
 import type { School } from '../../course/types/School';
 import schoolAxios from '../../../utils/axios/school';
 import axios from 'axios';

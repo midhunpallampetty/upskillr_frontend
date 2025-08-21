@@ -84,6 +84,9 @@ export const getAllSchools = async (filters: {
     if (filters.fromDate) params.append('fromDate', filters.fromDate);
     if (filters.toDate) params.append('toDate', filters.toDate);
 
+    // ✅ Force only verified schools
+    params.append('isVerified', 'true');
+
     const res: AxiosResponse = await schoolAxios.get(`/getSchools?${params.toString()}`);
 
     // Extract and return the structured response data
@@ -109,3 +112,4 @@ export const getAllSchools = async (filters: {
     };
   }
 };
+

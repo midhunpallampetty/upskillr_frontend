@@ -4,11 +4,10 @@ import { useNavigate } from 'react-router-dom';
 import {
   Search, LogOut, GraduationCap, Clock, BookOpen, ChevronLeft, ChevronRight, Filter
 } from 'lucide-react';
-import { getAllSchools } from './api/student.api'; // Assuming this is the updated API
-import { School } from './types/School'; // Adjust types as needed
+import { getAllSchools } from './api/student.api';
+import { School } from './types/School';
 import { Student } from './types/School';
 import StudentNavbar from './components/Layout/StudentNavbar';
-import useSchoolAuthGuard from '../school/hooks/useSchoolAuthGuard';
 import useStudentAuthGuard from './hooks/useStudentAuthGuard';
 
 const ITEMS_PER_PAGE = 6;
@@ -55,20 +54,27 @@ const StudentHomePage: React.FC = () => {
           limit: ITEMS_PER_PAGE,
           fromDate,
           toDate,
-           // Only fetch verified schools
+          isVerified: true, // Explicitly filter for verified schools
         });
 
-        // For extra safety: Validate and apply client-side sorting if sorting by name (case-insensitive fallback)
-        let sortedSchools = response.schools;
+        // Client-side filtering for extra safety
+        const verifiedSchools = response.schools.filter((school: School) => school.isVerified === true);
+
+        // Apply client-side sorting if sorting by name (case-insensitive)
+        let sortedSchools = verifiedSchools;
         if (sortBy === 'name') {
-          sortedSchools = [...response.schools].sort((a, b) => {
-            // Case-insensitive comparison
+          sortedSchools = [...verifiedSchools].sort((a, b) => {
             const compareResult = a.name.localeCompare(b.name, 'en', { sensitivity: 'base' });
-            return sortOrder === 'asc' ? compareResult : -compareResult; // Reverse for desc (Z-A)
+            return sortOrder === 'asc' ? compareResult : -compareResult;
           });
         }
 
-        setSchoolData({ ...response, schools: sortedSchools });
+        setSchoolData({
+          ...response,
+          schools: sortedSchools,
+          total: sortedSchools.length, // Update total to reflect filtered count
+          totalPages: Math.ceil(sortedSchools.length / ITEMS_PER_PAGE), // Recalculate total pages
+        });
       } catch (error) {
         console.error('Error fetching schools:', error);
         setSchoolData({
@@ -96,12 +102,12 @@ const StudentHomePage: React.FC = () => {
     const url = new URL(fullUrl);
     const hostParts = url.hostname.split('.');
 
-    // Handle localhost-based subdomain routing: subdomain.localhost
+    // Handle localhost-based subdomain routing
     if (hostParts.length >= 2 && hostParts[1] === 'localhost') {
-      return hostParts[0]; // returns "orangeschool"
+      return hostParts[0];
     }
 
-    // Handle normal domains like sub.domain.com
+    // Handle normal domains
     return hostParts.length > 2 ? hostParts[0] : '';
   };
 
@@ -112,7 +118,7 @@ const StudentHomePage: React.FC = () => {
 
   const handleSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value);
-    setCurrentPage(1); // Reset to first page on search change
+    setCurrentPage(1);
   };
 
   const handleSortChange = (e: ChangeEvent<HTMLSelectElement>) => {
@@ -261,7 +267,7 @@ const StudentHomePage: React.FC = () => {
             ))}
           </div>
         ) : (
-          <p className="text-center py-10 text-gray-500">No schools found for this search.</p>
+          <p className="text-center py-10 text-gray-500">No verified schools found for this search.</p>
         )}
 
         {/* Pagination */}

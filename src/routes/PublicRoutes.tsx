@@ -71,7 +71,7 @@ const PublicRoutes = () => (
     <Route path='/school/:verifiedSchool/manage-exam'element={<ExamManager/>}/>
     <Route path='/student/exam/take-exam' element={<ExamPage />} />
     <Route path='/about'element={<About/>}/>
-    
+    <Route path='/contact'element={<Contact/>}/>
   </Routes>
 );
 

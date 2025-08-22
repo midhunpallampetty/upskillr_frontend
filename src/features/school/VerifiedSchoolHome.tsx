@@ -24,10 +24,10 @@ const SchoolHome: React.FC = () => {
 
   useEffect(() => {
     const fetchSchoolInfo = async () => {
-      if (!verifiedSchool) {
-        dispatch({ type: 'FETCH_ERROR', payload: '❌ School identifier is missing in URL.' });
-        return;
-      }
+      // if (!verifiedSchool) {
+      //   dispatch({ type: 'FETCH_ERROR', payload: '❌ School identifier is missing in URL.' });
+      //   return;
+      // }
 
       try {
         dispatch({ type: 'FETCH_START' });

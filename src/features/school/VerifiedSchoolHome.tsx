@@ -18,7 +18,7 @@ import LoadingSchoolDashboard from './components/UI/LoadingSchoolDashboard';
 const SchoolHome: React.FC = () => {
   const { isDarkMode } = useGlobalState();
   const navigate = useNavigate();
-  const { verifiedSchool } = useParams();
+  const verifiedSchool  ='gamersclub'
   const { state, dispatch, school, setSchool } = useSchoolInfo(verifiedSchool);
   const [activeView, dispatchView] = useReducer(viewReducer, 'dashboard' as ViewState);
 

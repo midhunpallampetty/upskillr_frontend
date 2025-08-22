@@ -1,11 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Helmet } from 'react-helmet-async'; // Install via npm install react-helmet-async for SEO
+import { Helmet } from 'react-helmet-async';
+import { getDynamicSubdomain } from '../../utils/getSubdomain'; // Adjust import path
 
-interface MarketingPageProps {
-  subdomain: string;
-}
-
-const MarketingPage: React.FC= () => {
+const MarketingPage: React.FC = () => {
   const [schoolData, setSchoolData] = useState({
     name: "test.com", // Default: Capitalize subdomain as school name
     email: `info@.eduvia.space`,
@@ -16,44 +13,40 @@ const MarketingPage: React.FC= () => {
   });
 
   useEffect(() => {
-    // Fetch school-specific data from your backend API (e.g., Node.js/MongoDB endpoint)
-    const fetchSchoolData = async () => {
-      try {
-        const response = await fetch(`/api/school/gamersclub`); // Adjust to your API route
-        if (response.ok) {
-          const data = await response.json();
-          setSchoolData({
-            name: data.name || schoolData.name,
-            email: data.email || schoolData.email,
-            phone: data.phone || schoolData.phone,
-            address: data.address || schoolData.address,
-            description: data.description || schoolData.description,
-          });
-        } else {
-          // Fallback or error handling (e.g., invalid subdomain)
-          console.error('School not found');
-          // Optional: Redirect to main domain if subdomain invalid
-          // window.location.href = 'https://eduvia.space';
+    const subdomain = getDynamicSubdomain(); // Detect subdomain inside the component
+    if (subdomain) {
+      const fetchSchoolData = async () => {
+        try {
+          const response = await fetch(`/api/school/${subdomain}`); // Use detected subdomain dynamically
+          if (response.ok) {
+            const data = await response.json();
+            setSchoolData({
+              name: data.name || schoolData.name,
+              email: data.email || schoolData.email,
+              phone: data.phone || schoolData.phone,
+              address: data.address || schoolData.address,
+              description: data.description || schoolData.description,
+            });
+          } else {
+            console.error('School not found');
+          }
+        } catch (error) {
+          console.error('Error fetching school data:', error);
         }
-      } catch (error) {
-        console.error('Error fetching school data:', error);
-      }
-    };
-
-    fetchSchoolData();
+      };
+      fetchSchoolData();
+    }
   }, []);
 
   return (
     <>
-      {/* SEO Optimization with react-helmet-async for dynamic meta tags */}
       <Helmet>
         <title>{`${schoolData.name} - Unlock Your Future with Expert Learning`}</title>
         <meta name="description" content={schoolData.description} />
         <meta name="keywords" content={`${schoolData.name}, online courses, education, career development`} />
         <meta property="og:title" content={`${schoolData.name} - Expert Learning Platform`} />
         <meta property="og:description" content={schoolData.description} />
-        <meta property="og:url" content={`https://eduvia.space`} />
-        {/* Add more Open Graph or Twitter tags as needed for social sharing */}
+        <meta property="og:url" content={`https://${getDynamicSubdomain() || ''}.eduvia.space`} /> {/* Dynamic URL */}
       </Helmet>
 
       <div style={{ fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif", color: "#222", lineHeight: "1.6" }}>

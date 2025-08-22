@@ -1,28 +1,28 @@
+// src/routes/AppRouter.tsx
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import PublicRoutes from './PublicRoutes';
 import SchoolRoutes from './SchoolRoutes';
-import MarketingPage from '../features/school/MarketingPage'; // Adjust import path
+import MarketingPage from '../features/school/MarketingPage';
+import { getDynamicSubdomain } from '../utils/getSubdomain'; // new import
 
-interface Props {
-  subdomain: string | null;
-}
+const AppRouter: React.FC = () => {
+  // Detect sub-domain locally; no prop required
+  const subdomain: string | null = getDynamicSubdomain();
 
-const AppRouter: React.FC<Props> = ({ subdomain }) => {
-  // Check for any dynamic subdomain (non-null and non-empty)
-  if (subdomain && subdomain !== '') {
+  if (subdomain) {
     return (
       <Routes>
+        {/* Marketing page as the default on any sub-domain */}
         <Route path="/" element={<MarketingPage subdomain={subdomain} />} />
-        {/* Optional: Fallback for other paths on subdomain */}
-        <Route path="*" element={<SchoolRoutes />} /> {/* Or a 404/redirect */}
+
+        {/* Optional: fall-back for other routes on the same sub-domain */}
+        <Route path="*" element={<SchoolRoutes />} />
       </Routes>
     );
   }
 
-  // Main domain (eduvia.space) uses PublicRoutes
-
-  
+  /* Main domain (eduvia.space / localhost) */
   return (
     <Routes>
       <Route path="*" element={<PublicRoutes />} />

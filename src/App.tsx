@@ -11,7 +11,7 @@ const App: React.FC = () => {
       <Suspense fallback={<div className="text-center mt-10">Loading...</div>}>
       
       
-        <AppRouter subdomain={subdomain} />
+        <AppRouter  />
       </Suspense>
     </Router>
   );

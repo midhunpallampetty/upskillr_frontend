@@ -5,10 +5,10 @@ interface MarketingPageProps {
   subdomain: string;
 }
 
-const MarketingPage: React.FC<MarketingPageProps> = ({ subdomain }) => {
+const MarketingPage: React.FC= () => {
   const [schoolData, setSchoolData] = useState({
-    name: subdomain.charAt(0).toUpperCase() + subdomain.slice(1), // Default: Capitalize subdomain as school name
-    email: `info@${subdomain}.eduvia.space`,
+    name: "test.com", // Default: Capitalize subdomain as school name
+    email: `info@.eduvia.space`,
     phone: '+1 (555) 123-4567', // Default; fetch real data from API
     address: '123 Education Rd, Knowledge City, 00000',
     description: 'Join our community and gain the skills to transform your career and passion. Flexible courses designed for real-world success.',
@@ -19,7 +19,7 @@ const MarketingPage: React.FC<MarketingPageProps> = ({ subdomain }) => {
     // Fetch school-specific data from your backend API (e.g., Node.js/MongoDB endpoint)
     const fetchSchoolData = async () => {
       try {
-        const response = await fetch(`/api/school/${subdomain}`); // Adjust to your API route
+        const response = await fetch(`/api/school/gamersclub`); // Adjust to your API route
         if (response.ok) {
           const data = await response.json();
           setSchoolData({
@@ -41,7 +41,7 @@ const MarketingPage: React.FC<MarketingPageProps> = ({ subdomain }) => {
     };
 
     fetchSchoolData();
-  }, [subdomain]);
+  }, []);
 
   return (
     <>
@@ -52,7 +52,7 @@ const MarketingPage: React.FC<MarketingPageProps> = ({ subdomain }) => {
         <meta name="keywords" content={`${schoolData.name}, online courses, education, career development`} />
         <meta property="og:title" content={`${schoolData.name} - Expert Learning Platform`} />
         <meta property="og:description" content={schoolData.description} />
-        <meta property="og:url" content={`https://${subdomain}.eduvia.space`} />
+        <meta property="og:url" content={`https://eduvia.space`} />
         {/* Add more Open Graph or Twitter tags as needed for social sharing */}
       </Helmet>
 

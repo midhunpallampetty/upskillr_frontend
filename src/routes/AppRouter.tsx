@@ -14,7 +14,6 @@ const AppRouter: React.FC<Props> = ({ subdomain }) => {
       <Routes>
         <Route path="/" element={<MarketingPage />} />
         {/* Optional: Fallback for other paths on subdomain */}
-        <Route path="*" element={<SchoolRoutes />} /> {/* Or a 404/redirect */}
       </Routes>
     );
   }
@@ -22,6 +21,8 @@ const AppRouter: React.FC<Props> = ({ subdomain }) => {
   // Main domain (eduvia.space) uses PublicRoutes
   return (
     <Routes>
+      <Route path="*" element={<SchoolRoutes />} /> {/* Or a 404/redirect */}
+
       <Route path="*" element={<PublicRoutes />} />
     </Routes>
   );

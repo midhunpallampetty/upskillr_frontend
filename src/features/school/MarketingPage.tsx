@@ -13,11 +13,11 @@ const MarketingPage: React.FC = () => {
   });
 
   useEffect(() => {
-    const subdomain = getDynamicSubdomain(); // Detect subdomain inside the component
+    const subdomain = getDynamicSubdomain(); // Detect subdomain dynamically inside the component
     if (subdomain) {
       const fetchSchoolData = async () => {
         try {
-          const response = await fetch(`/api/school/${subdomain}`); // Use detected subdomain dynamically
+          const response = await fetch(`/api/school/${subdomain}`); // Use detected subdomain
           if (response.ok) {
             const data = await response.json();
             setSchoolData({
@@ -40,13 +40,15 @@ const MarketingPage: React.FC = () => {
 
   return (
     <>
+      {/* SEO Optimization with react-helmet-async for dynamic meta tags */}
       <Helmet>
         <title>{`${schoolData.name} - Unlock Your Future with Expert Learning`}</title>
         <meta name="description" content={schoolData.description} />
         <meta name="keywords" content={`${schoolData.name}, online courses, education, career development`} />
         <meta property="og:title" content={`${schoolData.name} - Expert Learning Platform`} />
         <meta property="og:description" content={schoolData.description} />
-        <meta property="og:url" content={`https://${getDynamicSubdomain() || ''}.eduvia.space`} /> {/* Dynamic URL */}
+        <meta property="og:url" content={`https://eduvia.space`} />
+        {/* Add more Open Graph or Twitter tags as needed for social sharing */}
       </Helmet>
 
       <div style={{ fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif", color: "#222", lineHeight: "1.6" }}>

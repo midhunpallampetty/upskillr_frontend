@@ -37,7 +37,7 @@ export const approveSchool = async (schoolId: string): Promise<void> => {
   });
 };
 export const getSchoolBySubdomain = async (subDomain: string, token: string) => {
-  const url = `/getSchoolBySubDomain?subDomain=http://${subDomain}.localhost:5173`;
+  const url = `/getSchoolBySubDomain?subDomain=http://${subDomain}.upskillr.online`;
 console.log(token)
   return schoolAxios.get(url, {
     headers: {

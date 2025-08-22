@@ -21,6 +21,7 @@ const AppRouter: React.FC<Props> = ({ subdomain }) => {
   }
 
   // Main domain (eduvia.space) uses PublicRoutes
+
   
   return (
     <Routes>

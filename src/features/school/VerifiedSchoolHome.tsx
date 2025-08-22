@@ -21,7 +21,7 @@ const SchoolHome: React.FC = () => {
   const verifiedSchool  ='gamersclub'
   const { state, dispatch, school, setSchool } = useSchoolInfo(verifiedSchool);
   const [activeView, dispatchView] = useReducer(viewReducer, 'dashboard' as ViewState);
-
+console.log(verifiedSchool,'verifiedSchool')
   useEffect(() => {
     const fetchSchoolInfo = async () => {
       // if (!verifiedSchool) {

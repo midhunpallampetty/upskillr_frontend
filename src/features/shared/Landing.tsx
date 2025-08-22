@@ -89,9 +89,8 @@ const LandingPage: React.FC = () => {
         </div>
         <nav className="flex space-x-4 md:space-x-6 mb-4 md:mb-0 text-lg">
           <a href="#" className="text-gray-700 hover:text-pink-600 transition font-medium">Home</a>
-          <a href="#" className="text-gray-700 hover:text-yellow-500 transition font-medium">Courses</a>
-          <a href="#" className="text-gray-700 hover:text-indigo-600 transition font-medium">About</a>
-          <a href="#" className="text-gray-700 hover:text-green-500 transition font-medium">Contact</a>
+          <a href="/about" className="text-gray-700 hover:text-indigo-600 transition font-medium">About</a>
+          <a href="/contact" className="text-gray-700 hover:text-green-500 transition font-medium">Contact</a>
         </nav>
         <div className="flex space-x-3">
           <motion.button
@@ -147,13 +146,7 @@ const LandingPage: React.FC = () => {
             >
               Get Started
             </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.1, backgroundColor: "#fff", color: "#6366f1" }}
-              onClick={() => navigate('/courses')}
-              className="bg-white text-indigo-700 font-bold px-6 py-3 rounded-lg shadow-lg hover:bg-indigo-50 transition"
-            >
-              Browse Courses
-            </motion.button>
+
           </motion.div>
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
@@ -233,9 +226,8 @@ const LandingPage: React.FC = () => {
                   boxShadow: "0 0 0 8px #f472b633",
                 }}
                 whileTap={{ scale: 0.95 }}
-                className={`bg-indigo-700 p-5 rounded-lg text-center font-semibold text-lg shadow-md hover:bg-pink-600 transition cursor-pointer outline-none focus:ring-2 focus:ring-pink-400 ${
-                  selectedSubject === subject ? 'ring-4 ring-yellow-400' : ''
-                }`}
+                className={`bg-indigo-700 p-5 rounded-lg text-center font-semibold text-lg shadow-md hover:bg-pink-600 transition cursor-pointer outline-none focus:ring-2 focus:ring-pink-400 ${selectedSubject === subject ? 'ring-4 ring-yellow-400' : ''
+                  }`}
                 onClick={() => handleSubjectClick(subject)}
                 aria-pressed={selectedSubject === subject}
               >
@@ -279,7 +271,7 @@ const LandingPage: React.FC = () => {
           >
             Welcome to Upskillr! We are a team of passionate MCA students, bridging the gap between schools and eager learners. Our platform delivers the latest learning tools and resources to foster academic growth and success.
           </motion.p>
-          <div className="flex justify-center gap-6">
+          {/* <div className="flex justify-center gap-6">
             {['team1', 'team2', 'team3'].map((img, i) => (
               <motion.img
                 key={img}
@@ -292,12 +284,12 @@ const LandingPage: React.FC = () => {
                 className="w-24 h-24 rounded-full object-cover shadow-md"
               />
             ))}
-          </div>
+          </div> */}
         </div>
       </section>
 
       {/* Contact Section */}
-      <section className="bg-gradient-to-br from-indigo-900 via-pink-600 to-yellow-500 text-white py-16">
+      {/* <section className="bg-gradient-to-br from-indigo-900 via-pink-600 to-yellow-500 text-white py-16">
         <div className="container mx-auto px-4">
           <motion.h2
             initial="hidden"
@@ -383,7 +375,7 @@ const LandingPage: React.FC = () => {
             </motion.div>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Footer */}
       <footer className="bg-gradient-to-br from-indigo-900 via-pink-600 to-yellow-500 text-white py-12">
@@ -394,24 +386,47 @@ const LandingPage: React.FC = () => {
               <p className="text-gray-200">Content © 2024 Upskillr</p>
             </div>
             <div className="md:col-span-2">
-              <div className="flex flex-wrap gap-4 mb-6">
-                <a href="#" className="text-gray-300 hover:text-pink-300 transition">Home</a>
-                <a href="#" className="text-gray-300 hover:text-yellow-300 transition">Courses</a>
-                <a href="#" className="text-gray-300 hover:text-indigo-300 transition">Contact</a>
-                <a href="#" className="text-gray-300 hover:text-green-300 transition">Privacy Policy</a>
-              </div>
+
               <div className="flex space-x-4">
-                <a href="#" aria-label="Facebook" className="bg-gray-800 w-10 h-10 rounded-full flex items-center justify-center hover:bg-pink-600 transition">
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 5.019 3.676 9.163 8.438 9.877v-6.987h-2.54v-2.89h2.54V9.797c0-2.507 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.242 0-1.63.771-1.63 1.562v1.875h2.773l-.443 2.89h-2.33v6.987C18.324 21.163 22 17.019 22 12z"/>
+                {/* LinkedIn */}
+                <a
+                  href="https://www.linkedin.com/in/midhun-ps/"
+                  aria-label="LinkedIn"
+                  className="bg-gray-800 w-10 h-10 rounded-full flex items-center justify-center
+               hover:bg-blue-600 transition"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <svg
+                    className="w-5 h-5 text-white"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 .774v22.452C0 23.226.792 24 1.771 24h20.451C23.2 24 24 23.226 24 22.774V1.774C24 .774 23.2 0 22.225 0z" />
                   </svg>
                 </a>
-                <a href="#" aria-label="Twitter" className="bg-gray-800 w-10 h-10 rounded-full flex items-center justify-center hover:bg-yellow-400 transition">
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743A11.65 11.65 0 013.15 4.57a4.106 4.106 0 001.27 5.482A4.073 4.073 0 012.8 9.713v.052a4.108 4.108 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84"/>
+
+                {/* YouTube */}
+                <a
+                  href="https://www.youtube.com/digitalsciencemalayalam"
+                  aria-label="YouTube"
+                  className="bg-gray-800 w-10 h-10 rounded-full flex items-center justify-center
+               hover:bg-red-600 transition"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <svg
+                    className="w-5 h-5 text-white"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path d="M23.498 6.186a3.01 3.01 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.376.505A3.013 3.013 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.01 3.01 0 002.122 2.136C4.495 20.5 12 20.5 12 20.5s7.505 0 9.376-.505a3.01 3.01 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L16.09 12l-6.545 3.568z" />
                   </svg>
                 </a>
               </div>
+
             </div>
           </div>
         </div>

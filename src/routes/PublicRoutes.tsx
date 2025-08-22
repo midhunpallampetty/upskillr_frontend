@@ -17,6 +17,8 @@ import CoursesShowPage from '../features/student/CourseShowPage';
 import ExamManager from '../features/school/ExamManager';
 import { ExamPage } from '../features/student/ExamPage';
 import ForumPage from '../features/shared/ForumPage';
+import About from '../features/shared/About';
+import Contact from '../features/shared/Contact';
 
 const LandingPage = lazy(() => import('../features/shared/Landing'));
 const AdminAuth = lazy(() => import('../features/admin/AdminAuth'));
@@ -68,7 +70,8 @@ const PublicRoutes = () => (
     <Route path='/student/course-page/:schoolName/:courseId'element={<CoursesShowPage/>}/>
     <Route path='/school/:verifiedSchool/manage-exam'element={<ExamManager/>}/>
     <Route path='/student/exam/take-exam' element={<ExamPage />} />
-
+    <Route path='/about'element={<About/>}/>
+    <Route path='/contact'element={<Contact/>}/>
   </Routes>
 );
 

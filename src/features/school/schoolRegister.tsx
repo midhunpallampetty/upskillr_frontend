@@ -96,6 +96,11 @@ const SchoolRegister = () => {
     });
 
     if (currentStep === 0) {
+      // Custom validation for schoolName
+      if (formData.schoolName.trim().length < 3) {
+        errors.schoolName = 'School name must be at least 3 characters';
+      }
+
       if (!/^\d+$/.test(formData.experience) || parseInt(formData.experience) <= 0) {
         errors.experience = 'Experience must be a positive number';
       }
@@ -115,8 +120,7 @@ const SchoolRegister = () => {
     }
 
     if (currentStep === 2) {
-      if (!imageFile) errors.image = 'Logo is required';
-      if (!coverImageFile) errors.coverImage = 'Cover image is required';
+      // No required checks for image and coverImage (now optional)
     }
 
     if (currentStep === 3) {
@@ -124,13 +128,14 @@ const SchoolRegister = () => {
       if (!emailRegex.test(formData.email)) {
         errors.email = 'Must be a valid email address';
       }
-      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\-+={}[\]|\\:;"'<>,.?/~`]).{6,}$/;
+      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\-+={}[\]|\\:;"'<>,.?/~`]).+.{6,}$/;
       if (!passwordRegex.test(formData.password)) {
         errors.password =
           'Password must have 6+ chars, 1 uppercase, 1 lowercase, 1 number, 1 symbol';
       }
+      // Custom message for confirmPassword
       if (formData.password !== formData.confirmPassword) {
-        errors.confirmPassword = 'Passwords do not match';
+        errors.confirmPassword = 'Passwords do not match—please double-check';
       }
     }
 
@@ -159,8 +164,15 @@ const SchoolRegister = () => {
     dispatch({ type: 'SET_LOADING', payload: true });
 
     try {
-      const imageUrl = await uploadToCloudinary(imageFile, CLOUD_NAME, UPLOAD_PRESET);
-      const coverImageUrl = await uploadToCloudinary(coverImageFile, CLOUD_NAME, UPLOAD_PRESET);
+      let imageUrl = '';
+      if (imageFile) {
+        imageUrl = await uploadToCloudinary(imageFile, CLOUD_NAME, UPLOAD_PRESET);
+      }
+
+      let coverImageUrl = '';
+      if (coverImageFile) {
+        coverImageUrl = await uploadToCloudinary(coverImageFile, CLOUD_NAME, UPLOAD_PRESET);
+      }
 
       await registerSchool({
         ...formData,
@@ -185,13 +197,13 @@ const SchoolRegister = () => {
       title: 'School Details',
       fields: [
         { name: 'schoolName', label: 'School Name', type: 'text' },
-        { name: 'experience', label: 'Experience', type: 'text' },
+        { name: 'experience', label: 'Years of Operations', type: 'text' },
         { name: 'address', label: 'Address', type: 'textarea' },
       ],
     },
     {
       title: 'Contact Info',
-      fields: [{ name: 'officialContact', label: 'Official Contact', type: 'text' }], // rest via Select components
+      fields: [{ name: 'officialContact', label: ' Contact Number', type: 'text' }], // rest via Select components
     },
     {
       title: 'Images',

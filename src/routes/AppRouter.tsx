@@ -12,8 +12,8 @@ const AppRouter: React.FC<Props> = ({ subdomain }) => {
   return (
     <Routes>
       {subdomain === 'contact' ? (
-        // Contact should be the root route for this subdomain
-        <Route path="/" element={<Contact />} />
+        // Directly render Contact page at root for contact.eduvia.space
+        <Route path="*" element={<Contact />} />
       ) : subdomain ? (
         <Route path="*" element={<SchoolRoutes />} />
       ) : (

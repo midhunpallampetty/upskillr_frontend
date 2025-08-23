@@ -16,6 +16,7 @@ export interface Exam {
 }
 
 export interface Props {
+  schoolId: string;
   dbname: string;
   schoolName: string;
   courseId: string;

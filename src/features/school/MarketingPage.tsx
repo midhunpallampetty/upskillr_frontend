@@ -48,6 +48,7 @@ const MarketingPage: React.FC = () => {
     foundedYear: '',
     studentsGraduated: '',
     successRate: '',
+    subDomain: '',
     experience: '',
     image: '',
     coverImage: '',
@@ -80,6 +81,7 @@ const MarketingPage: React.FC = () => {
             successRate: data.successRate || '', // If not provided, empty
             experience: data.experience || '',
             image: data.image || '',
+            subdomain:data.subDomain || '',
             coverImage: data.coverImage || '',
             coursesOffered: [] // Initialize empty; will be updated below
           };

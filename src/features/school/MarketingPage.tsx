@@ -103,7 +103,7 @@ const MarketingPage: React.FC = () => {
         try {
           const schoolId = schoolData.id;
           console.log(schoolData.name, 'school name');
-          const dbname = schoolData.name; // Use schoolData.name as dbname
+          const dbname = 'gamersclub'; // Use schoolData.name as dbname
           const coursesResponse = await getCoursesBySchool(schoolId, dbname);
           console.log(coursesResponse, 'courses response');
 

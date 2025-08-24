@@ -488,11 +488,11 @@ const MarketingPage: React.FC = () => {
                     </div> */}
 
                     {/* Salary Range */}
-                    <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-xl mb-6 border border-green-200">
+                    {/* <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-xl mb-6 border border-green-200">
                       <p className="text-green-800 font-semibold flex items-center">
                         💰 <span className="ml-2">Average Salary: <span className="text-green-600">{dummy.salary}</span></span>
                       </p>
-                    </div>
+                    </div> */}
 
                     {/* Additional Course Details */}
                     <div className="mb-6">

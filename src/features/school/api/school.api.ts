@@ -37,7 +37,7 @@ export const approveSchool = async (schoolId: string): Promise<void> => {
   });
 };
 export const getSchoolBySubdomain = async (subDomain: string, token: string) => {
-  const url = `/getSchoolBySubDomain?subDomain=http://${subDomain}.eduvia.space`;
+  const url = `/getSchoolBySubDomain?subDomain=https://${subDomain}.eduvia.space`;
 console.log(token)
   return schoolAxios.get(url, {
     headers: {

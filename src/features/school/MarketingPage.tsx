@@ -19,25 +19,18 @@ const getSubdomain = (url: string = window.location.href): string => {
 
 const MarketingPage: React.FC = () => {
   const [schoolData, setSchoolData] = useState({
-    name: "EduVia Academy",
-    email: `info@eduvia.space`,
-    phone: '+1 (555) 123-4567',
-    address: '123 Education Boulevard, Knowledge City, 00000',
-    description: 'Transform your future with industry-leading education designed for real-world success.',
-    foundedYear: '2015',
-    studentsGraduated: '10,000+',
-    successRate: '95%',
-    experience: '10',
-    image: 'https://via.placeholder.com/200x200/4F46E5/FFFFFF?text=EDUVIA', // Dummy logo
-    coverImage: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=2071&q=80', // Dummy cover
-    coursesOffered: [
-      'Full Stack Web Development',
-      'Data Science & Analytics',
-      'Digital Marketing Mastery',
-      'UI/UX Design Professional',
-      'Mobile App Development',
-      'Cloud Computing & DevOps'
-    ]
+    name: '',
+    email: '',
+    phone: '',
+    address: '',
+    description: '',
+    foundedYear: '',
+    studentsGraduated: '',
+    successRate: '',
+    experience: '',
+    image: '',
+    coverImage: '',
+    coursesOffered: [] // Keep empty initially; will be set from API
   });
 
   useEffect(() => {
@@ -52,18 +45,18 @@ const MarketingPage: React.FC = () => {
           const data = response.data; // Adjust based on axios response structure
           
           setSchoolData({
-            name: data.name || schoolData.name,
-            email: data.email || schoolData.email,
-            phone: data.officialContact || schoolData.phone,
-            address: data.address || schoolData.address,
-            description: data.description || schoolData.description,
-            foundedYear: data.createdAt ? new Date(data.createdAt).getFullYear().toString() : schoolData.foundedYear,
-            studentsGraduated: data.studentsGraduated || schoolData.studentsGraduated,
-            successRate: data.successRate || schoolData.successRate,
-            experience: data.experience || schoolData.experience,
-            image: data.image || schoolData.image,
-            coverImage: data.coverImage || schoolData.coverImage,
-            coursesOffered: data.coursesOffered || schoolData.coursesOffered
+            name: data.name || '',
+            email: data.email || '',
+            phone: data.officialContact || '',
+            address: data.address || '',
+            description: data.description || '', // If not provided by API, remains empty
+            foundedYear: data.createdAt ? new Date(data.createdAt).getFullYear().toString() : '',
+            studentsGraduated: data.studentsGraduated || '', // If not provided, empty
+            successRate: data.successRate || '', // If not provided, empty
+            experience: data.experience || '',
+            image: data.image || '',
+            coverImage: data.coverImage || '',
+            coursesOffered: data.coursesOffered || []
           });
         } catch (error) {
           console.error('Error fetching school data:', error);
@@ -75,19 +68,22 @@ const MarketingPage: React.FC = () => {
 
   // SEO and meta tag updates
   useEffect(() => {
-    document.title = `${schoolData.name} - Transform Your Career with Expert-Led Courses`;
+    if (schoolData.name) {
+      document.title = `${schoolData.name} - Transform Your Career with Expert-Led Courses`;
+    }
     
     const metaDescription = document.querySelector('meta[name="description"]');
-    if (metaDescription) {
-      metaDescription.setAttribute('content', `${schoolData.description} Join ${schoolData.studentsGraduated} successful graduates. Flexible learning, industry certification, career support.`);
-    } else {
+    if (metaDescription && schoolData.description) {
+      metaDescription.setAttribute('content', `${schoolData.description} Join ${schoolData.studentsGraduated || 'thousands of'} successful graduates. Flexible learning, industry certification, career support.`);
+    } else if (schoolData.description) {
       const meta = document.createElement('meta');
       meta.name = 'description';
-      meta.content = `${schoolData.description} Join ${schoolData.studentsGraduated} successful graduates.`;
+      meta.content = `${schoolData.description} Join ${schoolData.studentsGraduated || 'thousands of'} successful graduates.`;
       document.head.appendChild(meta);
     }
 
     const updateOrCreateMetaTag = (property: string, content: string) => {
+      if (!content) return; // Skip if content is empty
       let metaTag = document.querySelector(`meta[property="${property}"]`);
       if (metaTag) {
         metaTag.setAttribute('content', content);
@@ -107,7 +103,7 @@ const MarketingPage: React.FC = () => {
     }
   }, [schoolData]);
 
-  // Dummy course details for enhanced display
+  // Dummy course details for enhanced display (kept as per instructions)
   const courseDetails = {
     'Full Stack Web Development': {
       icon: '💻',
@@ -166,7 +162,7 @@ const MarketingPage: React.FC = () => {
       <section
         className="relative overflow-hidden min-h-screen flex items-center text-white"
         style={{
-          background: `linear-gradient(135deg, rgba(59, 130, 246, 0.85), rgba(147, 51, 234, 0.85)), url(${schoolData.coverImage})`,
+          background: `linear-gradient(135deg, rgba(59, 130, 246, 0.85), rgba(147, 51, 234, 0.85)), url(${schoolData.coverImage || 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=2071&q=80'})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundAttachment: 'fixed'
@@ -190,7 +186,7 @@ const MarketingPage: React.FC = () => {
               <div className="relative group">
                 <div className="absolute -inset-4 bg-gradient-to-r from-pink-500 to-violet-500 rounded-full blur-lg opacity-30 group-hover:opacity-50 transition-opacity"></div>
                 <img 
-                  src={schoolData.image} 
+                  src={schoolData.image || 'https://via.placeholder.com/200x200/4F46E5/FFFFFF?text=LOGO'} 
                   alt={`${schoolData.name} Logo`} 
                   className="relative w-32 h-32 rounded-full border-4 border-white/40 shadow-2xl backdrop-blur-sm hover:scale-110 transition-transform duration-300"
                 />
@@ -200,40 +196,48 @@ const MarketingPage: React.FC = () => {
             {/* School Name with Enhanced Typography */}
             <h1 className="text-6xl md:text-8xl font-black mb-6 tracking-tight">
               <span className="block text-transparent bg-clip-text bg-gradient-to-r from-white via-blue-100 to-purple-100 drop-shadow-lg">
-                {schoolData.name}
+                {schoolData.name || 'EduVia Academy'}
               </span>
             </h1>
             
             <div className="max-w-4xl mx-auto mb-8">
-              <p className="text-xl md:text-2xl font-light mb-8 text-blue-100 leading-relaxed">
-                {schoolData.description}
-              </p>
+              {schoolData.description && (
+                <p className="text-xl md:text-2xl font-light mb-8 text-blue-100 leading-relaxed">
+                  {schoolData.description}
+                </p>
+              )}
               
               {/* Enhanced Contact Information */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                <div className="flex items-center justify-center space-x-3 bg-white/10 backdrop-blur-md px-6 py-4 rounded-2xl border border-white/20 hover:bg-white/20 transition-all">
-                  <span className="text-2xl">📍</span>
-                  <div className="text-left">
-                    <p className="font-semibold text-sm">Location</p>
-                    <p className="text-blue-100 text-sm">{schoolData.address}</p>
+                {schoolData.address && (
+                  <div className="flex items-center justify-center space-x-3 bg-white/10 backdrop-blur-md px-6 py-4 rounded-2xl border border-white/20 hover:bg-white/20 transition-all">
+                    <span className="text-2xl">📍</span>
+                    <div className="text-left">
+                      <p className="font-semibold text-sm">Location</p>
+                      <p className="text-blue-100 text-sm">{schoolData.address}</p>
+                    </div>
                   </div>
-                </div>
+                )}
                 
-                <div className="flex items-center justify-center space-x-3 bg-white/10 backdrop-blur-md px-6 py-4 rounded-2xl border border-white/20 hover:bg-white/20 transition-all">
-                  <span className="text-2xl">📞</span>
-                  <div className="text-left">
-                    <p className="font-semibold text-sm">Call Us</p>
-                    <p className="text-blue-100 text-sm">{schoolData.phone}</p>
+                {schoolData.phone && (
+                  <div className="flex items-center justify-center space-x-3 bg-white/10 backdrop-blur-md px-6 py-4 rounded-2xl border border-white/20 hover:bg-white/20 transition-all">
+                    <span className="text-2xl">📞</span>
+                    <div className="text-left">
+                      <p className="font-semibold text-sm">Call Us</p>
+                      <p className="text-blue-100 text-sm">{schoolData.phone}</p>
+                    </div>
                   </div>
-                </div>
+                )}
                 
-                <div className="flex items-center justify-center space-x-3 bg-white/10 backdrop-blur-md px-6 py-4 rounded-2xl border border-white/20 hover:bg-white/20 transition-all">
-                  <span className="text-2xl">✉️</span>
-                  <div className="text-left">
-                    <p className="font-semibold text-sm">Email</p>
-                    <p className="text-blue-100 text-sm">{schoolData.email}</p>
+                {schoolData.email && (
+                  <div className="flex items-center justify-center space-x-3 bg-white/10 backdrop-blur-md px-6 py-4 rounded-2xl border border-white/20 hover:bg-white/20 transition-all">
+                    <span className="text-2xl">✉️</span>
+                    <div className="text-left">
+                      <p className="font-semibold text-sm">Email</p>
+                      <p className="text-blue-100 text-sm">{schoolData.email}</p>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             </div>
           </div>
@@ -260,137 +264,153 @@ const MarketingPage: React.FC = () => {
             </button>
           </div>
 
-          {/* Enhanced Trust Indicators */}
+          {/* Enhanced Trust Indicators (conditionally render based on available data) */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-6xl mx-auto">
-            {[
-              { icon: "🎓", value: schoolData.studentsGraduated, label: "Successful Graduates", color: "from-green-400 to-blue-500" },
-              { icon: "📈", value: schoolData.successRate, label: "Job Placement Rate", color: "from-purple-400 to-pink-500" },
-              { icon: "⭐", value: `Since ${schoolData.foundedYear}`, label: "Years of Excellence", color: "from-yellow-400 to-orange-500" },
-              { icon: "🌍", value: "50+ Countries", label: "Global Alumni Network", color: "from-teal-400 to-cyan-500" }
-            ].map((stat, index) => (
-              <div key={index} className={`text-center bg-gradient-to-br ${stat.color} p-6 rounded-3xl shadow-2xl hover:shadow-3xl transform hover:-translate-y-2 transition-all duration-300 border border-white/20`}>
-                <div className="text-4xl mb-3 filter drop-shadow-lg">{stat.icon}</div>
-                <div className="text-2xl md:text-3xl font-black text-white mb-2 drop-shadow-lg">{stat.value}</div>
-                <div className="text-white/90 font-semibold text-sm">{stat.label}</div>
+            {schoolData.studentsGraduated && (
+              <div className="text-center bg-gradient-to-br from-green-400 to-blue-500 p-6 rounded-3xl shadow-2xl hover:shadow-3xl transform hover:-translate-y-2 transition-all duration-300 border border-white/20">
+                <div className="text-4xl mb-3 filter drop-shadow-lg">🎓</div>
+                <div className="text-2xl md:text-3xl font-black text-white mb-2 drop-shadow-lg">{schoolData.studentsGraduated}</div>
+                <div className="text-white/90 font-semibold text-sm">Successful Graduates</div>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Enhanced Courses Section with Dummy Data */}
-      <section id="courses" className="py-24 px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-20">
-            <h2 className="text-5xl md:text-6xl font-black mb-6">
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-pink-500 to-orange-400">
-                Our Premium Courses
-              </span>
-            </h2>
-            <p className="text-xl md:text-2xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
-              Master in-demand skills with our industry-aligned curriculum designed by experts from top companies
-            </p>
-            <div className="mt-8 inline-block bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-full font-semibold">
-              🔥 {schoolData.coursesOffered.length} Courses Available
+            )}
+            {schoolData.successRate && (
+              <div className="text-center bg-gradient-to-br from-purple-400 to-pink-500 p-6 rounded-3xl shadow-2xl hover:shadow-3xl transform hover:-translate-y-2 transition-all duration-300 border border-white/20">
+                <div className="text-4xl mb-3 filter drop-shadow-lg">📈</div>
+                <div className="text-2xl md:text-3xl font-black text-white mb-2 drop-shadow-lg">{schoolData.successRate}</div>
+                <div className="text-white/90 font-semibold text-sm">Job Placement Rate</div>
+              </div>
+            )}
+            {schoolData.foundedYear && (
+              <div className="text-center bg-gradient-to-br from-yellow-400 to-orange-500 p-6 rounded-3xl shadow-2xl hover:shadow-3xl transform hover:-translate-y-2 transition-all duration-300 border border-white/20">
+                <div className="text-4xl mb-3 filter drop-shadow-lg">⭐</div>
+                <div className="text-2xl md:text-3xl font-black text-white mb-2 drop-shadow-lg">Since {schoolData.foundedYear}</div>
+                <div className="text-white/90 font-semibold text-sm">Years of Excellence</div>
+              </div>
+            )}
+            <div className="text-center bg-gradient-to-br from-teal-400 to-cyan-500 p-6 rounded-3xl shadow-2xl hover:shadow-3xl transform hover:-translate-y-2 transition-all duration-300 border border-white/20">
+              <div className="text-4xl mb-3 filter drop-shadow-lg">🌍</div>
+              <div className="text-2xl md:text-3xl font-black text-white mb-2 drop-shadow-lg">50+ Countries</div>
+              <div className="text-white/90 font-semibold text-sm">Global Alumni Network</div>
             </div>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-            {schoolData.coursesOffered.map((course, index) => {
-              const details = courseDetails[course] || courseDetails['Full Stack Web Development'];
-              
-              return (
-                <div
-                  key={index}
-                  className="group bg-white rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 border-l-4 border-gradient-to-b from-purple-500 to-pink-500 hover:-translate-y-2 transform"
-                  style={{
-                    borderImage: 'linear-gradient(to bottom, #8B5CF6, #EC4899) 1'
-                  }}
-                >
-                  {/* Course Header */}
-                  <div className="flex items-center justify-between mb-6">
-                    <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center text-white text-3xl shadow-lg">
-                      {details.icon}
-                    </div>
-                    <div className="text-right">
-                      <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold mb-1">
-                        🔥 Popular
-                      </div>
-                      <div className="text-gray-500 text-sm">Course {index + 1}</div>
-                    </div>
-                  </div>
-
-                  <h3 className="text-2xl font-bold mb-4 text-gray-800 group-hover:text-purple-600 transition-colors leading-tight">
-                    {course}
-                  </h3>
-
-                  <p className="text-gray-600 mb-6 leading-relaxed">
-                    {details.description}
-                  </p>
-
-                  {/* Course Meta */}
-                  <div className="flex flex-wrap gap-3 mb-6">
-                    <span className="bg-blue-50 text-blue-600 px-3 py-2 rounded-xl text-sm flex items-center font-medium">
-                      📅 {details.duration}
-                    </span>
-                    <span className="bg-orange-50 text-orange-600 px-3 py-2 rounded-xl text-sm flex items-center font-medium">
-                      📊 {details.level}
-                    </span>
-                    <span className="bg-green-50 text-green-600 px-3 py-2 rounded-xl text-sm flex items-center font-medium">
-                      🏆 Certified
-                    </span>
-                  </div>
-
-                  {/* Skills */}
-                  <div className="mb-6">
-                    <h4 className="font-bold text-gray-800 mb-3">Key Skills You'll Learn:</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {details.skills.map((skill, idx) => (
-                        <span key={idx} className="bg-purple-50 text-purple-700 px-3 py-1 rounded-full text-sm font-medium">
-                          {skill}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Features */}
-                  <div className="mb-6">
-                    <h4 className="font-bold text-gray-800 mb-3">What You'll Get:</h4>
-                    <ul className="space-y-2">
-                      {[
-                        "🎯 Live Interactive Sessions", 
-                        "👨‍🏫 1-on-1 Expert Mentorship", 
-                        "💼 Career Placement Support",
-                        "📜 Industry Certificate"
-                      ].map((feature, idx) => (
-                        <li key={idx} className="flex items-center text-gray-700 text-sm">
-                          <span className="mr-2">{feature.split(' ')[0]}</span>
-                          <span>{feature.split(' ').slice(1).join(' ')}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  {/* Salary Range */}
-                  <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-xl mb-6 border border-green-200">
-                    <p className="text-green-800 font-semibold flex items-center">
-                      💰 <span className="ml-2">Average Salary: <span className="text-green-600">{details.salary}</span></span>
-                    </p>
-                  </div>
-
-                  {/* CTA Button */}
-                  <button
-                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-4 text-lg font-bold rounded-2xl hover:from-purple-700 hover:to-pink-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-                    onClick={() => window.location.href = "#contact"}
-                  >
-                    Start Learning Today →
-                  </button>
-                </div>
-              );
-            })}
-          </div>
         </div>
       </section>
+
+      {/* Enhanced Courses Section with API-provided courses and dummy details */}
+      {schoolData.coursesOffered.length > 0 && (
+        <section id="courses" className="py-24 px-6">
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center mb-20">
+              <h2 className="text-5xl md:text-6xl font-black mb-6">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-pink-500 to-orange-400">
+                  Our Premium Courses
+                </span>
+              </h2>
+              <p className="text-xl md:text-2xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
+                Master in-demand skills with our industry-aligned curriculum designed by experts from top companies
+              </p>
+              <div className="mt-8 inline-block bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-full font-semibold">
+                🔥 {schoolData.coursesOffered.length} Courses Available
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+              {schoolData.coursesOffered.map((course, index) => {
+                const details = courseDetails[course] || courseDetails['Full Stack Web Development']; // Fallback if course not in dummy map
+                
+                return (
+                  <div
+                    key={index}
+                    className="group bg-white rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 border-l-4 border-gradient-to-b from-purple-500 to-pink-500 hover:-translate-y-2 transform"
+                    style={{
+                      borderImage: 'linear-gradient(to bottom, #8B5CF6, #EC4899) 1'
+                    }}
+                  >
+                    {/* Course Header */}
+                    <div className="flex items-center justify-between mb-6">
+                      <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center text-white text-3xl shadow-lg">
+                        {details.icon}
+                      </div>
+                      <div className="text-right">
+                        <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold mb-1">
+                          🔥 Popular
+                        </div>
+                        <div className="text-gray-500 text-sm">Course {index + 1}</div>
+                      </div>
+                    </div>
+
+                    <h3 className="text-2xl font-bold mb-4 text-gray-800 group-hover:text-purple-600 transition-colors leading-tight">
+                      {course}
+                    </h3>
+
+                    <p className="text-gray-600 mb-6 leading-relaxed">
+                      {details.description}
+                    </p>
+
+                    {/* Course Meta */}
+                    <div className="flex flex-wrap gap-3 mb-6">
+                      <span className="bg-blue-50 text-blue-600 px-3 py-2 rounded-xl text-sm flex items-center font-medium">
+                        📅 {details.duration}
+                      </span>
+                      <span className="bg-orange-50 text-orange-600 px-3 py-2 rounded-xl text-sm flex items-center font-medium">
+                        📊 {details.level}
+                      </span>
+                      <span className="bg-green-50 text-green-600 px-3 py-2 rounded-xl text-sm flex items-center font-medium">
+                        🏆 Certified
+                      </span>
+                    </div>
+
+                    {/* Skills */}
+                    <div className="mb-6">
+                      <h4 className="font-bold text-gray-800 mb-3">Key Skills You'll Learn:</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {details.skills.map((skill, idx) => (
+                          <span key={idx} className="bg-purple-50 text-purple-700 px-3 py-1 rounded-full text-sm font-medium">
+                            {skill}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Features */}
+                    <div className="mb-6">
+                      <h4 className="font-bold text-gray-800 mb-3">What You'll Get:</h4>
+                      <ul className="space-y-2">
+                        {[
+                          "🎯 Live Interactive Sessions", 
+                          "👨‍🏫 1-on-1 Expert Mentorship", 
+                          "💼 Career Placement Support",
+                          "📜 Industry Certificate"
+                        ].map((feature, idx) => (
+                          <li key={idx} className="flex items-center text-gray-700 text-sm">
+                            <span className="mr-2">{feature.split(' ')[0]}</span>
+                            <span>{feature.split(' ').slice(1).join(' ')}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    {/* Salary Range */}
+                    <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-xl mb-6 border border-green-200">
+                      <p className="text-green-800 font-semibold flex items-center">
+                        💰 <span className="ml-2">Average Salary: <span className="text-green-600">{details.salary}</span></span>
+                      </p>
+                    </div>
+
+                    {/* CTA Button */}
+                    <button
+                      className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-4 text-lg font-bold rounded-2xl hover:from-purple-700 hover:to-pink-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                      onClick={() => window.location.href = "#contact"}
+                    >
+                      Start Learning Today →
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Enhanced About Section */}
       <section className="py-24 px-6 bg-gradient-to-br from-slate-50 to-blue-50">
@@ -400,19 +420,21 @@ const MarketingPage: React.FC = () => {
             <div>
               <h2 className="text-4xl md:text-5xl font-black mb-8">
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
-                  Why Choose {schoolData.name}?
+                  Why Choose {schoolData.name || 'Us'}?
                 </span>
               </h2>
               
-              <p className="text-xl text-gray-700 mb-8 leading-relaxed">
-                With <span className="font-bold text-blue-600">{schoolData.experience}</span> years of experience since {schoolData.foundedYear}, we've been transforming careers through cutting-edge education and practical skill development.
-              </p>
+              {(schoolData.experience || schoolData.foundedYear) && (
+                <p className="text-xl text-gray-700 mb-8 leading-relaxed">
+                  With <span className="font-bold text-blue-600">{schoolData.experience || 'many'}</span> years of experience since {schoolData.foundedYear || 'our founding'}, we've been transforming careers through cutting-edge education and practical skill development.
+                </p>
+              )}
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
                 {[
                   { icon: "🎯", title: "Industry-Focused", desc: "Real-world projects and skills", color: "from-blue-500 to-purple-500" },
                   { icon: "👥", title: "Expert Mentors", desc: "Learn from industry leaders", color: "from-green-500 to-teal-500" },
-                  { icon: "🌟", title: "Proven Results", desc: `${schoolData.successRate} success rate`, color: "from-yellow-500 to-orange-500" },
+                  { icon: "🌟", title: "Proven Results", desc: `${schoolData.successRate ? `${schoolData.successRate} success rate` : 'High success rate'}`, color: "from-yellow-500 to-orange-500" },
                   { icon: "🤝", title: "Career Support", desc: "Job placement assistance", color: "from-pink-500 to-red-500" }
                 ].map((feature, index) => (
                   <div key={index} className={`bg-gradient-to-br ${feature.color} p-6 rounded-2xl shadow-md hover:shadow-lg transition-all text-white transform hover:-translate-y-1`}>
@@ -428,8 +450,8 @@ const MarketingPage: React.FC = () => {
             <div className="bg-gradient-to-br from-purple-600 to-blue-600 rounded-3xl p-8 text-white shadow-2xl">
               <div className="text-center mb-8">
                 <img 
-                  src={schoolData.image} 
-                  alt={`${schoolData.name} Logo`} 
+                  src={schoolData.image || 'https://via.placeholder.com/200x200/4F46E5/FFFFFF?text=LOGO'} 
+                  alt={`${schoolData.name || 'School'} Logo`} 
                   className="w-24 h-24 rounded-full border-4 border-white/30 mx-auto mb-4" 
                 />
                 <h3 className="text-3xl font-bold">Get In Touch</h3>
@@ -437,29 +459,35 @@ const MarketingPage: React.FC = () => {
               </div>
               
               <div className="space-y-4">
-                <div className="flex items-start space-x-4 bg-white/10 backdrop-blur-md p-4 rounded-xl">
-                  <span className="text-2xl">🏢</span>
-                  <div>
-                    <p className="font-semibold">Address</p>
-                    <p className="text-blue-100 text-sm">{schoolData.address}</p>
+                {schoolData.address && (
+                  <div className="flex items-start space-x-4 bg-white/10 backdrop-blur-md p-4 rounded-xl">
+                    <span className="text-2xl">🏢</span>
+                    <div>
+                      <p className="font-semibold">Address</p>
+                      <p className="text-blue-100 text-sm">{schoolData.address}</p>
+                    </div>
                   </div>
-                </div>
+                )}
                 
-                <div className="flex items-center space-x-4 bg-white/10 backdrop-blur-md p-4 rounded-xl">
-                  <span className="text-2xl">📧</span>
-                  <div>
-                    <p className="font-semibold">Email</p>
-                    <p className="text-blue-100">{schoolData.email}</p>
+                {schoolData.email && (
+                  <div className="flex items-center space-x-4 bg-white/10 backdrop-blur-md p-4 rounded-xl">
+                    <span className="text-2xl">📧</span>
+                    <div>
+                      <p className="font-semibold">Email</p>
+                      <p className="text-blue-100">{schoolData.email}</p>
+                    </div>
                   </div>
-                </div>
+                )}
                 
-                <div className="flex items-center space-x-4 bg-white/10 backdrop-blur-md p-4 rounded-xl">
-                  <span className="text-2xl">📞</span>
-                  <div>
-                    <p className="font-semibold">Phone</p>
-                    <p className="text-blue-100">{schoolData.phone}</p>
+                {schoolData.phone && (
+                  <div className="flex items-center space-x-4 bg-white/10 backdrop-blur-md p-4 rounded-xl">
+                    <span className="text-2xl">📞</span>
+                    <div>
+                      <p className="font-semibold">Phone</p>
+                      <p className="text-blue-100">{schoolData.phone}</p>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
 
               <button
@@ -480,22 +508,26 @@ const MarketingPage: React.FC = () => {
             <div className="col-span-1 md:col-span-2">
               <div className="flex items-center space-x-4 mb-6">
                 <img 
-                  src={schoolData.image} 
-                  alt={`${schoolData.name} Logo`} 
+                  src={schoolData.image || 'https://via.placeholder.com/200x200/4F46E5/FFFFFF?text=LOGO'} 
+                  alt={`${schoolData.name || 'School'} Logo`} 
                   className="w-16 h-16 rounded-full border-2 border-purple-400" 
                 />
                 <h3 className="text-4xl font-black">
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-orange-300">
-                    {schoolData.name}
+                    {schoolData.name || 'EduVia Academy'}
                   </span>
                 </h3>
               </div>
-              <p className="text-xl text-blue-100 mb-6 leading-relaxed">
-                {schoolData.description}
-              </p>
-              <p className="text-lg text-purple-200">
-                🎯 {schoolData.studentsGraduated} graduates • {schoolData.successRate} success rate • Since {schoolData.foundedYear}
-              </p>
+              {schoolData.description && (
+                <p className="text-xl text-blue-100 mb-6 leading-relaxed">
+                  {schoolData.description}
+                </p>
+              )}
+              {(schoolData.studentsGraduated || schoolData.successRate || schoolData.foundedYear) && (
+                <p className="text-lg text-purple-200">
+                  🎯 {schoolData.studentsGraduated || 'Thousands of'} graduates • {schoolData.successRate || 'High'} success rate • Since {schoolData.foundedYear || '2015'}
+                </p>
+              )}
             </div>
             
             <div>
@@ -529,7 +561,7 @@ const MarketingPage: React.FC = () => {
           
           <div className="border-t border-white/20 pt-8 text-center">
             <p className="text-lg text-blue-200">
-              © 2024 {schoolData.name}. Empowering futures through education. All rights reserved.
+              © 2024 {schoolData.name || 'EduVia Academy'}. Empowering futures through education. All rights reserved.
             </p>
           </div>
         </div>

@@ -1,11 +1,20 @@
 export const getSubdomain = (): string | null => {
-  const host = window.location.hostname;
-  const parts = host.split('.');
-  if (parts.length >= 2) {
+  const host = window.location.hostname; // e.g., "gamersclub.eduvia.space" or "school.localhost"
+  const parts = host.split(".");
+
+  // ✅ Handle localhost (school.localhost → "school")
+  if (parts.length >= 2 && parts[parts.length - 1] === "localhost") {
     return parts[0];
   }
-  return null;
+
+  // ✅ Handle production (gamersclub.eduvia.space → "gamersclub")
+  if (parts.length > 2) {
+    return parts[0];
+  }
+
+  return null; // root domain → no subdomain
 };
+
 // export const getDynamicSubdomain = (): string | null => {
 //   const host: string = window.location.hostname;
 //   const parts: string[] = host.split('.');

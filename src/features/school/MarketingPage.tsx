@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { getSchoolBySubdomain } from './api/school.api'; // Adjust the import path to match your project structure (e.g., the api folder where this function exists)
 import { getCoursesBySchool } from './api/course.api'; // Assuming this is the import for the new API function; adjust path accordingly
 
+
 // Embedded utility function to extract subdomain
 const getSubdomain = (url: string = window.location.href): string => {
   try {
@@ -18,6 +19,7 @@ const getSubdomain = (url: string = window.location.href): string => {
   }
 };
 
+
 const MarketingPage: React.FC = () => {
   const [schoolData, setSchoolData] = useState({
     name: '',
@@ -33,6 +35,7 @@ const MarketingPage: React.FC = () => {
     coverImage: '',
     coursesOffered: [] // Keep empty initially; will be set from API
   });
+
 
   useEffect(() => {
     const subdomain = getSubdomain();
@@ -73,12 +76,10 @@ const MarketingPage: React.FC = () => {
           const coursesResponse = await getCoursesBySchool(schoolId, dbname);
           console.log(coursesResponse, 'courses response');
 
-          // Assuming response structure has courses in coursesResponse.data.courses as an array of objects
-          // Extract course names or full objects as needed; here we store full course objects
-          const fetchedCourses = coursesResponse?.data?.courses || [];
-          console.log(fetchedCourses, 'fetched courses');
-
-          // Update schoolData with fetched courses (storing full objects for potential extended use)
+          // Assuming response structure has courses in coursesResponse.data.courses as an array of strings
+          const fetchedCourses = coursesResponse || [];
+console.log(fetchedCourses, 'fetched courses');
+          // Update schoolData with fetched courses
           setSchoolData(prevData => ({
             ...prevData,
             coursesOffered: fetchedCourses
@@ -91,7 +92,7 @@ const MarketingPage: React.FC = () => {
       fetchSchoolData();
     }
   }, []);
-  console.log(schoolData, 'school data');
+console.log(schoolData, 'school data');
 
   // SEO and meta tag updates
   useEffect(() => {
@@ -109,6 +110,7 @@ const MarketingPage: React.FC = () => {
       document.head.appendChild(meta);
     }
 
+
     const updateOrCreateMetaTag = (property: string, content: string) => {
       if (!content) return; // Skip if content is empty
       let metaTag = document.querySelector(`meta[property="${property}"]`);
@@ -122,6 +124,7 @@ const MarketingPage: React.FC = () => {
       }
     };
 
+
     updateOrCreateMetaTag('og:title', `${schoolData.name} - Expert Learning Platform`);
     updateOrCreateMetaTag('og:description', schoolData.description);
     updateOrCreateMetaTag('og:url', 'https://eduvia.space');
@@ -130,91 +133,67 @@ const MarketingPage: React.FC = () => {
     }
   }, [schoolData]);
 
-  // Updated dummy course details to match or approximate the provided API courses
-  // Extended with new entries based on the sample data (e.g., IOT Development, 2D Animations Using Blender, Game Development Using Unreal Engine)
-  const courseDetails = {
-    'IOT Development': {
-      icon: '📡',
-      duration: '18 weeks',
-      level: 'Intermediate to Advanced',
-      description: 'Learn to build connected devices and IoT systems for smart applications',
-      skills: ['IoT Protocols', 'Sensor Integration', 'Cloud Connectivity', 'Embedded Systems'],
-      salary: '$80K - $130K'
-    },
-    '2D Animations Using Blender': {
-      icon: '🎥',
-      duration: '16 weeks',
-      level: 'Beginner to Intermediate',
-      description: 'Master 2D animation techniques using Blender for creative storytelling',
-      skills: ['Blender', 'Animation Principles', 'Storyboarding', 'Digital Illustration'],
-      salary: '$55K - $95K'
-    },
-    'game development using unreal engine': {
-      icon: '🎮',
-      duration: '22 weeks',
-      level: 'Intermediate to Advanced',
-      description: 'Create immersive games using Unreal Engine with advanced graphics and mechanics',
-      skills: ['Unreal Engine', 'Blueprint Scripting', '3D Modeling', 'Game Physics'],
-      salary: '$70K - $120K'
-    },
-    // Retained original dummies for fallback or additional courses
-    'Full Stack Web Development': {
-      icon: '💻',
-      duration: '24 weeks',
-      level: 'Beginner to Advanced',
-      description: 'Master React, Node.js, MongoDB and become a complete web developer',
-      skills: ['React', 'Node.js', 'MongoDB', 'TypeScript'],
-      salary: '$75K - $130K'
-    },
-    'Data Science & Analytics': {
-      icon: '📊',
-      duration: '20 weeks',
-      level: 'Intermediate',
-      description: 'Learn Python, Machine Learning, and data visualization techniques',
-      skills: ['Python', 'Machine Learning', 'SQL', 'Tableau'],
-      salary: '$80K - $140K'
-    },
-    'Digital Marketing Mastery': {
-      icon: '📱',
-      duration: '16 weeks',
-      level: 'All Levels',
-      description: 'Master SEO, social media marketing, and digital advertising strategies',
-      skills: ['SEO', 'Google Ads', 'Social Media', 'Analytics'],
-      salary: '$50K - $90K'
-    },
-    'UI/UX Design Professional': {
-      icon: '🎨',
-      duration: '18 weeks',
-      level: 'Beginner to Advanced',
-      description: 'Create stunning user interfaces and exceptional user experiences',
-      skills: ['Figma', 'Adobe XD', 'Prototyping', 'User Research'],
-      salary: '$65K - $110K'
-    },
-    'Mobile App Development': {
-      icon: '📱',
-      duration: '22 weeks',
-      level: 'Intermediate',
-      description: 'Build native iOS and Android apps with React Native and Flutter',
-      skills: ['React Native', 'Flutter', 'iOS', 'Android'],
-      salary: '$70K - $125K'
-    },
-    'Cloud Computing & DevOps': {
-      icon: '☁️',
-      duration: '20 weeks',
-      level: 'Advanced',
-      description: 'Master AWS, Docker, Kubernetes and modern deployment practices',
-      skills: ['AWS', 'Docker', 'Kubernetes', 'CI/CD'],
-      salary: '$85K - $150K'
-    },
-    'Game Development Using Unity': {
-      icon: '🎮',
-      duration: '20 weeks',
-      level: 'Beginner to Advanced',
-      description: 'Learn Unity engine to create immersive 2D and 3D games',
-      skills: ['Unity', 'C#', 'Game Design', '3D Modeling'],
-      salary: '$70K - $120K'
-    }
-  };
+
+  // Dummy course details for enhanced display (kept as per instructions, extended for potential new courses)
+  // const courseDetails = {
+  //   'Full Stack Web Development': {
+  //     icon: '💻',
+  //     duration: '24 weeks',
+  //     level: 'Beginner to Advanced',
+  //     description: 'Master React, Node.js, MongoDB and become a complete web developer',
+  //     skills: ['React', 'Node.js', 'MongoDB', 'TypeScript'],
+  //     salary: '$75K - $130K'
+  //   },
+  //   'Data Science & Analytics': {
+  //     icon: '📊',
+  //     duration: '20 weeks',
+  //     level: 'Intermediate',
+  //     description: 'Learn Python, Machine Learning, and data visualization techniques',
+  //     skills: ['Python', 'Machine Learning', 'SQL', 'Tableau'],
+  //     salary: '$80K - $140K'
+  //   },
+  //   'Digital Marketing Mastery': {
+  //     icon: '📱',
+  //     duration: '16 weeks',
+  //     level: 'All Levels',
+  //     description: 'Master SEO, social media marketing, and digital advertising strategies',
+  //     skills: ['SEO', 'Google Ads', 'Social Media', 'Analytics'],
+  //     salary: '$50K - $90K'
+  //   },
+  //   'UI/UX Design Professional': {
+  //     icon: '🎨',
+  //     duration: '18 weeks',
+  //     level: 'Beginner to Advanced',
+  //     description: 'Create stunning user interfaces and exceptional user experiences',
+  //     skills: ['Figma', 'Adobe XD', 'Prototyping', 'User Research'],
+  //     salary: '$65K - $110K'
+  //   },
+  //   'Mobile App Development': {
+  //     icon: '📱',
+  //     duration: '22 weeks',
+  //     level: 'Intermediate',
+  //     description: 'Build native iOS and Android apps with React Native and Flutter',
+  //     skills: ['React Native', 'Flutter', 'iOS', 'Android'],
+  //     salary: '$70K - $125K'
+  //   },
+  //   'Cloud Computing & DevOps': {
+  //     icon: '☁️',
+  //     duration: '20 weeks',
+  //     level: 'Advanced',
+  //     description: 'Master AWS, Docker, Kubernetes and modern deployment practices',
+  //     skills: ['AWS', 'Docker', 'Kubernetes', 'CI/CD'],
+  //     salary: '$85K - $150K'
+  //   },
+  //   'Game Development Using Unity': { // Added based on sample data for better matching
+  //     icon: '🎮',
+  //     duration: '20 weeks',
+  //     level: 'Beginner to Advanced',
+  //     description: 'Learn Unity engine to create immersive 2D and 3D games',
+  //     skills: ['Unity', 'C#', 'Game Design', '3D Modeling'],
+  //     salary: '$70K - $120K'
+  //   }
+  // };
+
 
   return (
     <div className="font-inter text-gray-800 leading-7 bg-gray-50 min-h-screen">
@@ -239,6 +218,7 @@ const MarketingPage: React.FC = () => {
           <div className="absolute top-1/2 left-1/4 w-64 h-64 bg-pink-500/10 rounded-full blur-2xl animate-pulse delay-500"></div>
         </div>
 
+
         <div className="relative z-10 container mx-auto px-6">
           {/* School Header with Logo */}
           <div className="text-center mb-12">
@@ -253,6 +233,7 @@ const MarketingPage: React.FC = () => {
                 />
               </div>
             </div>
+
 
             {/* School Name with Enhanced Typography */}
             <h1 className="text-6xl md:text-8xl font-black mb-6 tracking-tight">
@@ -303,6 +284,7 @@ const MarketingPage: React.FC = () => {
             </div>
           </div>
 
+
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16">
             <button
@@ -324,6 +306,7 @@ const MarketingPage: React.FC = () => {
               </span>
             </button>
           </div>
+
 
           {/* Enhanced Trust Indicators (conditionally render based on available data) */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-6xl mx-auto">
@@ -357,6 +340,7 @@ const MarketingPage: React.FC = () => {
         </div>
       </section>
 
+
       {/* Enhanced Courses Section with API-provided courses and dummy details */}
       {schoolData.coursesOffered.length > 0 && (
         <section id="courses" className="py-24 px-6">
@@ -370,17 +354,15 @@ const MarketingPage: React.FC = () => {
               <p className="text-xl md:text-2xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
                 Master in-demand skills with our industry-aligned curriculum designed by experts from top companies
               </p>
-              <div className="mt-8 inline-block bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-full font-semibold">
+              {/* <div className="mt-8 inline-block bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-full font-semibold">
                 🔥 {schoolData.coursesOffered.length} Courses Available
-              </div>
+              </div> */}
             </div>
+
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
               {schoolData.coursesOffered.map((course, index) => {
-                // Extract course name from the object (assuming course is an object with 'courseName')
-                const courseName = course.courseName || 'Unknown Course';
-                // Lookup details using the courseName; fallback to a default if not found
-                const details = courseDetails[courseName] || courseDetails['Full Stack Web Development'];
+                const details = courseDetails[course] || courseDetails['Full Stack Web Development']; // Fallback if course not in dummy map
                 
                 return (
                   <div
@@ -403,13 +385,16 @@ const MarketingPage: React.FC = () => {
                       </div>
                     </div>
 
+
                     <h3 className="text-2xl font-bold mb-4 text-gray-800 group-hover:text-purple-600 transition-colors leading-tight">
-                      {courseName}
+                      {course}
                     </h3>
+
 
                     <p className="text-gray-600 mb-6 leading-relaxed">
                       {details.description}
                     </p>
+
 
                     {/* Course Meta */}
                     <div className="flex flex-wrap gap-3 mb-6">
@@ -424,6 +409,7 @@ const MarketingPage: React.FC = () => {
                       </span>
                     </div>
 
+
                     {/* Skills */}
                     <div className="mb-6">
                       <h4 className="font-bold text-gray-800 mb-3">Key Skills You'll Learn:</h4>
@@ -435,6 +421,7 @@ const MarketingPage: React.FC = () => {
                         ))}
                       </div>
                     </div>
+
 
                     {/* Features */}
                     <div className="mb-6">
@@ -454,12 +441,14 @@ const MarketingPage: React.FC = () => {
                       </ul>
                     </div>
 
+
                     {/* Salary Range */}
                     <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-xl mb-6 border border-green-200">
                       <p className="text-green-800 font-semibold flex items-center">
                         💰 <span className="ml-2">Average Salary: <span className="text-green-600">{details.salary}</span></span>
                       </p>
                     </div>
+
 
                     {/* CTA Button */}
                     <button
@@ -475,6 +464,7 @@ const MarketingPage: React.FC = () => {
           </div>
         </section>
       )}
+
 
       {/* Enhanced About Section */}
       <section className="py-24 px-6 bg-gradient-to-br from-slate-50 to-blue-50">
@@ -494,6 +484,7 @@ const MarketingPage: React.FC = () => {
                 </p>
               )}
 
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
                 {[
                   { icon: "🎯", title: "Industry-Focused", desc: "Real-world projects and skills", color: "from-blue-500 to-purple-500" },
@@ -509,6 +500,7 @@ const MarketingPage: React.FC = () => {
                 ))}
               </div>
             </div>
+
 
             {/* Right Column - Contact Card - Ensured logo, address, phone, email are prominently displayed */}
             <div className="bg-gradient-to-br from-purple-600 to-blue-600 rounded-3xl p-8 text-white shadow-2xl">
@@ -554,6 +546,7 @@ const MarketingPage: React.FC = () => {
                 )}
               </div>
 
+
               <button
                 className="w-full mt-8 bg-white text-purple-600 py-4 rounded-2xl font-bold hover:bg-gray-100 transition-all transform hover:-translate-y-1 shadow-lg"
                 onClick={() => window.location.href = "#contact"}
@@ -564,6 +557,7 @@ const MarketingPage: React.FC = () => {
           </div>
         </div>
       </section>
+
 
       {/* Modern Footer - Ensured logo and other details are shown */}
       <footer id="contact" className="bg-gradient-to-br from-gray-900 via-purple-900 to-blue-900 text-white py-20 px-6">
@@ -631,6 +625,7 @@ const MarketingPage: React.FC = () => {
         </div>
       </footer>
 
+
       {/* Custom CSS for animations */}
       <style jsx>{`
         @keyframes fade-in {
@@ -644,5 +639,6 @@ const MarketingPage: React.FC = () => {
     </div>
   );
 };
+
 
 export default MarketingPage;

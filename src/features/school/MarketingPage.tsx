@@ -74,7 +74,7 @@ const MarketingPage: React.FC = () => {
           const schoolId = data._id; // Adjust based on actual school ID field in response
           const dbname = 'gamersclub'; // Adjust if dbname is dynamic or from response
           const coursesResponse = await getCoursesBySchool(schoolId, dbname);
-          console.log(coursesResponse.data.courses, 'courses response');
+          console.log(coursesResponse, 'courses response');
 
           // Assuming response structure has courses in coursesResponse.data.courses as an array of strings
           const fetchedCourses = coursesResponse.data.courses || [];

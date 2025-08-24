@@ -19,7 +19,7 @@ import { getSubdomain } from '../../utils/getSubdomain';
 const SchoolHome: React.FC = () => {
   const { isDarkMode } = useGlobalState();
   const navigate = useNavigate();
-  const verifiedSchool  = getSubdomain();
+  const verifiedSchool  = 'gamersclub'; //getSubdomain();
   const { state, dispatch, school, setSchool } = useSchoolInfo(verifiedSchool);
   const [activeView, dispatchView] = useReducer(viewReducer, 'dashboard' as ViewState);
 

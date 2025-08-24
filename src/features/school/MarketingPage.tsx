@@ -81,7 +81,7 @@ const MarketingPage: React.FC = () => {
             successRate: data.successRate || '', // If not provided, empty
             experience: data.experience || '',
             image: data.image || '',
-            subDomain: data.subDomain || '',
+            subdomain:data.subDomain || '',
             coverImage: data.coverImage || '',
             coursesOffered: [] // Initialize empty; will be updated below
           };
@@ -98,12 +98,12 @@ const MarketingPage: React.FC = () => {
 
   // Separate useEffect to fetch courses after schoolData is updated
   useEffect(() => {
-    if (schoolData.id && schoolData.subDomain) {
+    if (schoolData.id && schoolData.name) {
       const fetchCourses = async () => {
         try {
           const schoolId = schoolData.id;
           console.log(schoolData.name, 'school name');
-          const dbname = getSubdomain(schoolData.subDomain); // Extract dbname from schoolData.subDomain URL (e.g., 'goldenpublic' from 'https://goldenpublic.eduvia.space')
+          const dbname = schoolData.name; // Use schoolData.name as dbname
           const coursesResponse = await getCoursesBySchool(schoolId, dbname);
           console.log(coursesResponse, 'courses response');
 

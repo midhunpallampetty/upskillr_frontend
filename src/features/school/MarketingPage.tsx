@@ -68,6 +68,12 @@ const MarketingPage: React.FC = () => {
           console.log(response.data.school, 'response');
           
           const data = response.data.school; // Adjust based on axios response structure
+
+          // Check if school data exists; if not, redirect
+          if (!data) {
+            window.location.href = 'https://eduvia.space';
+            return;
+          }
           
           const updatedData = {
             id: data._id || '',
@@ -81,7 +87,7 @@ const MarketingPage: React.FC = () => {
             successRate: data.successRate || '', // If not provided, empty
             experience: data.experience || '',
             image: data.image || '',
-            subdomain:data.subDomain || '',
+            subdomain: data.subDomain || '',
             coverImage: data.coverImage || '',
             coursesOffered: [] // Initialize empty; will be updated below
           };
@@ -90,9 +96,14 @@ const MarketingPage: React.FC = () => {
           console.log(updatedData, 'data'); // Log after setting state (note: state update is async, use callback if needed for immediate logging)
         } catch (error) {
           console.error('Error fetching school data:', error);
+          // Optionally handle error by redirecting as well
+          window.location.href = 'https://eduvia.space';
         }
       };
       fetchSchoolData();
+    } else {
+      // If no subdomain, redirect
+      window.location.href = 'https://eduvia.space';
     }
   }, []);
 
@@ -104,7 +115,7 @@ const MarketingPage: React.FC = () => {
           const schoolId = schoolData.id;
           console.log(schoolData.name, 'school name');
           const dbname = getSubdomain(schoolData.subDomain); // Use schoolData.name as dbname
-          console.log(dbname,'dbname');
+          console.log(dbname, 'dbname');
           
           const coursesResponse = await getCoursesBySchool(schoolId, dbname);
           console.log(coursesResponse, 'courses response');

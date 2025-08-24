@@ -37,53 +37,61 @@ const MarketingPage: React.FC = () => {
   });
 
 
- useEffect(() => {
-  const subdomain = getSubdomain();
-  if (subdomain) {
-    const fetchSchoolData = async () => {
-      try {
-        const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'; // Your token
-        const response = await getSchoolBySubdomain(subdomain, token);
-        const data = response.data.school;
+  useEffect(() => {
+    const subdomain = getSubdomain();
+    if (subdomain) {
+      const fetchSchoolData = async () => {
+        try {
+          // Replace with actual token retrieval (e.g., from auth context, localStorage, etc.)
+          const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4NGQ4YjI5NDRhMzg4N2E4MjJkNTg2YiIsImVtYWlsIjoieWljZXdhYjkzOUBsaXRlcGF4LmNvbSIsInJvbGUiOiJzY2hvb2wiLCJzdWJEb21haW4iOiJodHRwOi8vZ2FtZXJzY2x1Yi5lZHV2aWEuc3BhY2UiLCJpYXQiOjE3NTU5NjMyMjUsImV4cCI6MTc1NTk2MzI4NX0.1GcqFwkWRABUA6RvFdNjTZaRZHCQY-djW8SIeslT4es'; // Implement proper token handling
+          console.log(subdomain, 'subdomain');
+          
+          const response = await getSchoolBySubdomain(subdomain, token);
+          console.log(response.data.school, 'response');
+          
+          const data = response.data.school; // Adjust based on axios response structure
+          
+          const updatedData = {
+            name: data.name || '',
+            email: data.email || '',
+            phone: data.officialContact || '',
+            address: data.address || '',
+            description: data.description || '', // If not provided by API, remains empty
+            foundedYear: data.createdAt ? new Date(data.createdAt).getFullYear().toString() : '',
+            studentsGraduated: data.studentsGraduated || '', // If not provided, empty
+            successRate: data.successRate || '', // If not provided, empty
+            experience: data.experience || '',
+            image: data.image || '',
+            coverImage: data.coverImage || '',
+            coursesOffered: [] // Initialize empty; will be updated below
+          };
 
-        const updatedData = {
-          name: data.name || '',
-          email: data.email || '',
-          phone: data.officialContact || '',
-          address: data.address || '',
-          description: data.description || '',
-          foundedYear: data.createdAt ? new Date(data.createdAt).getFullYear().toString() : '',
-          studentsGraduated: data.studentsGraduated || '',
-          successRate: data.successRate || '',
-          experience: data.experience || '',
-          image: data.image || '',
-          coverImage: data.coverImage || '',
-          coursesOffered: [] // Initialize empty
-        };
+          setSchoolData(updatedData);
+          console.log(updatedData, 'data'); // Log after setting state (note: state update is async, use callback if needed for immediate logging)
 
-        setSchoolData(updatedData);
+          // Fetch courses using getCoursesBySchool API
+          // Assuming schoolId is available as data._id and dbname is 'eduvia' based on context
+          const schoolId = data._id; // Adjust based on actual school ID field in response
+          const dbname = 'gamersclub'; // Adjust if dbname is dynamic or from response
+          const coursesResponse = await getCoursesBySchool(schoolId, dbname);
+          console.log(coursesResponse, 'courses response');
 
-        // Fetch courses
-        const schoolId = data._id;
-        const dbname = 'gamersclub';
-        const coursesResponse = await getCoursesBySchool(schoolId, dbname);
+          // Assuming response structure has courses in coursesResponse.data.courses as an array of strings
+          const fetchedCourses = coursesResponse || [];
+console.log(fetchedCourses, 'fetched courses');
+          // Update schoolData with fetched courses
+          setSchoolData(prevData => ({
+            ...prevData,
+            coursesOffered: fetchedCourses
+          }));
 
-        // Extract course names (assuming coursesResponse.data.courses is an array of objects)
-        const fetchedCourses = coursesResponse?.data?.courses?.map(course => course.courseName) || [];
-        console.log(fetchedCourses, 'fetched courses');
-
-        // Update schoolData with course names
-        setSchoolData(prevData => ({
-          ...prevData,
-          coursesOffered: fetchedCourses
-        }));
-      } catch (error) {
-        console.error('Error fetching school data or courses:', error);
-      }
-    };
-    fetchSchoolData();
-  }
-}, []);
+        } catch (error) {
+          console.error('Error fetching school data or courses:', error);
+        }
+      };
+      fetchSchoolData();
+    }
+  }, []);
 console.log(schoolData, 'school data');
 
   // SEO and meta tag updates

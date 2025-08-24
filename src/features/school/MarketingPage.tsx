@@ -32,7 +32,7 @@ const MarketingPage: React.FC = () => {
     coverImage: '',
     coursesOffered: [] // Keep empty initially; will be set from API
   });
-
+console.log(schoolData,'data')
   useEffect(() => {
     const subdomain = getSubdomain();
     if (subdomain) {

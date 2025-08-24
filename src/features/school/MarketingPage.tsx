@@ -78,7 +78,7 @@ const MarketingPage: React.FC = () => {
 
           // Assuming response structure has courses in coursesResponse.data.courses as an array of strings
           const fetchedCourses = coursesResponse || [];
-
+console.log(fetchedCourses, 'fetched courses');
           // Update schoolData with fetched courses
           setSchoolData(prevData => ({
             ...prevData,

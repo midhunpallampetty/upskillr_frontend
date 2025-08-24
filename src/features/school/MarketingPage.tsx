@@ -362,7 +362,7 @@ console.log(schoolData, 'school data');
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
               {schoolData.coursesOffered.map((course, index) => {
-                const details = courseDetails[course] || courseDetails['Full Stack Web Development']; // Fallback if course not in dummy map
+                // Fallback if course not in dummy map
                 
                 return (
                   <div

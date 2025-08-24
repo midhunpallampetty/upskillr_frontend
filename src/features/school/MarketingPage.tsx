@@ -32,6 +32,7 @@ const MarketingPage: React.FC = () => {
     coverImage: '',
     coursesOffered: [] // Keep empty initially; will be set from API
   });
+
   useEffect(() => {
     const subdomain = getSubdomain();
     if (subdomain) {
@@ -43,7 +44,7 @@ const MarketingPage: React.FC = () => {
           const response = await getSchoolBySubdomain(subdomain, token);
           const data = response.data; // Adjust based on axios response structure
           
-          setSchoolData({
+          const updatedData = {
             name: data.name || '',
             email: data.email || '',
             phone: data.officialContact || '',
@@ -56,8 +57,10 @@ const MarketingPage: React.FC = () => {
             image: data.image || '',
             coverImage: data.coverImage || '',
             coursesOffered: data.coursesOffered || []
-          });
-          console.log(schoolData,'data')
+          };
+
+          setSchoolData(updatedData);
+          console.log(updatedData, 'data'); // Log after setting state (note: state update is async, use callback if needed for immediate logging)
 
         } catch (error) {
           console.error('Error fetching school data:', error);
@@ -104,7 +107,7 @@ const MarketingPage: React.FC = () => {
     }
   }, [schoolData]);
 
-  // Dummy course details for enhanced display (kept as per instructions)
+  // Dummy course details for enhanced display (kept as per instructions, extended for potential new courses)
   const courseDetails = {
     'Full Stack Web Development': {
       icon: '💻',
@@ -153,6 +156,14 @@ const MarketingPage: React.FC = () => {
       description: 'Master AWS, Docker, Kubernetes and modern deployment practices',
       skills: ['AWS', 'Docker', 'Kubernetes', 'CI/CD'],
       salary: '$85K - $150K'
+    },
+    'Game Development Using Unity': { // Added based on sample data for better matching
+      icon: '🎮',
+      duration: '20 weeks',
+      level: 'Beginner to Advanced',
+      description: 'Learn Unity engine to create immersive 2D and 3D games',
+      skills: ['Unity', 'C#', 'Game Design', '3D Modeling'],
+      salary: '$70K - $120K'
     }
   };
 
@@ -208,7 +219,7 @@ const MarketingPage: React.FC = () => {
                 </p>
               )}
               
-              {/* Enhanced Contact Information */}
+              {/* Enhanced Contact Information - Ensured all are displayed if available */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
                 {schoolData.address && (
                   <div className="flex items-center justify-center space-x-3 bg-white/10 backdrop-blur-md px-6 py-4 rounded-2xl border border-white/20 hover:bg-white/20 transition-all">
@@ -447,7 +458,7 @@ const MarketingPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Right Column - Contact Card */}
+            {/* Right Column - Contact Card - Ensured logo, address, phone, email are prominently displayed */}
             <div className="bg-gradient-to-br from-purple-600 to-blue-600 rounded-3xl p-8 text-white shadow-2xl">
               <div className="text-center mb-8">
                 <img 
@@ -502,7 +513,7 @@ const MarketingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Modern Footer */}
+      {/* Modern Footer - Ensured logo and other details are shown */}
       <footer id="contact" className="bg-gradient-to-br from-gray-900 via-purple-900 to-blue-900 text-white py-20 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">

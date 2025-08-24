@@ -10,18 +10,12 @@ const MarketingPage: React.FC = () => {
     description: 'Transform your future with industry-leading education designed for real-world success.',
     foundedYear: '2015',
     studentsGraduated: '10,000+',
-    successRate: '95%'
+    successRate: '95%',
+    experience: '0',
+    image: '',
+    coverImage: '',
+    coursesOffered: []
   });
-
-  function getPage(url: string) {
-    const hostname = new URL(url).hostname;
-    const parts = hostname.split('.');
-    
-    if (parts.length > 2) {
-      return parts[0];
-    }
-    return null;
-  }
 
   useEffect(() => {
     const subdomain = getSubdomain();
@@ -34,12 +28,16 @@ const MarketingPage: React.FC = () => {
             setSchoolData({
               name: data.name || schoolData.name,
               email: data.email || schoolData.email,
-              phone: data.phone || schoolData.phone,
+              phone: data.officialContact || schoolData.phone,
               address: data.address || schoolData.address,
-              description: data.description || schoolData.description,
-              foundedYear: data.foundedYear || schoolData.foundedYear,
-              studentsGraduated: data.studentsGraduated || schoolData.studentsGraduated,
-              successRate: data.successRate || schoolData.successRate,
+              description: data.description || schoolData.description, // Fallback if not in API
+              foundedYear: data.createdAt ? new Date(data.createdAt).getFullYear().toString() : schoolData.foundedYear,
+              studentsGraduated: data.studentsGraduated || schoolData.studentsGraduated, // Fallback if not in API
+              successRate: data.successRate || schoolData.successRate, // Fallback if not in API
+              experience: data.experience || schoolData.experience,
+              image: data.image || schoolData.image,
+              coverImage: data.coverImage || schoolData.coverImage,
+              coursesOffered: data.coursesOffered || schoolData.coursesOffered
             });
           } else {
             console.error('School not found');
@@ -52,7 +50,7 @@ const MarketingPage: React.FC = () => {
     }
   }, []);
 
-  // SEO and meta tag updates (keeping your existing implementation)
+  // SEO and meta tag updates
   useEffect(() => {
     document.title = `${schoolData.name} - Transform Your Career with Expert-Led Courses`;
     
@@ -81,15 +79,22 @@ const MarketingPage: React.FC = () => {
     updateOrCreateMetaTag('og:title', `${schoolData.name} - Expert Learning Platform`);
     updateOrCreateMetaTag('og:description', schoolData.description);
     updateOrCreateMetaTag('og:url', 'https://eduvia.space');
+    if (schoolData.image) {
+      updateOrCreateMetaTag('og:image', schoolData.image);
+    }
   }, [schoolData]);
 
   return (
     <div style={{ fontFamily: "'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif", color: "#2d3748", lineHeight: "1.7" }}>
       
-      {/* Hero Section - Enhanced */}
+      {/* Hero Section - Enhanced with coverImage */}
       <section
         style={{
-          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          background: schoolData.coverImage 
+            ? `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(${schoolData.coverImage})` 
+            : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
           color: "white",
           padding: "5rem 1rem",
           textAlign: "center",
@@ -172,7 +177,7 @@ const MarketingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* About Us Section - Enhanced */}
+      {/* About Us Section - Enhanced with image and experience */}
       <section style={{ padding: "4rem 1rem", maxWidth: "1000px", margin: "0 auto" }}>
         <div style={{ textAlign: "center", marginBottom: "3rem" }}>
           <h2 style={{ fontSize: "2.5rem", fontWeight: "700", marginBottom: "1rem", color: "#2d3748" }}>
@@ -183,9 +188,16 @@ const MarketingPage: React.FC = () => {
         
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "3rem", alignItems: "center" }}>
           <div>
+            {schoolData.image && (
+              <img 
+                src={schoolData.image} 
+                alt={`${schoolData.name} Logo`} 
+                style={{ maxWidth: "200px", marginBottom: "1rem", borderRadius: "8px" }} 
+              />
+            )}
             <h3 style={{ fontSize: "1.8rem", marginBottom: "1rem", color: "#4a5568" }}>Our Mission</h3>
             <p style={{ fontSize: "1.1rem", marginBottom: "1.5rem", color: "#718096" }}>
-              Since {schoolData.foundedYear}, {schoolData.name} has been at the forefront of transforming lives through education. 
+              With {schoolData.experience} years of experience since {schoolData.foundedYear}, {schoolData.name} has been at the forefront of transforming lives through education. 
               We believe that quality learning should be accessible, practical, and career-focused.
             </p>
             <p style={{ fontSize: "1.1rem", color: "#718096" }}>
@@ -288,7 +300,7 @@ const MarketingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Courses Section - Enhanced */}
+      {/* Courses Section - Using dummy data as per instructions */}
       <section id="courses" style={{ padding: "4rem 1rem" }}>
         <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: "3rem" }}>
@@ -629,7 +641,7 @@ const MarketingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Contact Section - Enhanced */}
+      {/* Contact Section - Enhanced with address and phone */}
       <section id="contact" style={{
         backgroundColor: "#f7fafc",
         padding: "4rem 1rem"
@@ -845,7 +857,7 @@ const MarketingPage: React.FC = () => {
         <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
           <h3 style={{ fontSize: "1.5rem", marginBottom: "1rem" }}>{schoolData.name}</h3>
           <p style={{ opacity: "0.8", marginBottom: "1rem" }}>
-            Transforming lives through education since {schoolData.foundedYear}
+            Transforming lives through education since {schoolData.foundedYear} with {schoolData.experience} years of experience.
           </p>
           <p style={{ fontSize: "0.9rem", opacity: "0.7" }}>
             © 2024 {schoolData.name}. All rights reserved. | Privacy Policy | Terms of Service

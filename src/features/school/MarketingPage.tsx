@@ -1,5 +1,21 @@
 import React, { useEffect, useState } from 'react';
-import { getSubdomain } from '../../utils/getSubdomain';
+import { getSchoolBySubdomain } from './api/school.api'; // Adjust the import path to match your project structure (e.g., the api folder where this function exists)
+
+// Embedded utility function to extract subdomain
+const getSubdomain = (url: string = window.location.href): string => {
+  try {
+    const parsedUrl = new URL(url);
+    const hostname = parsedUrl.hostname;
+    const parts = hostname.split('.');
+    if (parts.length >= 3 && parts[parts.length - 2] === 'eduvia' && parts[parts.length - 1] === 'space') {
+      return parts.slice(0, -2).join('.');
+    }
+    return '';
+  } catch (error) {
+    console.error('Error extracting subdomain:', error);
+    return '';
+  }
+};
 
 const MarketingPage: React.FC = () => {
   const [schoolData, setSchoolData] = useState({
@@ -29,26 +45,26 @@ const MarketingPage: React.FC = () => {
     if (subdomain) {
       const fetchSchoolData = async () => {
         try {
-          const response = await fetch(`/api/school/${subdomain}`);
-          if (response.ok) {
-            const data = await response.json();
-            setSchoolData({
-              name: data.name || schoolData.name,
-              email: data.email || schoolData.email,
-              phone: data.officialContact || schoolData.phone,
-              address: data.address || schoolData.address,
-              description: data.description || schoolData.description,
-              foundedYear: data.createdAt ? new Date(data.createdAt).getFullYear().toString() : schoolData.foundedYear,
-              studentsGraduated: data.studentsGraduated || schoolData.studentsGraduated,
-              successRate: data.successRate || schoolData.successRate,
-              experience: data.experience || schoolData.experience,
-              image: data.image || schoolData.image,
-              coverImage: data.coverImage || schoolData.coverImage,
-              coursesOffered: data.coursesOffered || schoolData.coursesOffered
-            });
-          } else {
-            console.error('School not found');
-          }
+          // Replace with actual token retrieval (e.g., from auth context, localStorage, etc.)
+          const token = 'your-auth-token-here'; // Implement proper token handling
+          
+          const response = await getSchoolBySubdomain(subdomain, token);
+          const data = response.data; // Adjust based on axios response structure
+          
+          setSchoolData({
+            name: data.name || schoolData.name,
+            email: data.email || schoolData.email,
+            phone: data.officialContact || schoolData.phone,
+            address: data.address || schoolData.address,
+            description: data.description || schoolData.description,
+            foundedYear: data.createdAt ? new Date(data.createdAt).getFullYear().toString() : schoolData.foundedYear,
+            studentsGraduated: data.studentsGraduated || schoolData.studentsGraduated,
+            successRate: data.successRate || schoolData.successRate,
+            experience: data.experience || schoolData.experience,
+            image: data.image || schoolData.image,
+            coverImage: data.coverImage || schoolData.coverImage,
+            coursesOffered: data.coursesOffered || schoolData.coursesOffered
+          });
         } catch (error) {
           console.error('Error fetching school data:', error);
         }

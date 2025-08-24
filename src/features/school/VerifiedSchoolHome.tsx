@@ -15,10 +15,11 @@ import ActionCardsSection from './components/Layout/ActionCardsSection';
 import CoursesSection from './components/Layout/CoursesSection';
 import StudentManagementSection from './components/Layout/StudentManagementSection';
 import LoadingSchoolDashboard from './components/UI/LoadingSchoolDashboard';
+import { getSubdomain } from '../../utils/getSubdomain';
 const SchoolHome: React.FC = () => {
   const { isDarkMode } = useGlobalState();
   const navigate = useNavigate();
-  const { verifiedSchool } = useParams();
+  const verifiedSchool  = getSubdomain();
   const { state, dispatch, school, setSchool } = useSchoolInfo(verifiedSchool);
   const [activeView, dispatchView] = useReducer(viewReducer, 'dashboard' as ViewState);
 

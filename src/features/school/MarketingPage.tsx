@@ -37,7 +37,7 @@ interface Course {
 }
 
 const MarketingPage: React.FC = () => {
-  const [courses, setCourses] = useState<string[]>([]);
+  const [courses, setCourses] = useState<Course[]>([]);
   const [schoolData, setSchoolData] = useState({
     id: '',
     name: '',
@@ -120,13 +120,11 @@ const MarketingPage: React.FC = () => {
           const coursesResponse = await getCoursesBySchool(schoolId, dbname);
           console.log(coursesResponse, 'courses response');
 
-          // Extract course names assuming response is an array of course objects (or nested under data.courses)
-          // Adjust the path based on your actual API response structure, e.g., coursesResponse.data.courses if nested
-          const fetchedCourses = (coursesResponse?.data?.courses || coursesResponse || []).map((courseObj: Course) => courseObj.courseName || '');
+          // Set the full course objects
+          const fetchedCourses = (coursesResponse?.data?.courses || coursesResponse || []).filter((course: Course) => course.courseName); // Filter out any invalid courses
           console.log(fetchedCourses, 'fetched courses');
 
-          // Set the courses state using setCourses (now an array of course names as strings)
-          setCourses(fetchedCourses.filter(name => name)); // Filter out any empty names
+          setCourses(fetchedCourses);
         } catch (error) {
           console.error('Error fetching courses:', error);
         }
@@ -397,11 +395,10 @@ const MarketingPage: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
               {courses.map((course, index) => {
                 // Fallback if course not in dummy map
-                const details = courseDetails[course] || {
+                const dummy = courseDetails[course.courseName] || {
                   icon: '📚',
                   duration: 'Varies',
                   level: 'All Levels',
-                  description: 'Comprehensive course covering essential skills',
                   skills: ['Core Skills', 'Practical Projects'],
                   salary: '$60K - $100K'
                 };
@@ -417,7 +414,7 @@ const MarketingPage: React.FC = () => {
                     {/* Course Header */}
                     <div className="flex items-center justify-between mb-6">
                       <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center text-white text-3xl shadow-lg">
-                        {details.icon}
+                        {dummy.icon}
                       </div>
                       <div className="text-right">
                         <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold mb-1">
@@ -427,21 +424,30 @@ const MarketingPage: React.FC = () => {
                       </div>
                     </div>
 
+                    {/* Course Thumbnail */}
+                    {course.courseThumbnail && (
+                      <img 
+                        src={course.courseThumbnail} 
+                        alt={course.courseName} 
+                        className="w-full h-40 object-cover rounded-xl mb-4"
+                      />
+                    )}
+
                     <h3 className="text-2xl font-bold mb-4 text-gray-800 group-hover:text-purple-600 transition-colors leading-tight">
-                      {course}
+                      {course.courseName}
                     </h3>
 
                     <p className="text-gray-600 mb-6 leading-relaxed">
-                      {details.description}
+                      {course.description || dummy.description}
                     </p>
 
                     {/* Course Meta */}
                     <div className="flex flex-wrap gap-3 mb-6">
                       <span className="bg-blue-50 text-blue-600 px-3 py-2 rounded-xl text-sm flex items-center font-medium">
-                        📅 {details.duration}
+                        📅 {dummy.duration}
                       </span>
                       <span className="bg-orange-50 text-orange-600 px-3 py-2 rounded-xl text-sm flex items-center font-medium">
-                        📊 {details.level}
+                        📊 {dummy.level}
                       </span>
                       <span className="bg-green-50 text-green-600 px-3 py-2 rounded-xl text-sm flex items-center font-medium">
                         🏆 Certified
@@ -452,7 +458,7 @@ const MarketingPage: React.FC = () => {
                     <div className="mb-6">
                       <h4 className="font-bold text-gray-800 mb-3">Key Skills You'll Learn:</h4>
                       <div className="flex flex-wrap gap-2">
-                        {details.skills.map((skill, idx) => (
+                        {dummy.skills.map((skill, idx) => (
                           <span key={idx} className="bg-purple-50 text-purple-700 px-3 py-1 rounded-full text-sm font-medium">
                             {skill}
                           </span>
@@ -481,8 +487,15 @@ const MarketingPage: React.FC = () => {
                     {/* Salary Range */}
                     <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-xl mb-6 border border-green-200">
                       <p className="text-green-800 font-semibold flex items-center">
-                        💰 <span className="ml-2">Average Salary: <span className="text-green-600">{details.salary}</span></span>
+                        💰 <span className="ml-2">Average Salary: <span className="text-green-600">{dummy.salary}</span></span>
                       </p>
+                    </div>
+
+                    {/* Additional Course Details */}
+                    <div className="mb-6">
+                      <p className="text-gray-700 font-semibold">Fee: ${course.fee}</p>
+                      <p className="text-gray-500 text-sm">Created: {new Date(course.createdAt).toLocaleDateString()}</p>
+                      <p className="text-gray-500 text-sm">Last Updated: {new Date(course.updatedAt).toLocaleDateString()}</p>
                     </div>
 
                     {/* CTA Button */}

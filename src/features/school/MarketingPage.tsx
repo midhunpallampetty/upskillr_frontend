@@ -281,7 +281,7 @@ const MarketingPage: React.FC = () => {
             <div className="max-w-4xl mx-auto mb-8">
               {schoolData.description && (
                 <p className="text-xl md:text-2xl font-light mb-8 text-blue-100 leading-relaxed line-clamp-2">
-                  "schoolData.description"
+                  {schoolData.description}
                 </p>
               )}
               
@@ -438,7 +438,7 @@ const MarketingPage: React.FC = () => {
                     </h3>
 
                     <p className="text-gray-600 mb-6 leading-relaxed">
-                      {course.description || dummy.description}
+                      "bhvjfbv"
                     </p>
 
                     {/* Course Meta */}

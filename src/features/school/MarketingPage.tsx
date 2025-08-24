@@ -88,7 +88,8 @@ const MarketingPage: React.FC = () => {
           // Fetch courses using getCoursesBySchool API
           // Assuming schoolId is available as data._id and dbname is 'eduvia' based on context
           const schoolId = data._id; // Adjust based on actual school ID field in response
-          const dbname = data.name; // Adjust if dbname is dynamic or from response
+          console.log(schoolData.name,'school name')
+          const dbname = 'gamersclub'; // Adjust if dbname is dynamic or from response
           const coursesResponse = await getCoursesBySchool(schoolId, dbname);
           console.log(coursesResponse, 'courses response');
 

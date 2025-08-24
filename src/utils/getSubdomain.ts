@@ -27,3 +27,25 @@ export const getSubdomain = (): string | null => {
 
 //   return null; // No subdomain (e.g., eduvia.space or localhost)
 // };
+export function getDynamicDomain(): string | null {
+  if (typeof window === "undefined") return null;
+
+  const hostname = window.location.hostname; // e.g. gamersclub.eduvia.space
+  const rootDomain = "eduvia.space";
+
+  // If localhost (for dev)
+  if (hostname.includes("localhost")) {
+    return null; // treat as no subdomain
+  }
+
+  // Split hostname parts
+  const parts = hostname.split(".");
+
+  // If hostname === rootDomain or www.rootDomain → no subdomain
+  if (hostname === rootDomain || hostname === `www.${rootDomain}`) {
+    return null;
+  }
+
+  // Return the first part (subdomain)
+  return parts[0]; // e.g. "gamersclub"
+}

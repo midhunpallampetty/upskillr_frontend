@@ -45,7 +45,7 @@ const MarketingPage: React.FC = () => {
           const response = await getSchoolBySubdomain(subdomain, token);
           console.log(response.data.school, 'response');
           
-          const data = response.data; // Adjust based on axios response structure
+          const data = response.data.school; // Adjust based on axios response structure
           
           const updatedData = {
             name: data.name || '',

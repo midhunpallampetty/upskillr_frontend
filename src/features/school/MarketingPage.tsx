@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { getSchoolBySubdomain } from './api/school.api'; // Adjust the import path to match your project structure (e.g., the api folder where this function exists)
 import { getCoursesBySchool } from './api/course.api'; // Assuming this is the import for the new API function; adjust path accordingly
 
-
 // Embedded utility function to extract subdomain
 const getSubdomain = (url: string = window.location.href): string => {
   try {
@@ -19,8 +18,8 @@ const getSubdomain = (url: string = window.location.href): string => {
   }
 };
 
-
 const MarketingPage: React.FC = () => {
+  const [courses, setCourses] = useState<string[]>([]);
   const [schoolData, setSchoolData] = useState({
     name: '',
     email: '',
@@ -35,7 +34,6 @@ const MarketingPage: React.FC = () => {
     coverImage: '',
     coursesOffered: [] // Keep empty initially; will be set from API
   });
-
 
   useEffect(() => {
     const subdomain = getSubdomain();
@@ -77,13 +75,13 @@ const MarketingPage: React.FC = () => {
           console.log(coursesResponse, 'courses response');
 
           // Assuming response structure has courses in coursesResponse.data.courses as an array of strings
+          // Adjust this line based on the actual structure of coursesResponse
+          // For example, if it's coursesResponse.data.courses, use that instead
           const fetchedCourses = coursesResponse || [];
-console.log(fetchedCourses, 'fetched courses');
-          // Update schoolData with fetched courses
-          setSchoolData(prevData => ({
-            ...prevData,
-            coursesOffered: fetchedCourses
-          }));
+          console.log(fetchedCourses, 'fetched courses');
+
+          // Set the courses state using setCourses
+          setCourses(fetchedCourses);
 
         } catch (error) {
           console.error('Error fetching school data or courses:', error);
@@ -92,7 +90,7 @@ console.log(fetchedCourses, 'fetched courses');
       fetchSchoolData();
     }
   }, []);
-console.log(schoolData, 'school data');
+  console.log(schoolData, 'school data');
 
   // SEO and meta tag updates
   useEffect(() => {
@@ -110,7 +108,6 @@ console.log(schoolData, 'school data');
       document.head.appendChild(meta);
     }
 
-
     const updateOrCreateMetaTag = (property: string, content: string) => {
       if (!content) return; // Skip if content is empty
       let metaTag = document.querySelector(`meta[property="${property}"]`);
@@ -124,7 +121,6 @@ console.log(schoolData, 'school data');
       }
     };
 
-
     updateOrCreateMetaTag('og:title', `${schoolData.name} - Expert Learning Platform`);
     updateOrCreateMetaTag('og:description', schoolData.description);
     updateOrCreateMetaTag('og:url', 'https://eduvia.space');
@@ -133,67 +129,66 @@ console.log(schoolData, 'school data');
     }
   }, [schoolData]);
 
-
   // Dummy course details for enhanced display (kept as per instructions, extended for potential new courses)
-  // const courseDetails = {
-  //   'Full Stack Web Development': {
-  //     icon: '💻',
-  //     duration: '24 weeks',
-  //     level: 'Beginner to Advanced',
-  //     description: 'Master React, Node.js, MongoDB and become a complete web developer',
-  //     skills: ['React', 'Node.js', 'MongoDB', 'TypeScript'],
-  //     salary: '$75K - $130K'
-  //   },
-  //   'Data Science & Analytics': {
-  //     icon: '📊',
-  //     duration: '20 weeks',
-  //     level: 'Intermediate',
-  //     description: 'Learn Python, Machine Learning, and data visualization techniques',
-  //     skills: ['Python', 'Machine Learning', 'SQL', 'Tableau'],
-  //     salary: '$80K - $140K'
-  //   },
-  //   'Digital Marketing Mastery': {
-  //     icon: '📱',
-  //     duration: '16 weeks',
-  //     level: 'All Levels',
-  //     description: 'Master SEO, social media marketing, and digital advertising strategies',
-  //     skills: ['SEO', 'Google Ads', 'Social Media', 'Analytics'],
-  //     salary: '$50K - $90K'
-  //   },
-  //   'UI/UX Design Professional': {
-  //     icon: '🎨',
-  //     duration: '18 weeks',
-  //     level: 'Beginner to Advanced',
-  //     description: 'Create stunning user interfaces and exceptional user experiences',
-  //     skills: ['Figma', 'Adobe XD', 'Prototyping', 'User Research'],
-  //     salary: '$65K - $110K'
-  //   },
-  //   'Mobile App Development': {
-  //     icon: '📱',
-  //     duration: '22 weeks',
-  //     level: 'Intermediate',
-  //     description: 'Build native iOS and Android apps with React Native and Flutter',
-  //     skills: ['React Native', 'Flutter', 'iOS', 'Android'],
-  //     salary: '$70K - $125K'
-  //   },
-  //   'Cloud Computing & DevOps': {
-  //     icon: '☁️',
-  //     duration: '20 weeks',
-  //     level: 'Advanced',
-  //     description: 'Master AWS, Docker, Kubernetes and modern deployment practices',
-  //     skills: ['AWS', 'Docker', 'Kubernetes', 'CI/CD'],
-  //     salary: '$85K - $150K'
-  //   },
-  //   'Game Development Using Unity': { // Added based on sample data for better matching
-  //     icon: '🎮',
-  //     duration: '20 weeks',
-  //     level: 'Beginner to Advanced',
-  //     description: 'Learn Unity engine to create immersive 2D and 3D games',
-  //     skills: ['Unity', 'C#', 'Game Design', '3D Modeling'],
-  //     salary: '$70K - $120K'
-  //   }
-  // };
-
+  // Uncommented and used in the component as per the original map logic
+  const courseDetails = {
+    'Full Stack Web Development': {
+      icon: '💻',
+      duration: '24 weeks',
+      level: 'Beginner to Advanced',
+      description: 'Master React, Node.js, MongoDB and become a complete web developer',
+      skills: ['React', 'Node.js', 'MongoDB', 'TypeScript'],
+      salary: '$75K - $130K'
+    },
+    'Data Science & Analytics': {
+      icon: '📊',
+      duration: '20 weeks',
+      level: 'Intermediate',
+      description: 'Learn Python, Machine Learning, and data visualization techniques',
+      skills: ['Python', 'Machine Learning', 'SQL', 'Tableau'],
+      salary: '$80K - $140K'
+    },
+    'Digital Marketing Mastery': {
+      icon: '📱',
+      duration: '16 weeks',
+      level: 'All Levels',
+      description: 'Master SEO, social media marketing, and digital advertising strategies',
+      skills: ['SEO', 'Google Ads', 'Social Media', 'Analytics'],
+      salary: '$50K - $90K'
+    },
+    'UI/UX Design Professional': {
+      icon: '🎨',
+      duration: '18 weeks',
+      level: 'Beginner to Advanced',
+      description: 'Create stunning user interfaces and exceptional user experiences',
+      skills: ['Figma', 'Adobe XD', 'Prototyping', 'User Research'],
+      salary: '$65K - $110K'
+    },
+    'Mobile App Development': {
+      icon: '📱',
+      duration: '22 weeks',
+      level: 'Intermediate',
+      description: 'Build native iOS and Android apps with React Native and Flutter',
+      skills: ['React Native', 'Flutter', 'iOS', 'Android'],
+      salary: '$70K - $125K'
+    },
+    'Cloud Computing & DevOps': {
+      icon: '☁️',
+      duration: '20 weeks',
+      level: 'Advanced',
+      description: 'Master AWS, Docker, Kubernetes and modern deployment practices',
+      skills: ['AWS', 'Docker', 'Kubernetes', 'CI/CD'],
+      salary: '$85K - $150K'
+    },
+    'Game Development Using Unity': { // Added based on sample data for better matching
+      icon: '🎮',
+      duration: '20 weeks',
+      level: 'Beginner to Advanced',
+      description: 'Learn Unity engine to create immersive 2D and 3D games',
+      skills: ['Unity', 'C#', 'Game Design', '3D Modeling'],
+      salary: '$70K - $120K'
+    }
+  };
 
   return (
     <div className="font-inter text-gray-800 leading-7 bg-gray-50 min-h-screen">
@@ -218,7 +213,6 @@ console.log(schoolData, 'school data');
           <div className="absolute top-1/2 left-1/4 w-64 h-64 bg-pink-500/10 rounded-full blur-2xl animate-pulse delay-500"></div>
         </div>
 
-
         <div className="relative z-10 container mx-auto px-6">
           {/* School Header with Logo */}
           <div className="text-center mb-12">
@@ -233,7 +227,6 @@ console.log(schoolData, 'school data');
                 />
               </div>
             </div>
-
 
             {/* School Name with Enhanced Typography */}
             <h1 className="text-6xl md:text-8xl font-black mb-6 tracking-tight">
@@ -284,7 +277,6 @@ console.log(schoolData, 'school data');
             </div>
           </div>
 
-
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16">
             <button
@@ -306,7 +298,6 @@ console.log(schoolData, 'school data');
               </span>
             </button>
           </div>
-
 
           {/* Enhanced Trust Indicators (conditionally render based on available data) */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-6xl mx-auto">
@@ -340,9 +331,8 @@ console.log(schoolData, 'school data');
         </div>
       </section>
 
-
       {/* Enhanced Courses Section with API-provided courses and dummy details */}
-      {schoolData.coursesOffered.length > 0 && (
+      {courses.length > 0 && (
         <section id="courses" className="py-24 px-6">
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-20">
@@ -355,14 +345,21 @@ console.log(schoolData, 'school data');
                 Master in-demand skills with our industry-aligned curriculum designed by experts from top companies
               </p>
               {/* <div className="mt-8 inline-block bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-full font-semibold">
-                🔥 {schoolData.coursesOffered.length} Courses Available
+                🔥 {courses.length} Courses Available
               </div> */}
             </div>
 
-
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-              {schoolData.coursesOffered.map((course, index) => {
+              {courses.map((course, index) => {
                 // Fallback if course not in dummy map
+                const details = courseDetails[course] || {
+                  icon: '📚',
+                  duration: 'Varies',
+                  level: 'All Levels',
+                  description: 'Comprehensive course covering essential skills',
+                  skills: ['Core Skills', 'Practical Projects'],
+                  salary: '$60K - $100K'
+                };
                 
                 return (
                   <div
@@ -385,16 +382,13 @@ console.log(schoolData, 'school data');
                       </div>
                     </div>
 
-
                     <h3 className="text-2xl font-bold mb-4 text-gray-800 group-hover:text-purple-600 transition-colors leading-tight">
                       {course}
                     </h3>
 
-
                     <p className="text-gray-600 mb-6 leading-relaxed">
                       {details.description}
                     </p>
-
 
                     {/* Course Meta */}
                     <div className="flex flex-wrap gap-3 mb-6">
@@ -409,7 +403,6 @@ console.log(schoolData, 'school data');
                       </span>
                     </div>
 
-
                     {/* Skills */}
                     <div className="mb-6">
                       <h4 className="font-bold text-gray-800 mb-3">Key Skills You'll Learn:</h4>
@@ -421,7 +414,6 @@ console.log(schoolData, 'school data');
                         ))}
                       </div>
                     </div>
-
 
                     {/* Features */}
                     <div className="mb-6">
@@ -441,14 +433,12 @@ console.log(schoolData, 'school data');
                       </ul>
                     </div>
 
-
                     {/* Salary Range */}
                     <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-xl mb-6 border border-green-200">
                       <p className="text-green-800 font-semibold flex items-center">
                         💰 <span className="ml-2">Average Salary: <span className="text-green-600">{details.salary}</span></span>
                       </p>
                     </div>
-
 
                     {/* CTA Button */}
                     <button
@@ -464,7 +454,6 @@ console.log(schoolData, 'school data');
           </div>
         </section>
       )}
-
 
       {/* Enhanced About Section */}
       <section className="py-24 px-6 bg-gradient-to-br from-slate-50 to-blue-50">
@@ -484,7 +473,6 @@ console.log(schoolData, 'school data');
                 </p>
               )}
 
-
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
                 {[
                   { icon: "🎯", title: "Industry-Focused", desc: "Real-world projects and skills", color: "from-blue-500 to-purple-500" },
@@ -500,7 +488,6 @@ console.log(schoolData, 'school data');
                 ))}
               </div>
             </div>
-
 
             {/* Right Column - Contact Card - Ensured logo, address, phone, email are prominently displayed */}
             <div className="bg-gradient-to-br from-purple-600 to-blue-600 rounded-3xl p-8 text-white shadow-2xl">
@@ -546,7 +533,6 @@ console.log(schoolData, 'school data');
                 )}
               </div>
 
-
               <button
                 className="w-full mt-8 bg-white text-purple-600 py-4 rounded-2xl font-bold hover:bg-gray-100 transition-all transform hover:-translate-y-1 shadow-lg"
                 onClick={() => window.location.href = "#contact"}
@@ -557,7 +543,6 @@ console.log(schoolData, 'school data');
           </div>
         </div>
       </section>
-
 
       {/* Modern Footer - Ensured logo and other details are shown */}
       <footer id="contact" className="bg-gradient-to-br from-gray-900 via-purple-900 to-blue-900 text-white py-20 px-6">
@@ -625,7 +610,6 @@ console.log(schoolData, 'school data');
         </div>
       </footer>
 
-
       {/* Custom CSS for animations */}
       <style jsx>{`
         @keyframes fade-in {
@@ -639,6 +623,5 @@ console.log(schoolData, 'school data');
     </div>
   );
 };
-
 
 export default MarketingPage;

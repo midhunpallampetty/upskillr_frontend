@@ -1,21 +1,29 @@
 import React, { Suspense } from 'react';
-import { BrowserRouter as Router } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { getSubdomain } from './utils/getSubdomain';
 import AppRouter from './routes/AppRouter';
+import MarketingPage from './features/school/MarketingPage'; // make sure this path is correct
 
 const App: React.FC = () => {
   const subdomain = getSubdomain();
-  
+  const rootDomain = "eduvia.space"; // change to your domain
+
+  // if subdomain exists (not www or root domain), show MarketingPage
+  const isSubdomain = subdomain && subdomain !== "www";
+
   return (
     <Router>
       <Suspense fallback={<div className="text-center mt-10">Loading...</div>}>
-      
-      
-        <AppRouter subdomain={subdomain} />
+        <Routes>
+          {isSubdomain ? (
+            <Route path="/*" element={<MarketingPage />} />
+          ) : (
+            <Route path="/*" element={<AppRouter subdomain={subdomain} />} />
+          )}
+        </Routes>
       </Suspense>
     </Router>
   );
 };
 
 export default App;
-

@@ -32,7 +32,6 @@ const MarketingPage: React.FC = () => {
     coverImage: '',
     coursesOffered: [] // Keep empty initially; will be set from API
   });
-console.log(schoolData,'data')
   useEffect(() => {
     const subdomain = getSubdomain();
     if (subdomain) {
@@ -58,6 +57,8 @@ console.log(schoolData,'data')
             coverImage: data.coverImage || '',
             coursesOffered: data.coursesOffered || []
           });
+          console.log(schoolData,'data')
+
         } catch (error) {
           console.error('Error fetching school data:', error);
         }

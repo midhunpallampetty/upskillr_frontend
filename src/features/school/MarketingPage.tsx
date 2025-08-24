@@ -18,6 +18,24 @@ const getSubdomain = (url: string = window.location.href): string => {
   }
 };
 
+// Define interface for course objects based on your API structure
+interface Course {
+  _id: string;
+  courseName: string;
+  isPreliminaryRequired: boolean;
+  courseThumbnail: string;
+  fee: number;
+  isDeleted: boolean;
+  sections: any[]; // Adjust type as needed
+  school: string;
+  description: string;
+  preliminaryExam: any; // Adjust type
+  finalExam: any; // Adjust type
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+}
+
 const MarketingPage: React.FC = () => {
   const [courses, setCourses] = useState<string[]>([]);
   const [schoolData, setSchoolData] = useState({
@@ -74,14 +92,13 @@ const MarketingPage: React.FC = () => {
           const coursesResponse = await getCoursesBySchool(schoolId, dbname);
           console.log(coursesResponse, 'courses response');
 
-          // Assuming response structure has courses in coursesResponse.data.courses as an array of strings
-          // Adjust this line based on the actual structure of coursesResponse
-          // For example, if it's coursesResponse.data.courses, use that instead
-          const fetchedCourses = coursesResponse || [];
+          // Extract course names assuming response is an array of course objects (or nested under data.courses)
+          // Adjust the path based on your actual API response structure, e.g., coursesResponse.data.courses if nested
+          const fetchedCourses = (coursesResponse?.data?.courses || coursesResponse || []).map((courseObj: Course) => courseObj.courseName || '');
           console.log(fetchedCourses, 'fetched courses');
 
-          // Set the courses state using setCourses
-          setCourses(fetchedCourses);
+          // Set the courses state using setCourses (now an array of course names as strings)
+          setCourses(fetchedCourses.filter(name => name)); // Filter out any empty names
 
         } catch (error) {
           console.error('Error fetching school data or courses:', error);

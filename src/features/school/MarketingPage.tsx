@@ -30,10 +30,10 @@ const MarketingPage: React.FC = () => {
               email: data.email || schoolData.email,
               phone: data.officialContact || schoolData.phone,
               address: data.address || schoolData.address,
-              description: data.description || schoolData.description, // Fallback if not in API
+              description: data.description || schoolData.description,
               foundedYear: data.createdAt ? new Date(data.createdAt).getFullYear().toString() : schoolData.foundedYear,
-              studentsGraduated: data.studentsGraduated || schoolData.studentsGraduated, // Fallback if not in API
-              successRate: data.successRate || schoolData.successRate, // Fallback if not in API
+              studentsGraduated: data.studentsGraduated || schoolData.studentsGraduated,
+              successRate: data.successRate || schoolData.successRate,
               experience: data.experience || schoolData.experience,
               image: data.image || schoolData.image,
               coverImage: data.coverImage || schoolData.coverImage,
@@ -85,248 +85,371 @@ const MarketingPage: React.FC = () => {
   }, [schoolData]);
 
   return (
-    <div className="font-inter text-gray-700 leading-7">
+    <div className="font-inter text-gray-800 leading-7 bg-gray-50 min-h-screen">
       
-      {/* Hero Section - Enhanced with coverImage */}
+      {/* Enhanced Hero Section with School Details */}
       <section
-        className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white py-20 px-4 text-center relative overflow-hidden"
+        className="relative overflow-hidden min-h-screen flex items-center text-white"
         style={{
           background: schoolData.coverImage 
-            ? `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(${schoolData.coverImage})` 
-            : undefined,
+            ? `linear-gradient(135deg, rgba(59, 130, 246, 0.9), rgba(147, 51, 234, 0.9)), url(${schoolData.coverImage})` 
+            : 'linear-gradient(135deg, #3B82F6, #8B5CF6, #EC4899, #F59E0B)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}
       >
-        <div className="relative z-10">
-          <h1 className="text-5xl font-bold mb-6 text-shadow-lg">
-            Launch Your Dream Career with {schoolData.name}
-          </h1>
-          <p className="text-xl font-light max-w-xl mx-auto mb-10 opacity-95">
-            {schoolData.description} Join {schoolData.studentsGraduated} successful graduates who transformed their lives through our proven learning system.
-          </p>
-          
-          <div className="flex gap-4 justify-center flex-wrap mb-10">
+        {/* Animated Background Elements */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-white/10 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        </div>
+
+        <div className="relative z-10 container mx-auto px-6">
+          {/* School Header with Logo and Details */}
+          <div className="text-center mb-12">
+            <div className="flex justify-center items-center mb-8">
+              {schoolData.image && (
+                <div className="relative">
+                  <img 
+                    src={schoolData.image} 
+                    alt={`${schoolData.name} Logo`} 
+                    className="w-32 h-32 rounded-full border-4 border-white/30 shadow-2xl backdrop-blur-sm"
+                  />
+                  <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-blue-500/20 to-purple-500/20"></div>
+                </div>
+              )}
+            </div>
+
+            {/* School Name and Tagline */}
+            <h1 className="text-7xl md:text-8xl font-black mb-6 tracking-tight">
+              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-white to-blue-100">
+                {schoolData.name}
+              </span>
+            </h1>
+            
+            <div className="max-w-4xl mx-auto mb-8">
+              <p className="text-2xl md:text-3xl font-light mb-6 text-blue-100">
+                {schoolData.description}
+              </p>
+              
+              {/* Contact Information Bar */}
+              <div className="flex flex-wrap justify-center gap-8 text-lg text-white/90 mb-8">
+                <div className="flex items-center space-x-2 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full">
+                  <span className="text-2xl">📍</span>
+                  <span className="hidden md:inline">{schoolData.address}</span>
+                  <span className="md:hidden">Location Available</span>
+                </div>
+                <div className="flex items-center space-x-2 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full">
+                  <span className="text-2xl">📞</span>
+                  <span>{schoolData.phone}</span>
+                </div>
+                <div className="flex items-center space-x-2 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full">
+                  <span className="text-2xl">✉️</span>
+                  <span>{schoolData.email}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16">
             <button
-              className="bg-orange-400 text-white px-12 py-3 text-lg font-semibold rounded-full cursor-pointer shadow-2xl hover:-translate-y-1 transition-transform"
+              className="group relative overflow-hidden bg-gradient-to-r from-emerald-500 to-cyan-500 text-white px-12 py-4 text-xl font-bold rounded-2xl shadow-2xl hover:shadow-emerald-500/50 hover:-translate-y-2 transition-all duration-300"
               onClick={() => window.location.href = "#courses"}
             >
-              Explore Courses
+              <span className="relative z-10">🚀 Explore Our Courses</span>
+              <div className="absolute inset-0 bg-gradient-to-r from-emerald-600 to-cyan-600 opacity-0 group-hover:opacity-100 transition-opacity"></div>
             </button>
+            
             <button
-              className="bg-transparent border-2 border-white text-white px-12 py-3 text-lg font-semibold rounded-full cursor-pointer hover:bg-white hover:text-purple-600 transition-all"
+              className="group bg-white/10 backdrop-blur-md border-2 border-white/30 text-white px-12 py-4 text-xl font-bold rounded-2xl hover:bg-white hover:text-purple-600 transition-all duration-300"
               onClick={() => window.location.href = "#contact"}
             >
-              Get Free Consultation
+              💬 Free Consultation
             </button>
           </div>
 
-          {/* Trust Indicators */}
-          <div className="flex justify-center gap-12 flex-wrap text-sm">
-            <div>
-              <strong>{schoolData.studentsGraduated}</strong><br />
-              <span className="opacity-90">Graduates</span>
-            </div>
-            <div>
-              <strong>{schoolData.successRate}</strong><br />
-              <span className="opacity-90">Success Rate</span>
-            </div>
-            <div>
-              <strong>Since {schoolData.foundedYear}</strong><br />
-              <span className="opacity-90">Trusted Excellence</span>
-            </div>
+          {/* Enhanced Trust Indicators */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 max-w-5xl mx-auto">
+            {[
+              { icon: "🎓", value: schoolData.studentsGraduated, label: "Successful Graduates" },
+              { icon: "📈", value: schoolData.successRate, label: "Job Placement Rate" },
+              { icon: "⭐", value: `Since ${schoolData.foundedYear}`, label: "Years of Excellence" },
+              { icon: "🌍", value: "50+ Countries", label: "Global Alumni Network" }
+            ].map((stat, index) => (
+              <div key={index} className="text-center bg-white/10 backdrop-blur-md p-6 rounded-3xl border border-white/20 hover:bg-white/20 transition-all duration-300">
+                <div className="text-4xl mb-3">{stat.icon}</div>
+                <div className="text-3xl font-black text-white mb-2">{stat.value}</div>
+                <div className="text-blue-100 font-medium">{stat.label}</div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* About Us Section - Enhanced with image and experience */}
-      <section className="py-16 px-4 max-w-4xl mx-auto">
-        <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold mb-4 text-gray-800">
-            About {schoolData.name}
-          </h2>
-          <div className="w-20 h-1 bg-indigo-500 mx-auto"></div>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-          <div>
-            {schoolData.image && (
-              <img 
-                src={schoolData.image} 
-                alt={`${schoolData.name} Logo`} 
-                className="max-w-xs mb-4 rounded-lg" 
-              />
-            )}
-            <h3 className="text-2xl mb-4 text-gray-700">Our Mission</h3>
-            <p className="text-base mb-6 text-gray-500">
-              With {schoolData.experience} years of experience since {schoolData.foundedYear}, {schoolData.name} has been at the forefront of transforming lives through education. 
-              We believe that quality learning should be accessible, practical, and career-focused.
-            </p>
-            <p className="text-base text-gray-500">
-              Our expert instructors bring real-world experience from leading companies, ensuring you learn skills that employers actually need. 
-              With a {schoolData.successRate} job placement rate and {schoolData.studentsGraduated} successful graduates, we're committed to your success.
-            </p>
-            <p className="text-base text-gray-500 mt-4">
-              <strong>Address:</strong> {schoolData.address}<br />
-              <strong>Email:</strong> {schoolData.email}<br />
-              <strong>Phone:</strong> {schoolData.phone}
-            </p>
-          </div>
-          
-          <div className="bg-gray-50 p-8 rounded-lg">
-            <h3 className="text-2xl mb-6 text-gray-700">Our Achievements</h3>
-            <ul className="list-none p-0">
-              {[
-                "Industry-recognized certifications",
-                "Partnership with Fortune 500 companies",
-                "Award-winning online learning platform",
-                "24/7 student support system",
-                "Global alumni network in 50+ countries"
-              ].map((achievement, index) => (
-                <li key={index} className="flex items-center mb-4 text-base text-gray-700">
-                  <span className="text-green-600 mr-2 text-xl">✓</span>
-                  {achievement}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      </section>
-
-      {/* Courses Section - Using available courses from API with dummy details */}
-      <section id="courses" className="py-16 px-4">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold mb-4 text-gray-800">
-              Transform Your Career with Our Expert-Led Courses
+      {/* Modern Courses Section */}
+      <section id="courses" className="py-24 px-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-20">
+            <h2 className="text-6xl font-black mb-6">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-pink-500 to-orange-400">
+                Our Premium Courses
+              </span>
             </h2>
-            <p className="text-xl text-gray-500 max-w-2xl mx-auto">
-              Choose from our carefully crafted programs designed to get you job-ready in months, not years.
+            <p className="text-2xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
+              Master in-demand skills with our industry-aligned curriculum designed by experts from top companies
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {schoolData.coursesOffered.length > 0 ? (
-              schoolData.coursesOffered.map((course, index) => (
+          {schoolData.coursesOffered.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+              {schoolData.coursesOffered.map((course, index) => (
                 <div
                   key={index}
-                  className="bg-white p-8 rounded-2xl shadow-xl relative border border-gray-200"
+                  className="group bg-white rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 border-l-4 border-gradient-to-b from-purple-500 to-pink-500 hover:-translate-y-2"
+                  style={{
+                    borderImage: 'linear-gradient(to bottom, #8B5CF6, #EC4899) 1'
+                  }}
                 >
-                  <h3 className="text-xl font-semibold mb-4 text-gray-800">
+                  {/* Course Header */}
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center text-white text-2xl font-bold">
+                      {index + 1}
+                    </div>
+                    <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold">
+                      🔥 Popular
+                    </div>
+                  </div>
+
+                  <h3 className="text-2xl font-bold mb-4 text-gray-800 group-hover:text-purple-600 transition-colors">
                     {course}
                   </h3>
-                  
-                  <div className="flex gap-4 mb-4 text-sm text-gray-500">
-                    <span>📅 16 weeks</span>
-                    <span>📊 Beginner to Advanced</span>
+
+                  {/* Course Meta */}
+                  <div className="flex flex-wrap gap-4 mb-6">
+                    <span className="bg-blue-50 text-blue-600 px-3 py-1 rounded-full text-sm flex items-center">
+                      📅 16 Weeks
+                    </span>
+                    <span className="bg-orange-50 text-orange-600 px-3 py-1 rounded-full text-sm flex items-center">
+                      📊 All Levels
+                    </span>
+                    <span className="bg-green-50 text-green-600 px-3 py-1 rounded-full text-sm flex items-center">
+                      🏆 Certified
+                    </span>
                   </div>
-                  
-                  <p className="text-gray-600 mb-6 leading-relaxed">Master key skills with hands-on projects and expert guidance.</p>
-                  
-                  <div className="mb-6">
-                    <h4 className="text-base font-semibold mb-2 text-gray-800">
-                      What You'll Get:
-                    </h4>
-                    <ul className="list-none p-0">
-                      {["Live sessions", "1-on-1 mentorship", "Job support"].map((highlight, idx) => (
-                        <li key={idx} className="flex items-center mb-2 text-gray-700">
-                          <span className="text-green-600 mr-2">✓</span>
-                          {highlight}
+
+                  <p className="text-gray-600 mb-6 leading-relaxed">
+                    Transform your career with hands-on projects, expert mentorship, and industry-recognized certification.
+                  </p>
+
+                  {/* Features */}
+                  <div className="mb-8">
+                    <h4 className="font-bold text-gray-800 mb-3">What You'll Get:</h4>
+                    <ul className="space-y-2">
+                      {[
+                        "🎯 Live Interactive Sessions", 
+                        "👨‍🏫 1-on-1 Expert Mentorship", 
+                        "💼 Career Placement Support",
+                        "📜 Industry Certificate"
+                      ].map((feature, idx) => (
+                        <li key={idx} className="flex items-center text-gray-700">
+                          <span className="mr-2">{feature.split(' ')[0]}</span>
+                          <span>{feature.split(' ').slice(1).join(' ')}</span>
                         </li>
                       ))}
                     </ul>
                   </div>
-                  
-                  <div className="bg-gray-50 p-4 rounded-lg mb-6">
-                    <p className="m-0 text-sm text-gray-700">
-                      <strong>Average Salary:</strong> $70,000 - $120,000
+
+                  {/* Salary Range */}
+                  <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-xl mb-6 border border-green-200">
+                    <p className="text-green-800 font-semibold">
+                      💰 Average Salary: <span className="text-green-600">$70K - $120K</span>
                     </p>
                   </div>
-                  
+
+                  {/* CTA Button */}
                   <button
-                    className="w-full bg-indigo-500 text-white py-4 text-base font-semibold rounded-lg cursor-pointer hover:bg-indigo-600 transition-all"
+                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-4 text-lg font-bold rounded-2xl hover:from-purple-700 hover:to-pink-700 transition-all duration-300 shadow-lg hover:shadow-xl"
                     onClick={() => window.location.href = "#contact"}
                   >
-                    Start This Course
+                    Start Learning Today →
                   </button>
                 </div>
-              ))
-            ) : (
-              // Fallback dummy courses if API returns empty
-              [
-                {
-                  title: "Full-Stack Web Development Bootcamp",
-                  duration: "16 weeks",
-                  level: "Beginner to Advanced",
-                  description: "Master React, Node.js, databases, and cloud deployment. Build 5 real projects for your portfolio.",
-                  highlights: ["Live coding sessions", "1-on-1 mentorship", "Job guarantee program"],
-                  salary: "$70,000 - $120,000",
-                  popular: true
-                },
-                // ... (other dummies, but truncated for brevity)
-              ].map(({ title, duration, level, description, highlights, salary, popular }, index) => (
-                <div key={index} className="bg-white p-8 rounded-2xl shadow-xl relative border border-gray-200">
-                  {/* Similar structure as above */}
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-16">
+              <div className="text-8xl mb-6">🚀</div>
+              <h3 className="text-3xl font-bold text-gray-800 mb-4">Exciting Courses Coming Soon!</h3>
+              <p className="text-xl text-gray-600 mb-8">We're crafting amazing learning experiences just for you.</p>
+              <button 
+                className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-8 py-4 rounded-2xl font-bold hover:from-blue-600 hover:to-purple-700 transition-all"
+                onClick={() => window.location.href = "#contact"}
+              >
+                Get Notified When Available
+              </button>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Enhanced About Section */}
+      <section className="py-24 px-6 bg-gradient-to-br from-slate-50 to-blue-50">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            {/* Left Column - Content */}
+            <div>
+              <h2 className="text-5xl font-black mb-8">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
+                  Why Choose {schoolData.name}?
+                </span>
+              </h2>
+              
+              <p className="text-xl text-gray-700 mb-8 leading-relaxed">
+                With <span className="font-bold text-blue-600">{schoolData.experience}</span> years of experience since {schoolData.foundedYear}, we've been transforming careers through cutting-edge education and practical skill development.
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
+                {[
+                  { icon: "🎯", title: "Industry-Focused", desc: "Real-world projects and skills" },
+                  { icon: "👥", title: "Expert Mentors", desc: "Learn from industry leaders" },
+                  { icon: "🌟", title: "Proven Results", desc: `${schoolData.successRate} success rate` },
+                  { icon: "🤝", title: "Career Support", desc: "Job placement assistance" }
+                ].map((feature, index) => (
+                  <div key={index} className="bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition-all">
+                    <div className="text-3xl mb-3">{feature.icon}</div>
+                    <h4 className="font-bold text-gray-800 mb-2">{feature.title}</h4>
+                    <p className="text-gray-600 text-sm">{feature.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Right Column - Visual */}
+            <div className="bg-gradient-to-br from-purple-600 to-blue-600 rounded-3xl p-8 text-white shadow-2xl">
+              {schoolData.image && (
+                <div className="text-center mb-8">
+                  <img 
+                    src={schoolData.image} 
+                    alt={`${schoolData.name} Logo`} 
+                    className="w-24 h-24 rounded-full border-4 border-white/30 mx-auto mb-4" 
+                  />
                 </div>
-              ))
-            )}
+              )}
+              
+              <h3 className="text-3xl font-bold mb-6 text-center">Contact Information</h3>
+              
+              <div className="space-y-4">
+                <div className="flex items-center space-x-4 bg-white/10 backdrop-blur-md p-4 rounded-xl">
+                  <span className="text-2xl">🏢</span>
+                  <div>
+                    <p className="font-semibold">Address</p>
+                    <p className="text-blue-100">{schoolData.address}</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center space-x-4 bg-white/10 backdrop-blur-md p-4 rounded-xl">
+                  <span className="text-2xl">📧</span>
+                  <div>
+                    <p className="font-semibold">Email</p>
+                    <p className="text-blue-100">{schoolData.email}</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center space-x-4 bg-white/10 backdrop-blur-md p-4 rounded-xl">
+                  <span className="text-2xl">📞</span>
+                  <div>
+                    <p className="font-semibold">Phone</p>
+                    <p className="text-blue-100">{schoolData.phone}</p>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                className="w-full mt-8 bg-white text-purple-600 py-4 rounded-2xl font-bold hover:bg-gray-100 transition-all"
+                onClick={() => window.location.href = "#contact"}
+              >
+                Schedule a Call Today
+              </button>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Footer - Modern Design */}
-      <footer className="bg-gray-800 text-white py-12 px-4">
-        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div className="col-span-1">
-            <h3 className="text-2xl font-bold mb-4">{schoolData.name}</h3>
-            <p className="opacity-80 mb-4">
-              Transforming lives through education since {schoolData.foundedYear} with {schoolData.experience} years of experience.
-            </p>
-            {schoolData.image && (
-              <img 
-                src={schoolData.image} 
-                alt={`${schoolData.name} Logo`} 
-                className="max-w-[100px] rounded" 
-              />
-            )}
-          </div>
-          
-          <div>
-            <h4 className="text-lg font-semibold mb-4">Contact</h4>
-            <p className="mb-2">📍 {schoolData.address}</p>
-            <p className="mb-2">✉️ {schoolData.email}</p>
-            <p>📞 {schoolData.phone}</p>
-          </div>
-          
-          <div>
-            <h4 className="text-lg font-semibold mb-4">Quick Links</h4>
-            <ul className="list-none p-0">
-              <li className="mb-2"><a href="#courses" className="hover:text-indigo-300 transition-colors">Courses</a></li>
-              <li className="mb-2"><a href="#contact" className="hover:text-indigo-300 transition-colors">Contact</a></li>
-              <li className="mb-2"><a href="#" className="hover:text-indigo-300 transition-colors">Privacy Policy</a></li>
-              <li><a href="#" className="hover:text-indigo-300 transition-colors">Terms of Service</a></li>
-            </ul>
-          </div>
-          
-          <div>
-            <h4 className="text-lg font-semibold mb-4">Follow Us</h4>
-            <div className="flex gap-4">
-              {['LinkedIn', 'Twitter', 'Facebook', 'Instagram', 'YouTube'].map((platform) => (
-                <button
-                  key={platform}
-                  className="bg-indigo-500 text-white px-4 py-2 rounded-md text-sm hover:bg-indigo-600 transition-colors"
-                  onClick={() => alert(`Visit our ${platform} page`)}
-                >
-                  {platform}
-                </button>
-              ))}
+      {/* Modern Footer */}
+      <footer id="contact" className="bg-gradient-to-br from-gray-900 via-purple-900 to-blue-900 text-white py-20 px-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+            <div className="col-span-1 md:col-span-2">
+              <div className="flex items-center space-x-4 mb-6">
+                {schoolData.image && (
+                  <img 
+                    src={schoolData.image} 
+                    alt={`${schoolData.name} Logo`} 
+                    className="w-16 h-16 rounded-full border-2 border-purple-400" 
+                  />
+                )}
+                <h3 className="text-4xl font-black">
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-orange-300">
+                    {schoolData.name}
+                  </span>
+                </h3>
+              </div>
+              <p className="text-xl text-blue-100 mb-6 leading-relaxed">
+                {schoolData.description}
+              </p>
+              <p className="text-lg text-purple-200">
+                🎯 {schoolData.studentsGraduated} graduates • {schoolData.successRate} success rate • Since {schoolData.foundedYear}
+              </p>
+            </div>
+            
+            <div>
+              <h4 className="text-2xl font-bold mb-6 text-pink-300">Quick Links</h4>
+              <ul className="space-y-3">
+                {['Courses', 'About Us', 'Contact', 'Privacy Policy', 'Terms'].map((link) => (
+                  <li key={link}>
+                    <a href="#" className="text-lg hover:text-pink-300 transition-colors flex items-center">
+                      <span className="mr-2">→</span>{link}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            
+            <div>
+              <h4 className="text-2xl font-bold mb-6 text-pink-300">Connect With Us</h4>
+              <div className="grid grid-cols-2 gap-3">
+                {['LinkedIn', 'Twitter', 'Facebook', 'Instagram'].map((platform) => (
+                  <button
+                    key={platform}
+                    className="bg-gradient-to-r from-pink-500 to-purple-500 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:from-pink-600 hover:to-purple-600 transition-all transform hover:scale-105"
+                    onClick={() => alert(`Visit our ${platform} page`)}
+                  >
+                    {platform}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
-        <div className="text-center mt-8 opacity-70 text-sm">
-          © 2024 {schoolData.name}. All rights reserved.
+          
+          <div className="border-t border-white/20 pt-8 text-center">
+            <p className="text-lg text-blue-200">
+              © 2024 {schoolData.name}. Empowering futures through education. All rights reserved.
+            </p>
+          </div>
         </div>
       </footer>
+
+      {/* Custom CSS for animations */}
+      <style jsx>{`
+        @keyframes fade-in {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+          animation: fade-in 1s ease-out;
+        }
+      `}</style>
     </div>
   );
 };

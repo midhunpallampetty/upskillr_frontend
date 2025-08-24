@@ -470,7 +470,7 @@ const MarketingPage: React.FC = () => {
                     </div>
 
                     {/* Features */}
-                    <div className="mb-6">
+                    {/* <div className="mb-6">
                       <h4 className="font-bold text-gray-800 mb-3">What You'll Get:</h4>
                       <ul className="space-y-2">
                         {[
@@ -485,7 +485,7 @@ const MarketingPage: React.FC = () => {
                           </li>
                         ))}
                       </ul>
-                    </div>
+                    </div> */}
 
                     {/* Salary Range */}
                     <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-xl mb-6 border border-green-200">

@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { getSchoolBySubdomain } from './api/school.api'; // Adjust the import path to match your project structure (e.g., the api folder where this function exists)
+import { getCoursesBySchool } from './api/course.api'; // Assuming this is the import for the new API function; adjust path accordingly
+
 
 // Embedded utility function to extract subdomain
 const getSubdomain = (url: string = window.location.href): string => {
@@ -17,6 +19,7 @@ const getSubdomain = (url: string = window.location.href): string => {
   }
 };
 
+
 const MarketingPage: React.FC = () => {
   const [schoolData, setSchoolData] = useState({
     name: '',
@@ -32,6 +35,7 @@ const MarketingPage: React.FC = () => {
     coverImage: '',
     coursesOffered: [] // Keep empty initially; will be set from API
   });
+
 
   useEffect(() => {
     const subdomain = getSubdomain();
@@ -59,19 +63,36 @@ const MarketingPage: React.FC = () => {
             experience: data.experience || '',
             image: data.image || '',
             coverImage: data.coverImage || '',
-            coursesOffered: data.coursesOffered || []
+            coursesOffered: [] // Initialize empty; will be updated below
           };
 
           setSchoolData(updatedData);
           console.log(updatedData, 'data'); // Log after setting state (note: state update is async, use callback if needed for immediate logging)
 
+          // Fetch courses using getCoursesBySchool API
+          // Assuming schoolId is available as data._id and dbname is 'eduvia' based on context
+          const schoolId = data._id; // Adjust based on actual school ID field in response
+          const dbname = 'gamersclub'; // Adjust if dbname is dynamic or from response
+          const coursesResponse = await getCoursesBySchool(schoolId, dbname);
+          console.log(coursesResponse.data.courses, 'courses response');
+
+          // Assuming response structure has courses in coursesResponse.data.courses as an array of strings
+          const fetchedCourses = coursesResponse.data.courses || [];
+
+          // Update schoolData with fetched courses
+          setSchoolData(prevData => ({
+            ...prevData,
+            coursesOffered: fetchedCourses
+          }));
+
         } catch (error) {
-          console.error('Error fetching school data:', error);
+          console.error('Error fetching school data or courses:', error);
         }
       };
       fetchSchoolData();
     }
   }, []);
+
 
   // SEO and meta tag updates
   useEffect(() => {
@@ -89,6 +110,7 @@ const MarketingPage: React.FC = () => {
       document.head.appendChild(meta);
     }
 
+
     const updateOrCreateMetaTag = (property: string, content: string) => {
       if (!content) return; // Skip if content is empty
       let metaTag = document.querySelector(`meta[property="${property}"]`);
@@ -102,6 +124,7 @@ const MarketingPage: React.FC = () => {
       }
     };
 
+
     updateOrCreateMetaTag('og:title', `${schoolData.name} - Expert Learning Platform`);
     updateOrCreateMetaTag('og:description', schoolData.description);
     updateOrCreateMetaTag('og:url', 'https://eduvia.space');
@@ -109,6 +132,7 @@ const MarketingPage: React.FC = () => {
       updateOrCreateMetaTag('og:image', schoolData.image);
     }
   }, [schoolData]);
+
 
   // Dummy course details for enhanced display (kept as per instructions, extended for potential new courses)
   const courseDetails = {
@@ -170,6 +194,7 @@ const MarketingPage: React.FC = () => {
     }
   };
 
+
   return (
     <div className="font-inter text-gray-800 leading-7 bg-gray-50 min-h-screen">
       
@@ -193,6 +218,7 @@ const MarketingPage: React.FC = () => {
           <div className="absolute top-1/2 left-1/4 w-64 h-64 bg-pink-500/10 rounded-full blur-2xl animate-pulse delay-500"></div>
         </div>
 
+
         <div className="relative z-10 container mx-auto px-6">
           {/* School Header with Logo */}
           <div className="text-center mb-12">
@@ -207,6 +233,7 @@ const MarketingPage: React.FC = () => {
                 />
               </div>
             </div>
+
 
             {/* School Name with Enhanced Typography */}
             <h1 className="text-6xl md:text-8xl font-black mb-6 tracking-tight">
@@ -257,6 +284,7 @@ const MarketingPage: React.FC = () => {
             </div>
           </div>
 
+
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16">
             <button
@@ -278,6 +306,7 @@ const MarketingPage: React.FC = () => {
               </span>
             </button>
           </div>
+
 
           {/* Enhanced Trust Indicators (conditionally render based on available data) */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-6xl mx-auto">
@@ -311,6 +340,7 @@ const MarketingPage: React.FC = () => {
         </div>
       </section>
 
+
       {/* Enhanced Courses Section with API-provided courses and dummy details */}
       {schoolData.coursesOffered.length > 0 && (
         <section id="courses" className="py-24 px-6">
@@ -328,6 +358,7 @@ const MarketingPage: React.FC = () => {
                 🔥 {schoolData.coursesOffered.length} Courses Available
               </div>
             </div>
+
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
               {schoolData.coursesOffered.map((course, index) => {
@@ -354,13 +385,16 @@ const MarketingPage: React.FC = () => {
                       </div>
                     </div>
 
+
                     <h3 className="text-2xl font-bold mb-4 text-gray-800 group-hover:text-purple-600 transition-colors leading-tight">
                       {course}
                     </h3>
 
+
                     <p className="text-gray-600 mb-6 leading-relaxed">
                       {details.description}
                     </p>
+
 
                     {/* Course Meta */}
                     <div className="flex flex-wrap gap-3 mb-6">
@@ -375,6 +409,7 @@ const MarketingPage: React.FC = () => {
                       </span>
                     </div>
 
+
                     {/* Skills */}
                     <div className="mb-6">
                       <h4 className="font-bold text-gray-800 mb-3">Key Skills You'll Learn:</h4>
@@ -386,6 +421,7 @@ const MarketingPage: React.FC = () => {
                         ))}
                       </div>
                     </div>
+
 
                     {/* Features */}
                     <div className="mb-6">
@@ -405,12 +441,14 @@ const MarketingPage: React.FC = () => {
                       </ul>
                     </div>
 
+
                     {/* Salary Range */}
                     <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-xl mb-6 border border-green-200">
                       <p className="text-green-800 font-semibold flex items-center">
                         💰 <span className="ml-2">Average Salary: <span className="text-green-600">{details.salary}</span></span>
                       </p>
                     </div>
+
 
                     {/* CTA Button */}
                     <button
@@ -426,6 +464,7 @@ const MarketingPage: React.FC = () => {
           </div>
         </section>
       )}
+
 
       {/* Enhanced About Section */}
       <section className="py-24 px-6 bg-gradient-to-br from-slate-50 to-blue-50">
@@ -445,6 +484,7 @@ const MarketingPage: React.FC = () => {
                 </p>
               )}
 
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
                 {[
                   { icon: "🎯", title: "Industry-Focused", desc: "Real-world projects and skills", color: "from-blue-500 to-purple-500" },
@@ -460,6 +500,7 @@ const MarketingPage: React.FC = () => {
                 ))}
               </div>
             </div>
+
 
             {/* Right Column - Contact Card - Ensured logo, address, phone, email are prominently displayed */}
             <div className="bg-gradient-to-br from-purple-600 to-blue-600 rounded-3xl p-8 text-white shadow-2xl">
@@ -505,6 +546,7 @@ const MarketingPage: React.FC = () => {
                 )}
               </div>
 
+
               <button
                 className="w-full mt-8 bg-white text-purple-600 py-4 rounded-2xl font-bold hover:bg-gray-100 transition-all transform hover:-translate-y-1 shadow-lg"
                 onClick={() => window.location.href = "#contact"}
@@ -515,6 +557,7 @@ const MarketingPage: React.FC = () => {
           </div>
         </div>
       </section>
+
 
       {/* Modern Footer - Ensured logo and other details are shown */}
       <footer id="contact" className="bg-gradient-to-br from-gray-900 via-purple-900 to-blue-900 text-white py-20 px-6">
@@ -582,6 +625,7 @@ const MarketingPage: React.FC = () => {
         </div>
       </footer>
 
+
       {/* Custom CSS for animations */}
       <style jsx>{`
         @keyframes fade-in {
@@ -595,5 +639,6 @@ const MarketingPage: React.FC = () => {
     </div>
   );
 };
+
 
 export default MarketingPage;

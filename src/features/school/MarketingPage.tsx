@@ -39,6 +39,7 @@ interface Course {
 const MarketingPage: React.FC = () => {
   const [courses, setCourses] = useState<string[]>([]);
   const [schoolData, setSchoolData] = useState({
+    id: '',
     name: '',
     email: '',
     phone: '',
@@ -68,6 +69,7 @@ const MarketingPage: React.FC = () => {
           const data = response.data.school; // Adjust based on axios response structure
           
           const updatedData = {
+            id: data._id || '',
             name: data.name || '',
             email: data.email || '',
             phone: data.officialContact || '',
@@ -84,12 +86,22 @@ const MarketingPage: React.FC = () => {
 
           setSchoolData(updatedData);
           console.log(updatedData, 'data'); // Log after setting state (note: state update is async, use callback if needed for immediate logging)
+        } catch (error) {
+          console.error('Error fetching school data:', error);
+        }
+      };
+      fetchSchoolData();
+    }
+  }, []);
 
-          // Fetch courses using getCoursesBySchool API
-          // Assuming schoolId is available as data._id and dbname is 'eduvia' based on context
-          const schoolId = data._id; // Adjust based on actual school ID field in response
-          console.log(schoolData.name,'school name')
-          const dbname = 'gamersclub'; // Adjust if dbname is dynamic or from response
+  // Separate useEffect to fetch courses after schoolData is updated
+  useEffect(() => {
+    if (schoolData.id && schoolData.name) {
+      const fetchCourses = async () => {
+        try {
+          const schoolId = schoolData.id;
+          console.log(schoolData.name, 'school name');
+          const dbname = schoolData.name; // Use schoolData.name as dbname
           const coursesResponse = await getCoursesBySchool(schoolId, dbname);
           console.log(coursesResponse, 'courses response');
 
@@ -100,14 +112,14 @@ const MarketingPage: React.FC = () => {
 
           // Set the courses state using setCourses (now an array of course names as strings)
           setCourses(fetchedCourses.filter(name => name)); // Filter out any empty names
-
         } catch (error) {
-          console.error('Error fetching school data or courses:', error);
+          console.error('Error fetching courses:', error);
         }
       };
-      fetchSchoolData();
+      fetchCourses();
     }
-  }, []);
+  }, [schoolData]); // Depend on schoolData to run after it's updated
+
   console.log(schoolData, 'school data');
 
   // SEO and meta tag updates

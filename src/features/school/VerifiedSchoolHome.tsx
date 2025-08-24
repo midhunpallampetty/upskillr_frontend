@@ -33,7 +33,7 @@ const SchoolHome: React.FC = () => {
       try {
         dispatch({ type: 'FETCH_START' });
         let token=Cookies.get('accessToken')
-        const res = await getSchoolBySubdomain(verifiedSchool,token);
+        const res = await getSchoolBySubdomain('gamersclub',token);
         const schoolData = res.data.school;
 
         setSchool(schoolData);

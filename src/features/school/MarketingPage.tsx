@@ -9,6 +9,18 @@ const MarketingPage: React.FC = () => {
     address: '123 Education Rd, Knowledge City, 00000',
     description: 'Join our community and gain the skills to transform your career and passion. Flexible courses designed for real-world success.',
   });
+function getPage(url) {
+  const hostname = new URL(url).hostname; // "gamersclub.eduvia.space"
+  const parts = hostname.split('.');      // ["gamersclub", "eduvia", "space"]
+
+  if (parts.length > 2) {
+    return parts[0]; // "gamersclub"
+  }
+  return null; // no subdomain
+}
+
+// Example
+console.log(getPage("https://gamersclub.eduvia.space/")); // "gamersclub"
 
   useEffect(() => {
     const subdomain = getSubdomain();

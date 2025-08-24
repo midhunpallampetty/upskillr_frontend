@@ -92,7 +92,7 @@ const MarketingPage: React.FC = () => {
       fetchSchoolData();
     }
   }, []);
-
+console.log(schoolData, 'school data');
 
   // SEO and meta tag updates
   useEffect(() => {

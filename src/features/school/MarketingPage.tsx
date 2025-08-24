@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getDynamicSubdomain } from '../../utils/getSubdomain';
+import { getSubdomain } from '../../utils/getSubdomain';
 
 const MarketingPage: React.FC = () => {
   const [schoolData, setSchoolData] = useState({
@@ -11,7 +11,7 @@ const MarketingPage: React.FC = () => {
   });
 
   useEffect(() => {
-    const subdomain = getDynamicSubdomain();
+    const subdomain = getSubdomain();
     if (subdomain) {
       const fetchSchoolData = async () => {
         try {

@@ -39,9 +39,12 @@ const MarketingPage: React.FC = () => {
       const fetchSchoolData = async () => {
         try {
           // Replace with actual token retrieval (e.g., from auth context, localStorage, etc.)
-          const token = 'your-auth-token-here'; // Implement proper token handling
+          const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4NGQ4YjI5NDRhMzg4N2E4MjJkNTg2YiIsImVtYWlsIjoieWljZXdhYjkzOUBsaXRlcGF4LmNvbSIsInJvbGUiOiJzY2hvb2wiLCJzdWJEb21haW4iOiJodHRwOi8vZ2FtZXJzY2x1Yi5lZHV2aWEuc3BhY2UiLCJpYXQiOjE3NTU5NjMyMjUsImV4cCI6MTc1NTk2MzI4NX0.1GcqFwkWRABUA6RvFdNjTZaRZHCQY-djW8SIeslT4es'; // Implement proper token handling
+          console.log(subdomain, 'subdomain');
           
           const response = await getSchoolBySubdomain(subdomain, token);
+          console.log(response, 'response');
+          
           const data = response.data; // Adjust based on axios response structure
           
           const updatedData = {

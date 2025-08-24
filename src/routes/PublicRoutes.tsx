@@ -19,7 +19,8 @@ import { ExamPage } from '../features/student/ExamPage';
 import ForumPage from '../features/shared/ForumPage';
 import About from '../features/shared/About';
 import Contact from '../features/shared/Contact';
-
+import MarketingPage from '../features/school/MarketingPage';
+import { HelmetProvider } from 'react-helmet-async';
 const LandingPage = lazy(() => import('../features/shared/Landing'));
 const AdminAuth = lazy(() => import('../features/admin/AdminAuth'));
 const SchoolRegister = lazy(() => import('../features/school/schoolRegister'));
@@ -72,6 +73,8 @@ const PublicRoutes = () => (
     <Route path='/student/exam/take-exam' element={<ExamPage />} />
     <Route path='/about'element={<About/>}/>
     <Route path='/contact'element={<Contact/>}/>
+    
+    <Route path='/subdomainpage'element={<MarketingPage/>}/>
   </Routes>
 );
 

@@ -225,10 +225,10 @@ const CourseDetailsPage: React.FC = () => {
             <h2 className="text-md font-semibold text-gray-700 mb-2">School</h2>
             <p>{schoolName}</p>
           </div>
-
+            
           {/* Detailed Sections */}
           <div className="bg-white border rounded-lg p-5 shadow-md col-span-1 md:col-span-2">
-            <h2 className="text-md font-semibold text-gray-700 mb-4">Sections</h2>
+            <h2 className="text-md font-semibold text-gray-700 mb-4">Curriculam</h2>
             {sections.length > 0 ? (
               <ul className="space-y-4">
                 {sections.map((section, index) => (

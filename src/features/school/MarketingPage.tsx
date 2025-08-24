@@ -11,10 +11,17 @@ const MarketingPage: React.FC = () => {
     foundedYear: '2015',
     studentsGraduated: '10,000+',
     successRate: '95%',
-    experience: '0',
-    image: '',
-    coverImage: '',
-    coursesOffered: []
+    experience: '10',
+    image: 'https://via.placeholder.com/200x200/4F46E5/FFFFFF?text=EDUVIA', // Dummy logo
+    coverImage: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=2071&q=80', // Dummy cover
+    coursesOffered: [
+      'Full Stack Web Development',
+      'Data Science & Analytics',
+      'Digital Marketing Mastery',
+      'UI/UX Design Professional',
+      'Mobile App Development',
+      'Cloud Computing & DevOps'
+    ]
   });
 
   useEffect(() => {
@@ -84,68 +91,132 @@ const MarketingPage: React.FC = () => {
     }
   }, [schoolData]);
 
+  // Dummy course details for enhanced display
+  const courseDetails = {
+    'Full Stack Web Development': {
+      icon: '💻',
+      duration: '24 weeks',
+      level: 'Beginner to Advanced',
+      description: 'Master React, Node.js, MongoDB and become a complete web developer',
+      skills: ['React', 'Node.js', 'MongoDB', 'TypeScript'],
+      salary: '$75K - $130K'
+    },
+    'Data Science & Analytics': {
+      icon: '📊',
+      duration: '20 weeks',
+      level: 'Intermediate',
+      description: 'Learn Python, Machine Learning, and data visualization techniques',
+      skills: ['Python', 'Machine Learning', 'SQL', 'Tableau'],
+      salary: '$80K - $140K'
+    },
+    'Digital Marketing Mastery': {
+      icon: '📱',
+      duration: '16 weeks',
+      level: 'All Levels',
+      description: 'Master SEO, social media marketing, and digital advertising strategies',
+      skills: ['SEO', 'Google Ads', 'Social Media', 'Analytics'],
+      salary: '$50K - $90K'
+    },
+    'UI/UX Design Professional': {
+      icon: '🎨',
+      duration: '18 weeks',
+      level: 'Beginner to Advanced',
+      description: 'Create stunning user interfaces and exceptional user experiences',
+      skills: ['Figma', 'Adobe XD', 'Prototyping', 'User Research'],
+      salary: '$65K - $110K'
+    },
+    'Mobile App Development': {
+      icon: '📱',
+      duration: '22 weeks',
+      level: 'Intermediate',
+      description: 'Build native iOS and Android apps with React Native and Flutter',
+      skills: ['React Native', 'Flutter', 'iOS', 'Android'],
+      salary: '$70K - $125K'
+    },
+    'Cloud Computing & DevOps': {
+      icon: '☁️',
+      duration: '20 weeks',
+      level: 'Advanced',
+      description: 'Master AWS, Docker, Kubernetes and modern deployment practices',
+      skills: ['AWS', 'Docker', 'Kubernetes', 'CI/CD'],
+      salary: '$85K - $150K'
+    }
+  };
+
   return (
     <div className="font-inter text-gray-800 leading-7 bg-gray-50 min-h-screen">
       
-      {/* Enhanced Hero Section with School Details */}
+      {/* Enhanced Hero Section with Cover Image and Logo */}
       <section
         className="relative overflow-hidden min-h-screen flex items-center text-white"
         style={{
-          background: schoolData.coverImage 
-            ? `linear-gradient(135deg, rgba(59, 130, 246, 0.9), rgba(147, 51, 234, 0.9)), url(${schoolData.coverImage})` 
-            : 'linear-gradient(135deg, #3B82F6, #8B5CF6, #EC4899, #F59E0B)',
+          background: `linear-gradient(135deg, rgba(59, 130, 246, 0.85), rgba(147, 51, 234, 0.85)), url(${schoolData.coverImage})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
+          backgroundAttachment: 'fixed'
         }}
       >
+        {/* Overlay Pattern */}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 to-purple-900/20"></div>
+        
         {/* Animated Background Elements */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute -top-40 -right-40 w-80 h-80 bg-white/10 rounded-full blur-3xl animate-pulse"></div>
           <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+          <div className="absolute top-1/2 left-1/4 w-64 h-64 bg-pink-500/10 rounded-full blur-2xl animate-pulse delay-500"></div>
         </div>
 
         <div className="relative z-10 container mx-auto px-6">
-          {/* School Header with Logo and Details */}
+          {/* School Header with Logo */}
           <div className="text-center mb-12">
+            {/* Logo Section */}
             <div className="flex justify-center items-center mb-8">
-              {schoolData.image && (
-                <div className="relative">
-                  <img 
-                    src={schoolData.image} 
-                    alt={`${schoolData.name} Logo`} 
-                    className="w-32 h-32 rounded-full border-4 border-white/30 shadow-2xl backdrop-blur-sm"
-                  />
-                  <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-blue-500/20 to-purple-500/20"></div>
-                </div>
-              )}
+              <div className="relative group">
+                <div className="absolute -inset-4 bg-gradient-to-r from-pink-500 to-violet-500 rounded-full blur-lg opacity-30 group-hover:opacity-50 transition-opacity"></div>
+                <img 
+                  src={schoolData.image} 
+                  alt={`${schoolData.name} Logo`} 
+                  className="relative w-32 h-32 rounded-full border-4 border-white/40 shadow-2xl backdrop-blur-sm hover:scale-110 transition-transform duration-300"
+                />
+              </div>
             </div>
 
-            {/* School Name and Tagline */}
-            <h1 className="text-7xl md:text-8xl font-black mb-6 tracking-tight">
-              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-white to-blue-100">
+            {/* School Name with Enhanced Typography */}
+            <h1 className="text-6xl md:text-8xl font-black mb-6 tracking-tight">
+              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-white via-blue-100 to-purple-100 drop-shadow-lg">
                 {schoolData.name}
               </span>
             </h1>
             
             <div className="max-w-4xl mx-auto mb-8">
-              <p className="text-2xl md:text-3xl font-light mb-6 text-blue-100">
+              <p className="text-xl md:text-2xl font-light mb-8 text-blue-100 leading-relaxed">
                 {schoolData.description}
               </p>
               
-              {/* Contact Information Bar */}
-              <div className="flex flex-wrap justify-center gap-8 text-lg text-white/90 mb-8">
-                <div className="flex items-center space-x-2 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full">
+              {/* Enhanced Contact Information */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                <div className="flex items-center justify-center space-x-3 bg-white/10 backdrop-blur-md px-6 py-4 rounded-2xl border border-white/20 hover:bg-white/20 transition-all">
                   <span className="text-2xl">📍</span>
-                  <span className="hidden md:inline">{schoolData.address}</span>
-                  <span className="md:hidden">Location Available</span>
+                  <div className="text-left">
+                    <p className="font-semibold text-sm">Location</p>
+                    <p className="text-blue-100 text-sm">{schoolData.address}</p>
+                  </div>
                 </div>
-                <div className="flex items-center space-x-2 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full">
+                
+                <div className="flex items-center justify-center space-x-3 bg-white/10 backdrop-blur-md px-6 py-4 rounded-2xl border border-white/20 hover:bg-white/20 transition-all">
                   <span className="text-2xl">📞</span>
-                  <span>{schoolData.phone}</span>
+                  <div className="text-left">
+                    <p className="font-semibold text-sm">Call Us</p>
+                    <p className="text-blue-100 text-sm">{schoolData.phone}</p>
+                  </div>
                 </div>
-                <div className="flex items-center space-x-2 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full">
+                
+                <div className="flex items-center justify-center space-x-3 bg-white/10 backdrop-blur-md px-6 py-4 rounded-2xl border border-white/20 hover:bg-white/20 transition-all">
                   <span className="text-2xl">✉️</span>
-                  <span>{schoolData.email}</span>
+                  <div className="text-left">
+                    <p className="font-semibold text-sm">Email</p>
+                    <p className="text-blue-100 text-sm">{schoolData.email}</p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -154,96 +225,120 @@ const MarketingPage: React.FC = () => {
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16">
             <button
-              className="group relative overflow-hidden bg-gradient-to-r from-emerald-500 to-cyan-500 text-white px-12 py-4 text-xl font-bold rounded-2xl shadow-2xl hover:shadow-emerald-500/50 hover:-translate-y-2 transition-all duration-300"
+              className="group relative overflow-hidden bg-gradient-to-r from-emerald-500 to-cyan-500 text-white px-12 py-5 text-xl font-bold rounded-2xl shadow-2xl hover:shadow-emerald-500/50 hover:-translate-y-2 transition-all duration-300 transform"
               onClick={() => window.location.href = "#courses"}
             >
-              <span className="relative z-10">🚀 Explore Our Courses</span>
+              <span className="relative z-10 flex items-center justify-center">
+                🚀 <span className="ml-2">Explore Our Courses</span>
+              </span>
               <div className="absolute inset-0 bg-gradient-to-r from-emerald-600 to-cyan-600 opacity-0 group-hover:opacity-100 transition-opacity"></div>
             </button>
             
             <button
-              className="group bg-white/10 backdrop-blur-md border-2 border-white/30 text-white px-12 py-4 text-xl font-bold rounded-2xl hover:bg-white hover:text-purple-600 transition-all duration-300"
+              className="group bg-white/10 backdrop-blur-md border-2 border-white/30 text-white px-12 py-5 text-xl font-bold rounded-2xl hover:bg-white hover:text-purple-600 transition-all duration-300 transform hover:-translate-y-1"
               onClick={() => window.location.href = "#contact"}
             >
-              💬 Free Consultation
+              <span className="flex items-center justify-center">
+                💬 <span className="ml-2">Free Consultation</span>
+              </span>
             </button>
           </div>
 
           {/* Enhanced Trust Indicators */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 max-w-5xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-6xl mx-auto">
             {[
-              { icon: "🎓", value: schoolData.studentsGraduated, label: "Successful Graduates" },
-              { icon: "📈", value: schoolData.successRate, label: "Job Placement Rate" },
-              { icon: "⭐", value: `Since ${schoolData.foundedYear}`, label: "Years of Excellence" },
-              { icon: "🌍", value: "50+ Countries", label: "Global Alumni Network" }
+              { icon: "🎓", value: schoolData.studentsGraduated, label: "Successful Graduates", color: "from-green-400 to-blue-500" },
+              { icon: "📈", value: schoolData.successRate, label: "Job Placement Rate", color: "from-purple-400 to-pink-500" },
+              { icon: "⭐", value: `Since ${schoolData.foundedYear}`, label: "Years of Excellence", color: "from-yellow-400 to-orange-500" },
+              { icon: "🌍", value: "50+ Countries", label: "Global Alumni Network", color: "from-teal-400 to-cyan-500" }
             ].map((stat, index) => (
-              <div key={index} className="text-center bg-white/10 backdrop-blur-md p-6 rounded-3xl border border-white/20 hover:bg-white/20 transition-all duration-300">
-                <div className="text-4xl mb-3">{stat.icon}</div>
-                <div className="text-3xl font-black text-white mb-2">{stat.value}</div>
-                <div className="text-blue-100 font-medium">{stat.label}</div>
+              <div key={index} className={`text-center bg-gradient-to-br ${stat.color} p-6 rounded-3xl shadow-2xl hover:shadow-3xl transform hover:-translate-y-2 transition-all duration-300 border border-white/20`}>
+                <div className="text-4xl mb-3 filter drop-shadow-lg">{stat.icon}</div>
+                <div className="text-2xl md:text-3xl font-black text-white mb-2 drop-shadow-lg">{stat.value}</div>
+                <div className="text-white/90 font-semibold text-sm">{stat.label}</div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Modern Courses Section */}
+      {/* Enhanced Courses Section with Dummy Data */}
       <section id="courses" className="py-24 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-20">
-            <h2 className="text-6xl font-black mb-6">
+            <h2 className="text-5xl md:text-6xl font-black mb-6">
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-pink-500 to-orange-400">
                 Our Premium Courses
               </span>
             </h2>
-            <p className="text-2xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
+            <p className="text-xl md:text-2xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
               Master in-demand skills with our industry-aligned curriculum designed by experts from top companies
             </p>
+            <div className="mt-8 inline-block bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-full font-semibold">
+              🔥 {schoolData.coursesOffered.length} Courses Available
+            </div>
           </div>
 
-          {schoolData.coursesOffered.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-              {schoolData.coursesOffered.map((course, index) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+            {schoolData.coursesOffered.map((course, index) => {
+              const details = courseDetails[course] || courseDetails['Full Stack Web Development'];
+              
+              return (
                 <div
                   key={index}
-                  className="group bg-white rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 border-l-4 border-gradient-to-b from-purple-500 to-pink-500 hover:-translate-y-2"
+                  className="group bg-white rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 border-l-4 border-gradient-to-b from-purple-500 to-pink-500 hover:-translate-y-2 transform"
                   style={{
                     borderImage: 'linear-gradient(to bottom, #8B5CF6, #EC4899) 1'
                   }}
                 >
                   {/* Course Header */}
                   <div className="flex items-center justify-between mb-6">
-                    <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center text-white text-2xl font-bold">
-                      {index + 1}
+                    <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center text-white text-3xl shadow-lg">
+                      {details.icon}
                     </div>
-                    <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold">
-                      🔥 Popular
+                    <div className="text-right">
+                      <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold mb-1">
+                        🔥 Popular
+                      </div>
+                      <div className="text-gray-500 text-sm">Course {index + 1}</div>
                     </div>
                   </div>
 
-                  <h3 className="text-2xl font-bold mb-4 text-gray-800 group-hover:text-purple-600 transition-colors">
+                  <h3 className="text-2xl font-bold mb-4 text-gray-800 group-hover:text-purple-600 transition-colors leading-tight">
                     {course}
                   </h3>
 
+                  <p className="text-gray-600 mb-6 leading-relaxed">
+                    {details.description}
+                  </p>
+
                   {/* Course Meta */}
-                  <div className="flex flex-wrap gap-4 mb-6">
-                    <span className="bg-blue-50 text-blue-600 px-3 py-1 rounded-full text-sm flex items-center">
-                      📅 16 Weeks
+                  <div className="flex flex-wrap gap-3 mb-6">
+                    <span className="bg-blue-50 text-blue-600 px-3 py-2 rounded-xl text-sm flex items-center font-medium">
+                      📅 {details.duration}
                     </span>
-                    <span className="bg-orange-50 text-orange-600 px-3 py-1 rounded-full text-sm flex items-center">
-                      📊 All Levels
+                    <span className="bg-orange-50 text-orange-600 px-3 py-2 rounded-xl text-sm flex items-center font-medium">
+                      📊 {details.level}
                     </span>
-                    <span className="bg-green-50 text-green-600 px-3 py-1 rounded-full text-sm flex items-center">
+                    <span className="bg-green-50 text-green-600 px-3 py-2 rounded-xl text-sm flex items-center font-medium">
                       🏆 Certified
                     </span>
                   </div>
 
-                  <p className="text-gray-600 mb-6 leading-relaxed">
-                    Transform your career with hands-on projects, expert mentorship, and industry-recognized certification.
-                  </p>
+                  {/* Skills */}
+                  <div className="mb-6">
+                    <h4 className="font-bold text-gray-800 mb-3">Key Skills You'll Learn:</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {details.skills.map((skill, idx) => (
+                        <span key={idx} className="bg-purple-50 text-purple-700 px-3 py-1 rounded-full text-sm font-medium">
+                          {skill}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
 
                   {/* Features */}
-                  <div className="mb-8">
+                  <div className="mb-6">
                     <h4 className="font-bold text-gray-800 mb-3">What You'll Get:</h4>
                     <ul className="space-y-2">
                       {[
@@ -252,7 +347,7 @@ const MarketingPage: React.FC = () => {
                         "💼 Career Placement Support",
                         "📜 Industry Certificate"
                       ].map((feature, idx) => (
-                        <li key={idx} className="flex items-center text-gray-700">
+                        <li key={idx} className="flex items-center text-gray-700 text-sm">
                           <span className="mr-2">{feature.split(' ')[0]}</span>
                           <span>{feature.split(' ').slice(1).join(' ')}</span>
                         </li>
@@ -262,34 +357,22 @@ const MarketingPage: React.FC = () => {
 
                   {/* Salary Range */}
                   <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-xl mb-6 border border-green-200">
-                    <p className="text-green-800 font-semibold">
-                      💰 Average Salary: <span className="text-green-600">$70K - $120K</span>
+                    <p className="text-green-800 font-semibold flex items-center">
+                      💰 <span className="ml-2">Average Salary: <span className="text-green-600">{details.salary}</span></span>
                     </p>
                   </div>
 
                   {/* CTA Button */}
                   <button
-                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-4 text-lg font-bold rounded-2xl hover:from-purple-700 hover:to-pink-700 transition-all duration-300 shadow-lg hover:shadow-xl"
+                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-4 text-lg font-bold rounded-2xl hover:from-purple-700 hover:to-pink-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
                     onClick={() => window.location.href = "#contact"}
                   >
                     Start Learning Today →
                   </button>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-16">
-              <div className="text-8xl mb-6">🚀</div>
-              <h3 className="text-3xl font-bold text-gray-800 mb-4">Exciting Courses Coming Soon!</h3>
-              <p className="text-xl text-gray-600 mb-8">We're crafting amazing learning experiences just for you.</p>
-              <button 
-                className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-8 py-4 rounded-2xl font-bold hover:from-blue-600 hover:to-purple-700 transition-all"
-                onClick={() => window.location.href = "#contact"}
-              >
-                Get Notified When Available
-              </button>
-            </div>
-          )}
+              );
+            })}
+          </div>
         </div>
       </section>
 
@@ -299,7 +382,7 @@ const MarketingPage: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             {/* Left Column - Content */}
             <div>
-              <h2 className="text-5xl font-black mb-8">
+              <h2 className="text-4xl md:text-5xl font-black mb-8">
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
                   Why Choose {schoolData.name}?
                 </span>
@@ -311,40 +394,38 @@ const MarketingPage: React.FC = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
                 {[
-                  { icon: "🎯", title: "Industry-Focused", desc: "Real-world projects and skills" },
-                  { icon: "👥", title: "Expert Mentors", desc: "Learn from industry leaders" },
-                  { icon: "🌟", title: "Proven Results", desc: `${schoolData.successRate} success rate` },
-                  { icon: "🤝", title: "Career Support", desc: "Job placement assistance" }
+                  { icon: "🎯", title: "Industry-Focused", desc: "Real-world projects and skills", color: "from-blue-500 to-purple-500" },
+                  { icon: "👥", title: "Expert Mentors", desc: "Learn from industry leaders", color: "from-green-500 to-teal-500" },
+                  { icon: "🌟", title: "Proven Results", desc: `${schoolData.successRate} success rate`, color: "from-yellow-500 to-orange-500" },
+                  { icon: "🤝", title: "Career Support", desc: "Job placement assistance", color: "from-pink-500 to-red-500" }
                 ].map((feature, index) => (
-                  <div key={index} className="bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition-all">
+                  <div key={index} className={`bg-gradient-to-br ${feature.color} p-6 rounded-2xl shadow-md hover:shadow-lg transition-all text-white transform hover:-translate-y-1`}>
                     <div className="text-3xl mb-3">{feature.icon}</div>
-                    <h4 className="font-bold text-gray-800 mb-2">{feature.title}</h4>
-                    <p className="text-gray-600 text-sm">{feature.desc}</p>
+                    <h4 className="font-bold text-white mb-2">{feature.title}</h4>
+                    <p className="text-white/90 text-sm">{feature.desc}</p>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Right Column - Visual */}
+            {/* Right Column - Contact Card */}
             <div className="bg-gradient-to-br from-purple-600 to-blue-600 rounded-3xl p-8 text-white shadow-2xl">
-              {schoolData.image && (
-                <div className="text-center mb-8">
-                  <img 
-                    src={schoolData.image} 
-                    alt={`${schoolData.name} Logo`} 
-                    className="w-24 h-24 rounded-full border-4 border-white/30 mx-auto mb-4" 
-                  />
-                </div>
-              )}
-              
-              <h3 className="text-3xl font-bold mb-6 text-center">Contact Information</h3>
+              <div className="text-center mb-8">
+                <img 
+                  src={schoolData.image} 
+                  alt={`${schoolData.name} Logo`} 
+                  className="w-24 h-24 rounded-full border-4 border-white/30 mx-auto mb-4" 
+                />
+                <h3 className="text-3xl font-bold">Get In Touch</h3>
+                <p className="text-blue-100 mt-2">Ready to start your journey?</p>
+              </div>
               
               <div className="space-y-4">
-                <div className="flex items-center space-x-4 bg-white/10 backdrop-blur-md p-4 rounded-xl">
+                <div className="flex items-start space-x-4 bg-white/10 backdrop-blur-md p-4 rounded-xl">
                   <span className="text-2xl">🏢</span>
                   <div>
                     <p className="font-semibold">Address</p>
-                    <p className="text-blue-100">{schoolData.address}</p>
+                    <p className="text-blue-100 text-sm">{schoolData.address}</p>
                   </div>
                 </div>
                 
@@ -366,7 +447,7 @@ const MarketingPage: React.FC = () => {
               </div>
 
               <button
-                className="w-full mt-8 bg-white text-purple-600 py-4 rounded-2xl font-bold hover:bg-gray-100 transition-all"
+                className="w-full mt-8 bg-white text-purple-600 py-4 rounded-2xl font-bold hover:bg-gray-100 transition-all transform hover:-translate-y-1 shadow-lg"
                 onClick={() => window.location.href = "#contact"}
               >
                 Schedule a Call Today
@@ -382,13 +463,11 @@ const MarketingPage: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
             <div className="col-span-1 md:col-span-2">
               <div className="flex items-center space-x-4 mb-6">
-                {schoolData.image && (
-                  <img 
-                    src={schoolData.image} 
-                    alt={`${schoolData.name} Logo`} 
-                    className="w-16 h-16 rounded-full border-2 border-purple-400" 
-                  />
-                )}
+                <img 
+                  src={schoolData.image} 
+                  alt={`${schoolData.name} Logo`} 
+                  className="w-16 h-16 rounded-full border-2 border-purple-400" 
+                />
                 <h3 className="text-4xl font-black">
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-orange-300">
                     {schoolData.name}

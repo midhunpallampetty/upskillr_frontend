@@ -63,10 +63,10 @@ const MarketingPage: React.FC = () => {
           // Replace with actual token retrieval (e.g., from auth context, localStorage, etc.)
           const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4NGQ4YjI5NDRhMzg4N2E4MjJkNTg2YiIsImVtYWlsIjoieWljZXdhYjkzOUBsaXRlcGF4LmNvbSIsInJvbGUiOiJzY2hvb2wiLCJzdWJEb21haW4iOiJodHRwOi8vZ2FtZXJzY2x1Yi5lZHV2aWEuc3BhY2UiLCJpYXQiOjE3NTU5NjMyMjUsImV4cCI6MTc1NTk2MzI4NX0.1GcqFwkWRABUA6RvFdNjTZaRZHCQY-djW8SIeslT4es'; // Implement proper token handling
           console.log(subdomain, 'subdomain');
-          
+
           const response = await getSchoolBySubdomain(subdomain, token);
           console.log(response.data.school, 'response');
-          
+
           const data = response.data.school; // Adjust based on axios response structure
 
           // Check if school data exists; if not, redirect
@@ -74,7 +74,7 @@ const MarketingPage: React.FC = () => {
             window.location.href = 'https://eduvia.space';
             return;
           }
-          
+
           const updatedData = {
             id: data._id || '',
             name: data.name || '',
@@ -116,7 +116,7 @@ const MarketingPage: React.FC = () => {
           console.log(schoolData.name, 'school name');
           const dbname = getSubdomain(schoolData.subDomain); // Use schoolData.name as dbname
           console.log(dbname, 'dbname');
-          
+
           const coursesResponse = await getCoursesBySchool(schoolId, dbname);
           console.log(coursesResponse, 'courses response');
 
@@ -140,7 +140,7 @@ const MarketingPage: React.FC = () => {
     if (schoolData.name) {
       document.title = `${schoolData.name} - Transform Your Career with Expert-Led Courses`;
     }
-    
+
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription && schoolData.description) {
       metaDescription.setAttribute('content', `${schoolData.description} Join ${schoolData.studentsGraduated || 'thousands of'} successful graduates. Flexible learning, industry certification, career support.`);
@@ -235,7 +235,7 @@ const MarketingPage: React.FC = () => {
 
   return (
     <div className="font-inter text-gray-800 leading-7 bg-gray-50 min-h-screen">
-      
+
       {/* Enhanced Hero Section with Cover Image and Logo */}
       <section
         className="relative overflow-hidden min-h-screen flex items-center text-white"
@@ -248,7 +248,7 @@ const MarketingPage: React.FC = () => {
       >
         {/* Overlay Pattern */}
         <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 to-purple-900/20"></div>
-        
+
         {/* Animated Background Elements */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute -top-40 -right-40 w-80 h-80 bg-white/10 rounded-full blur-3xl animate-pulse"></div>
@@ -263,9 +263,9 @@ const MarketingPage: React.FC = () => {
             <div className="flex justify-center items-center mb-8">
               <div className="relative group">
                 <div className="absolute -inset-4 bg-gradient-to-r from-pink-500 to-violet-500 rounded-full blur-lg opacity-30 group-hover:opacity-50 transition-opacity"></div>
-                <img 
-                  src={schoolData.image || 'https://via.placeholder.com/200x200/4F46E5/FFFFFF?text=LOGO'} 
-                  alt={`${schoolData.name} Logo`} 
+                <img
+                  src={schoolData.image || 'https://via.placeholder.com/200x200/4F46E5/FFFFFF?text=LOGO'}
+                  alt={`${schoolData.name} Logo`}
                   className="relative w-32 h-32 rounded-full border-4 border-white/40 shadow-2xl backdrop-blur-sm hover:scale-110 transition-transform duration-300"
                 />
               </div>
@@ -277,14 +277,14 @@ const MarketingPage: React.FC = () => {
                 {schoolData.name || 'EduVia Academy'}
               </span>
             </h1>
-            
+
             <div className="max-w-4xl mx-auto mb-8">
               {schoolData.description && (
                 <p className="text-xl md:text-2xl font-light mb-8 text-blue-100 leading-relaxed line-clamp-2">
                   {schoolData.description}
                 </p>
               )}
-              
+
               {/* Enhanced Contact Information - Ensured all are displayed if available */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
                 {schoolData.address && (
@@ -296,7 +296,7 @@ const MarketingPage: React.FC = () => {
                     </div>
                   </div>
                 )}
-                
+
                 {schoolData.phone && (
                   <div className="flex items-center justify-center space-x-3 bg-white/10 backdrop-blur-md px-6 py-4 rounded-2xl border border-white/20 hover:bg-white/20 transition-all">
                     <span className="text-2xl">📞</span>
@@ -306,7 +306,7 @@ const MarketingPage: React.FC = () => {
                     </div>
                   </div>
                 )}
-                
+
                 {schoolData.email && (
                   <div className="flex items-center justify-center space-x-3 bg-white/10 backdrop-blur-md px-6 py-4 rounded-2xl border border-white/20 hover:bg-white/20 transition-all">
                     <span className="text-2xl">✉️</span>
@@ -331,7 +331,7 @@ const MarketingPage: React.FC = () => {
               </span>
               <div className="absolute inset-0 bg-gradient-to-r from-emerald-600 to-cyan-600 opacity-0 group-hover:opacity-100 transition-opacity"></div>
             </button>
-            
+
             <button
               className="group bg-white/10 backdrop-blur-md border-2 border-white/30 text-white px-12 py-5 text-xl font-bold rounded-2xl hover:bg-white hover:text-purple-600 transition-all duration-300 transform hover:-translate-y-1"
               onClick={() => window.location.href = "#contact"}
@@ -402,7 +402,7 @@ const MarketingPage: React.FC = () => {
                   skills: ['Core Skills', 'Practical Projects'],
                   salary: '$60K - $100K'
                 };
-                
+
                 return (
                   <div
                     key={index}
@@ -426,9 +426,9 @@ const MarketingPage: React.FC = () => {
 
                     {/* Course Thumbnail */}
                     {course.courseThumbnail && (
-                      <img 
-                        src={course.courseThumbnail} 
-                        alt={course.courseName} 
+                      <img
+                        src={course.courseThumbnail}
+                        alt={course.courseName}
                         className="w-full h-40 object-cover rounded-xl mb-4"
                       />
                     )}
@@ -438,8 +438,11 @@ const MarketingPage: React.FC = () => {
                     </h3>
 
                     <p className="text-gray-600 mb-6 leading-relaxed">
-                      "bhvjfbv"
+                      {(course.description || dummy.description).length > 20
+                        ? (course.description || dummy.description).slice(0, 20) + "..."
+                        : (course.description || dummy.description)}
                     </p>
+
 
                     {/* Course Meta */}
                     <div className="flex flex-wrap gap-3 mb-6">
@@ -471,8 +474,8 @@ const MarketingPage: React.FC = () => {
                       <h4 className="font-bold text-gray-800 mb-3">What You'll Get:</h4>
                       <ul className="space-y-2">
                         {[
-                          "🎯 Live Interactive Sessions", 
-                          "👨‍🏫 1-on-1 Expert Mentorship", 
+                          "🎯 Live Interactive Sessions",
+                          "👨‍🏫 1-on-1 Expert Mentorship",
                           "💼 Career Placement Support",
                           "📜 Industry Certificate"
                         ].map((feature, idx) => (
@@ -524,7 +527,7 @@ const MarketingPage: React.FC = () => {
                   Why Choose {schoolData.name || 'Us'}?
                 </span>
               </h2>
-              
+
               {(schoolData.experience || schoolData.foundedYear) && (
                 <p className="text-xl text-gray-700 mb-8 leading-relaxed">
                   With <span className="font-bold text-blue-600">{schoolData.experience || 'many'}</span> years of experience since {schoolData.foundedYear || 'our founding'}, we've been transforming careers through cutting-edge education and practical skill development.
@@ -550,15 +553,15 @@ const MarketingPage: React.FC = () => {
             {/* Right Column - Contact Card - Ensured logo, address, phone, email are prominently displayed */}
             <div className="bg-gradient-to-br from-purple-600 to-blue-600 rounded-3xl p-8 text-white shadow-2xl">
               <div className="text-center mb-8">
-                <img 
-                  src={schoolData.image || 'https://via.placeholder.com/200x200/4F46E5/FFFFFF?text=LOGO'} 
-                  alt={`${schoolData.name || 'School'} Logo`} 
-                  className="w-24 h-24 rounded-full border-4 border-white/30 mx-auto mb-4" 
+                <img
+                  src={schoolData.image || 'https://via.placeholder.com/200x200/4F46E5/FFFFFF?text=LOGO'}
+                  alt={`${schoolData.name || 'School'} Logo`}
+                  className="w-24 h-24 rounded-full border-4 border-white/30 mx-auto mb-4"
                 />
                 <h3 className="text-3xl font-bold">Get In Touch</h3>
                 <p className="text-blue-100 mt-2">Ready to start your journey?</p>
               </div>
-              
+
               <div className="space-y-4">
                 {schoolData.address && (
                   <div className="flex items-start space-x-4 bg-white/10 backdrop-blur-md p-4 rounded-xl">
@@ -569,7 +572,7 @@ const MarketingPage: React.FC = () => {
                     </div>
                   </div>
                 )}
-                
+
                 {schoolData.email && (
                   <div className="flex items-center space-x-4 bg-white/10 backdrop-blur-md p-4 rounded-xl">
                     <span className="text-2xl">📧</span>
@@ -579,7 +582,7 @@ const MarketingPage: React.FC = () => {
                     </div>
                   </div>
                 )}
-                
+
                 {schoolData.phone && (
                   <div className="flex items-center space-x-4 bg-white/10 backdrop-blur-md p-4 rounded-xl">
                     <span className="text-2xl">📞</span>
@@ -608,10 +611,10 @@ const MarketingPage: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
             <div className="col-span-1 md:col-span-2">
               <div className="flex items-center space-x-4 mb-6">
-                <img 
-                  src={schoolData.image || 'https://via.placeholder.com/200x200/4F46E5/FFFFFF?text=LOGO'} 
-                  alt={`${schoolData.name || 'School'} Logo`} 
-                  className="w-16 h-16 rounded-full border-2 border-purple-400" 
+                <img
+                  src={schoolData.image || 'https://via.placeholder.com/200x200/4F46E5/FFFFFF?text=LOGO'}
+                  alt={`${schoolData.name || 'School'} Logo`}
+                  className="w-16 h-16 rounded-full border-2 border-purple-400"
                 />
                 <h3 className="text-4xl font-black">
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-orange-300">
@@ -630,7 +633,7 @@ const MarketingPage: React.FC = () => {
                 </p>
               )}
             </div>
-            
+
             <div>
               <h4 className="text-2xl font-bold mb-6 text-pink-300">Quick Links</h4>
               <ul className="space-y-3">
@@ -643,7 +646,7 @@ const MarketingPage: React.FC = () => {
                 ))}
               </ul>
             </div>
-            
+
             <div>
               <h4 className="text-2xl font-bold mb-6 text-pink-300">Connect With Us</h4>
               <div className="grid grid-cols-2 gap-3">
@@ -659,7 +662,7 @@ const MarketingPage: React.FC = () => {
               </div>
             </div>
           </div>
-          
+
           <div className="border-t border-white/20 pt-8 text-center">
             <p className="text-lg text-blue-200">
               © 2024 {schoolData.name || 'EduVia Academy'}. Empowering futures through education. All rights reserved.

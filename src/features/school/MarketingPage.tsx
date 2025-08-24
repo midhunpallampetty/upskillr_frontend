@@ -104,6 +104,8 @@ const MarketingPage: React.FC = () => {
           const schoolId = schoolData.id;
           console.log(schoolData.name, 'school name');
           const dbname = getSubdomain(schoolData.subDomain); // Use schoolData.name as dbname
+          console.log(dbname,'dbname');
+          
           const coursesResponse = await getCoursesBySchool(schoolId, dbname);
           console.log(coursesResponse, 'courses response');
 

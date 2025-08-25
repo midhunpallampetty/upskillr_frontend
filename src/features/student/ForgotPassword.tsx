@@ -11,8 +11,7 @@ const ForgotStudentPassword = () => {
   const [timeLeft, setTimeLeft] = useState(0);
 
   
-  const COOLDOWN_PERIOD = 5 * 60; 
-
+const COOLDOWN_PERIOD = 24 * 60 * 60;
   
   useEffect(() => {
     const lastRequestTime = localStorage.getItem('resetLinkTimestamp');

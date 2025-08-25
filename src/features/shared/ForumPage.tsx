@@ -77,7 +77,6 @@ export default function ForumChatUI() {
     socketRef.current.on('new_question', (qDoc: Question) => {
       setQuestions(prevQuestions => [qDoc, ...prevQuestions]);
       if (String(qDoc.author._id) !== String(user._id)) {
-        addToast(`${qDoc.author.fullName} asked a new question`, 'info');
       }
     });
 
@@ -405,7 +404,7 @@ export default function ForumChatUI() {
                   <div className="mt-1 flex items-center gap-4 text-sm text-gray-500">
                     <span className="flex items-center gap-1">
                       <UserCircleIcon className="h-4 w-4" />
-                      {selected.author?.fullName || 'Anonymous'} ({selected.author?.role || 'Unknown'})
+                      {selected.author?.fullName || 'Anonymous'} )
                     </span>
                     <span>•</span>
                     <span>Category: {selected.category}</span>

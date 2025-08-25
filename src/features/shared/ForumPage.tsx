@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import axios from 'axios';
 import io from 'socket.io-client';
-import { MagnifyingGlassIcon, FunnelIcon, UserCircleIcon, ChatBubbleLeftIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
+import { MagnifyingGlassIcon, FunnelIcon, UserCircleIcon, ChatBubbleLeftIcon, ArrowLeftIcon, ClockIcon } from '@heroicons/react/24/outline';
 import {QuestionForm} from './components/UI/QuestionForm';
 import {ToastContainer} from './components/UI/ToastContainer';
 import {QuestionListItem} from './components/UI/QuestionListItem';
@@ -10,12 +10,14 @@ import {ReplyRenderer} from './components/UI/ReplyRender';
 import {ResponseForm} from './components/UI/QuestionResponse';
 import { User, Question, Answer, Reply, Toast, API } from './types/ImportsAndTypes';
 
+
 export default function ForumChatUI() {
   const studentData = JSON.parse(localStorage.getItem('student') || '{}');
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [sortOrder, setSortOrder] = useState('latest');
   const [user] = useState<User>({
     _id: studentData._id || 'id1',
     fullName: studentData.fullName || 'TestUser',
@@ -27,34 +29,47 @@ export default function ForumChatUI() {
   const socketRef = useRef<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+
   const addToast = useCallback((message: string, type: Toast['type'] = 'info') => {
     const id = Date.now().toString();
     const newToast: Toast = { id, message, type };
     setToasts(prev => [...prev, newToast]);
+
 
     setTimeout(() => {
       setToasts(prev => prev.filter(toast => toast.id !== id));
     }, 5000);
   }, []);
 
+
   const removeToast = useCallback((id: string) => {
     setToasts(prev => prev.filter(toast => toast.id !== id));
   }, []);
+
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, []);
 
-  const filteredQuestions = questions.filter(q => {
-    const matchesSearch = q.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         (q.author?.fullName?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false);
-    const matchesCategory = selectedCategory === 'all' || q.category === selectedCategory;
-    return !q.isDeleted && matchesSearch && matchesCategory;
-  });
+
+  const filteredQuestions = questions
+    .filter(q => {
+      const matchesSearch = q.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           (q.author?.fullName?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false);
+      const matchesCategory = selectedCategory === 'all' || q.category === selectedCategory;
+      return !q.isDeleted && matchesSearch && matchesCategory;
+    })
+    .sort((a, b) => {
+      const dateA = new Date(a.createdAt);
+      const dateB = new Date(b.createdAt);
+      return sortOrder === 'latest' ? dateB.getTime() - dateA.getTime() : dateA.getTime() - dateB.getTime();
+    });
+
 
   useEffect(() => {
     scrollToBottom();
   }, [selected?.answers, selected?.replies, scrollToBottom]);
+
 
   useEffect(() => {
     setLoading(true);
@@ -68,17 +83,21 @@ export default function ForumChatUI() {
       })
       .finally(() => setLoading(false));
 
+
     socketRef.current = io(import.meta.env.VITE_SOCKET_URL);
+
 
     socketRef.current.on('connect', () => {
       addToast('Connected to real-time updates', 'success');
     });
+
 
     socketRef.current.on('new_question', (qDoc: Question) => {
       setQuestions(prevQuestions => [qDoc, ...prevQuestions]);
       if (String(qDoc.author._id) !== String(user._id)) {
       }
     });
+
 
     socketRef.current.on('new_answer', (aDoc: Answer) => {
       if (selected && selected._id === aDoc.forum_question_id) {
@@ -95,6 +114,7 @@ export default function ForumChatUI() {
         );
       }
     });
+
 
     socketRef.current.on('new_reply', (rDoc: Reply) => {
       if (selected && selected._id === rDoc.forum_question_id) {
@@ -119,6 +139,7 @@ export default function ForumChatUI() {
           });
         };
 
+
         setQuestions(prevQuestions =>
           prevQuestions.map(q => {
             if (rDoc.forum_question_id === q._id && !rDoc.forum_answer_id) {
@@ -137,6 +158,7 @@ export default function ForumChatUI() {
       }
     });
 
+
     socketRef.current.on('typing', ({ threadId, userName }: { threadId: string; userName: string }) => {
       if (selected && selected._id === threadId && userName !== user.fullName) {
         setTypingUsers(prevUsers =>
@@ -145,11 +167,13 @@ export default function ForumChatUI() {
       }
     });
 
+
     socketRef.current.on('stop_typing', ({ threadId, userName }: { threadId: string; userName: string }) => {
       if (selected && selected._id === threadId) {
         setTypingUsers(prevUsers => prevUsers.filter(name => name !== userName));
       }
     });
+
 
     socketRef.current.on('question_deleted', ({ id }: { id: string }) => {
       setQuestions(prevQuestions => prevQuestions.filter(q => q._id !== id));
@@ -158,6 +182,7 @@ export default function ForumChatUI() {
       }
       addToast('Question deleted', 'info');
     });
+
 
     socketRef.current.on('answer_deleted', ({ id, questionId }: { id: string; questionId: string }) => {
       if (selected && selected._id === questionId) {
@@ -172,6 +197,7 @@ export default function ForumChatUI() {
       }
     });
 
+
     socketRef.current.on('reply_deleted', ({ id, questionId, answerId }: { id: string; questionId: string; answerId?: string }) => {
       if (selected && selected._id === questionId) {
         selectQuestion(questionId, true);
@@ -182,6 +208,7 @@ export default function ForumChatUI() {
             return [...acc, { ...r, replies: removeNestedReply(r.replies || []) }];
           }, [] as Reply[]);
         };
+
 
         setQuestions(prevQuestions =>
           prevQuestions.map(q => {
@@ -201,10 +228,12 @@ export default function ForumChatUI() {
       }
     });
 
+
     socketRef.current.on('connect_error', (err: any) => {
       console.error('Socket connection error:', err);
       addToast('Failed to connect to real-time updates. Please refresh.', 'error');
     });
+
 
     return () => {
       if (socketRef.current) {
@@ -213,12 +242,14 @@ export default function ForumChatUI() {
     };
   }, [user.fullName, user._id, addToast, selected]);
 
+
   useEffect(() => {
     setTypingUsers([]);
     if (selected?._id && socketRef.current) {
       socketRef.current.emit('join_thread', selected._id);
     }
   }, [selected]);
+
 
   const selectQuestion = (qid: string, force: boolean = false) => {
     if (!force && selected?._id === qid) return;
@@ -248,6 +279,7 @@ export default function ForumChatUI() {
       .finally(() => setLoading(false));
   };
 
+
   const deleteQuestion = (questionId: string) => {
     if (!confirm('Are you sure you want to delete this question?')) return;
     
@@ -262,6 +294,7 @@ export default function ForumChatUI() {
         addToast('Failed to delete question. Please try again.', 'error');
       });
   };
+
 
   const deleteAnswer = (answerId: string, questionId: string) => {
     if (!confirm('Are you sure you want to delete this answer?')) return;
@@ -281,6 +314,7 @@ export default function ForumChatUI() {
       });
   };
 
+
   const deleteReply = (replyId: string, questionId: string, answerId?: string) => {
     if (!confirm('Are you sure you want to delete this reply?')) return;
     
@@ -299,6 +333,7 @@ export default function ForumChatUI() {
       });
   };
 
+
   const categories = [
     { value: 'all', label: 'All Categories' },
     { value: 'general', label: '🔍 General' },
@@ -307,6 +342,12 @@ export default function ForumChatUI() {
     { value: 'history', label: '📚 History' },
     { value: 'other', label: '🎯 Other' }
   ];
+
+  const sortOptions = [
+    { value: 'latest', label: 'Latest First' },
+    { value: 'oldest', label: 'Oldest First' }
+  ];
+
 
   return (
     <div className="flex md:flex-row flex-col h-screen bg-gray-50">
@@ -351,6 +392,20 @@ export default function ForumChatUI() {
               {categories.map(cat => (
                 <option key={cat.value} value={cat.value}>
                   {cat.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="relative">
+            <ClockIcon className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+            <select
+              value={sortOrder}
+              onChange={e => setSortOrder(e.target.value)}
+              className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2 pl-10 pr-4 text-sm focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+            >
+              {sortOptions.map(opt => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
                 </option>
               ))}
             </select>

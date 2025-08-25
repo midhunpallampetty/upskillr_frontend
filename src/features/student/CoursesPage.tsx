@@ -199,7 +199,7 @@ const CoursesPage: React.FC = () => {
             </div>
           </>
         ) : (
-          <p className="text-center text-gray-500 py-10">No courses found for this school.</p>
+          <p className="text-center text-gray-500 py-10 text-3xl">No courses found for this school.</p>
         )}
       </section>
     </div>

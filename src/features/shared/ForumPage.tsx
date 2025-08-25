@@ -10,7 +10,6 @@ import {ReplyRenderer} from './components/UI/ReplyRender';
 import {ResponseForm} from './components/UI/QuestionResponse';
 import { User, Question, Answer, Reply, Toast, API } from './types/ImportsAndTypes';
 
-
 export default function ForumChatUI() {
   const studentData = JSON.parse(localStorage.getItem('student') || '{}');
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
@@ -26,31 +25,27 @@ export default function ForumChatUI() {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [selected, setSelected] = useState<Question | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshKeys, setRefreshKeys] = useState<{ [key: string]: number }>({});
   const socketRef = useRef<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
 
   const addToast = useCallback((message: string, type: Toast['type'] = 'info') => {
     const id = Date.now().toString();
     const newToast: Toast = { id, message, type };
     setToasts(prev => [...prev, newToast]);
 
-
     setTimeout(() => {
       setToasts(prev => prev.filter(toast => toast.id !== id));
     }, 5000);
   }, []);
 
-
   const removeToast = useCallback((id: string) => {
     setToasts(prev => prev.filter(toast => toast.id !== id));
   }, []);
 
-
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, []);
-
 
   const filteredQuestions = questions
     .filter(q => {
@@ -65,11 +60,9 @@ export default function ForumChatUI() {
       return sortOrder === 'latest' ? dateB.getTime() - dateA.getTime() : dateA.getTime() - dateB.getTime();
     });
 
-
   useEffect(() => {
     scrollToBottom();
   }, [selected?.answers, selected?.replies, scrollToBottom]);
-
 
   useEffect(() => {
     setLoading(true);
@@ -83,21 +76,23 @@ export default function ForumChatUI() {
       })
       .finally(() => setLoading(false));
 
-
     socketRef.current = io(import.meta.env.VITE_SOCKET_URL);
-
 
     socketRef.current.on('connect', () => {
       addToast('Connected to real-time updates', 'success');
     });
 
-
     socketRef.current.on('new_question', (qDoc: Question) => {
       setQuestions(prevQuestions => [qDoc, ...prevQuestions]);
       if (String(qDoc.author._id) !== String(user._id)) {
       }
+      // Force re-render for new question images after a short delay
+      if (qDoc.assets && qDoc.assets.length > 0) { // Assuming 'assets' contains image URLs; adjust if field is 'imageUrls'
+        setTimeout(() => {
+          setRefreshKeys(prev => ({ ...prev, [qDoc._id]: Date.now() }));
+        }, 2000); // Adjust delay as needed based on image processing time
+      }
     });
-
 
     socketRef.current.on('new_answer', (aDoc: Answer) => {
       if (selected && selected._id === aDoc.forum_question_id) {
@@ -114,7 +109,6 @@ export default function ForumChatUI() {
         );
       }
     });
-
 
     socketRef.current.on('new_reply', (rDoc: Reply) => {
       if (selected && selected._id === rDoc.forum_question_id) {
@@ -139,7 +133,6 @@ export default function ForumChatUI() {
           });
         };
 
-
         setQuestions(prevQuestions =>
           prevQuestions.map(q => {
             if (rDoc.forum_question_id === q._id && !rDoc.forum_answer_id) {
@@ -158,7 +151,6 @@ export default function ForumChatUI() {
       }
     });
 
-
     socketRef.current.on('typing', ({ threadId, userName }: { threadId: string; userName: string }) => {
       if (selected && selected._id === threadId && userName !== user.fullName) {
         setTypingUsers(prevUsers =>
@@ -167,13 +159,11 @@ export default function ForumChatUI() {
       }
     });
 
-
     socketRef.current.on('stop_typing', ({ threadId, userName }: { threadId: string; userName: string }) => {
       if (selected && selected._id === threadId) {
         setTypingUsers(prevUsers => prevUsers.filter(name => name !== userName));
       }
     });
-
 
     socketRef.current.on('question_deleted', ({ id }: { id: string }) => {
       setQuestions(prevQuestions => prevQuestions.filter(q => q._id !== id));
@@ -182,7 +172,6 @@ export default function ForumChatUI() {
       }
       addToast('Question deleted', 'info');
     });
-
 
     socketRef.current.on('answer_deleted', ({ id, questionId }: { id: string; questionId: string }) => {
       if (selected && selected._id === questionId) {
@@ -197,7 +186,6 @@ export default function ForumChatUI() {
       }
     });
 
-
     socketRef.current.on('reply_deleted', ({ id, questionId, answerId }: { id: string; questionId: string; answerId?: string }) => {
       if (selected && selected._id === questionId) {
         selectQuestion(questionId, true);
@@ -208,7 +196,6 @@ export default function ForumChatUI() {
             return [...acc, { ...r, replies: removeNestedReply(r.replies || []) }];
           }, [] as Reply[]);
         };
-
 
         setQuestions(prevQuestions =>
           prevQuestions.map(q => {
@@ -228,12 +215,10 @@ export default function ForumChatUI() {
       }
     });
 
-
     socketRef.current.on('connect_error', (err: any) => {
       console.error('Socket connection error:', err);
       addToast('Failed to connect to real-time updates. Please refresh.', 'error');
     });
-
 
     return () => {
       if (socketRef.current) {
@@ -242,14 +227,12 @@ export default function ForumChatUI() {
     };
   }, [user.fullName, user._id, addToast, selected]);
 
-
   useEffect(() => {
     setTypingUsers([]);
     if (selected?._id && socketRef.current) {
       socketRef.current.emit('join_thread', selected._id);
     }
   }, [selected]);
-
 
   const selectQuestion = (qid: string, force: boolean = false) => {
     if (!force && selected?._id === qid) return;
@@ -279,7 +262,6 @@ export default function ForumChatUI() {
       .finally(() => setLoading(false));
   };
 
-
   const deleteQuestion = (questionId: string) => {
     if (!confirm('Are you sure you want to delete this question?')) return;
     
@@ -294,7 +276,6 @@ export default function ForumChatUI() {
         addToast('Failed to delete question. Please try again.', 'error');
       });
   };
-
 
   const deleteAnswer = (answerId: string, questionId: string) => {
     if (!confirm('Are you sure you want to delete this answer?')) return;
@@ -314,7 +295,6 @@ export default function ForumChatUI() {
       });
   };
 
-
   const deleteReply = (replyId: string, questionId: string, answerId?: string) => {
     if (!confirm('Are you sure you want to delete this reply?')) return;
     
@@ -333,7 +313,6 @@ export default function ForumChatUI() {
       });
   };
 
-
   const categories = [
     { value: 'all', label: 'All Categories' },
     { value: 'general', label: '🔍 General' },
@@ -347,7 +326,6 @@ export default function ForumChatUI() {
     { value: 'latest', label: 'Latest First' },
     { value: 'oldest', label: 'Oldest First' }
   ];
-
 
   return (
     <div className="flex md:flex-row flex-col h-screen bg-gray-50">
@@ -429,7 +407,7 @@ export default function ForumChatUI() {
             <div className="divide-y divide-gray-100">
               {filteredQuestions.map(q => (
                 <QuestionListItem
-                  key={q._id}
+                  key={`${q._id}${refreshKeys[q._id] || ''}`}
                   question={q}
                   isSelected={selected?._id === q._id}
                   onClick={() => selectQuestion(q._id)}

@@ -83,14 +83,22 @@ export default function ForumChatUI() {
     });
 
     socketRef.current.on('new_question', (qDoc: Question) => {
-      setQuestions(prevQuestions => [qDoc, ...prevQuestions]);
-      if (String(qDoc.author._id) !== String(user._id)) {
-      }
-      // Force re-render for new question images after a short delay
-      if (qDoc.assets && qDoc.assets.length > 0) { // Assuming 'assets' contains image URLs; adjust if field is 'imageUrls'
-        setTimeout(() => {
-          setRefreshKeys(prev => ({ ...prev, [qDoc._id]: Date.now() }));
-        }, 2000); // Adjust delay as needed based on image processing time
+      const addQuestion = () => {
+        setQuestions(prevQuestions => [qDoc, ...prevQuestions]);
+        if (String(qDoc.author._id) !== String(user._id)) {
+        }
+        // Force re-render for new question images after a short delay
+        if (qDoc.assets && qDoc.assets.length > 0) { // Assuming 'assets' contains image URLs; adjust if field is 'imageUrls'
+          setTimeout(() => {
+            setRefreshKeys(prev => ({ ...prev, [qDoc._id]: Date.now() }));
+          }, 2000); // Adjust delay as needed based on image processing time
+        }
+      };
+
+      if (qDoc.assets && qDoc.assets.length > 0) {
+        setTimeout(addQuestion, 3000); // Delay adding the question to the list to allow image upload to complete
+      } else {
+        addQuestion();
       }
     });
 
@@ -332,33 +340,23 @@ export default function ForumChatUI() {
       <ToastContainer toasts={toasts} removeToast={removeToast} />
       <div className={`w-full md:w-96 flex flex-col bg-white shadow-xl border-r border-gray-200 ${selected ? 'hidden md:flex' : 'flex'}`}>
         <QuestionForm
-  onSubmit={(text, imgs, category) =>
-    axios
-      .post(`${API}/forum/questions`, {
-        question: text,
-        author: user._id,
-        category,
-        authorType: user.role,
-        imageUrls: imgs,
-      })
-      .then((res) => {
-        const newQuestion = res.data; // Assuming the API returns the created question
-        // Add the new question to the state
-        setQuestions((prevQuestions) => [newQuestion, ...prevQuestions]);
-        addToast('Question posted successfully!', 'success');
-        // If the question has images, set a refresh key after a delay
-        if (imgs && imgs.length > 0) {
-          setTimeout(() => {
-            setRefreshKeys((prev) => ({ ...prev, [newQuestion._id]: Date.now() }));
-          }, 2000); // Adjust delay as needed based on image processing time
-        }
-      })
-      .catch((err) => {
-        console.error('Failed to post question:', err);
-        addToast('Failed to post question. Please try again.', 'error');
-      })
-  }
-/>
+          onSubmit={(text, imgs, category) =>
+            axios.post(`${API}/forum/questions`, {
+              question: text,
+              author: user._id,
+              category,
+              authorType: user.role,
+              imageUrls: imgs
+            })
+              .then(() => {
+                addToast('Question posted successfully!', 'success');
+              })
+              .catch(err => {
+                console.error('Failed to post question:', err);
+                addToast('Failed to post question. Please try again.', 'error');
+              })
+          }
+        />
         <div className="border-b border-gray-200 p-4 space-y-3">
           <div className="relative">
             <MagnifyingGlassIcon className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />

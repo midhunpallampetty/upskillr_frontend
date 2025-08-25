@@ -237,7 +237,7 @@ export default function ForumChatUI() {
         // Ensure author exists; set defaults if missing
         const questionData = {
           ...res.data,
-          author: res.data.author || { fullName: 'Anonymous', role: 'Unknown', _id: null },
+          author: res.data.author ,
         };
         setSelected(questionData);
       })
@@ -420,7 +420,7 @@ export default function ForumChatUI() {
                   author={selected.author?.fullName || 'Anonymous'}
                   text={selected.question}
                   assets={selected.assets}
-                  role={selected.author?.role || 'Unknown'}
+                  role={selected.author?.role }
                   createdAt={selected.createdAt}
                   isQuestion={true}
                   socket={socketRef.current}
@@ -461,7 +461,7 @@ export default function ForumChatUI() {
                       author={ans.author?.fullName || 'Anonymous'}
                       text={ans.text}
                       assets={ans.assets}
-                      role={ans.author?.role || 'Unknown'}
+                      role={ans.author?.role }
                       createdAt={ans.createdAt}
                       onReply={(text, imgs) =>
                         axios.post(`${API}/forum/replies`, {

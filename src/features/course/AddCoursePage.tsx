@@ -337,20 +337,48 @@ const AddCoursePage: React.FC = () => {
     let hasError = false;
     const newErrors = { courseName: '', fee: '', sections: '', thumbnail: '' };
 
-    if (!courseName.trim()) {
+    // Validate course name: alphanumeric with spaces, must contain at least one letter, no special characters
+    const alphanumericWithSpaceRegex = /^[a-zA-Z0-9 ]+$/;
+    const hasLetterRegex = /[a-zA-Z]/;
+    const trimmedCourseName = courseName.trim();
+    if (!trimmedCourseName) {
       newErrors.courseName = 'Course name is required.';
+      hasError = true;
+    } else if (!alphanumericWithSpaceRegex.test(courseName)) {  // Check original for internal spaces
+      newErrors.courseName = 'Course name can only contain letters, numbers, and spaces (no special characters).';
+      hasError = true;
+    } else if (!hasLetterRegex.test(trimmedCourseName)) {
+      newErrors.courseName = 'Course name must contain at least one letter and cannot be purely numeric.';
       hasError = true;
     }
 
+    // Validate fee
     if (fee === '' || Number(fee) < 0) {
       newErrors.fee = 'Please enter a valid course fee.';
       hasError = true;
     }
 
-    const validSections = sections.filter((s) => s.title.trim() !== '');
+    // Validate sections: each must be alphanumeric with spaces, must contain at least one letter, no special characters
+    const validSections = sections
+      .map((s) => ({ ...s, title: s.title.trim() }))
+      .filter((s) => s.title !== '');
     if (validSections.length === 0) {
       newErrors.sections = 'Please add at least one valid section title.';
       hasError = true;
+    } else {
+      let sectionError = '';
+      sections.forEach((s) => {  // Validate original for internal spaces
+        const trimmedTitle = s.title.trim();
+        if (trimmedTitle !== '' && (!alphanumericWithSpaceRegex.test(s.title))) {
+          sectionError = 'Section names can only contain letters, numbers, and spaces (no special characters).';
+        } else if (trimmedTitle !== '' && !hasLetterRegex.test(trimmedTitle)) {
+          sectionError = 'Section names must contain at least one letter and cannot be purely numeric.';
+        }
+      });
+      if (sectionError) {
+        newErrors.sections = sectionError;
+        hasError = true;
+      }
     }
 
     // Validate thumbnail if present
@@ -440,7 +468,7 @@ const AddCoursePage: React.FC = () => {
       }));
 
       const payload = {
-        courseName,
+        courseName: courseName,  // Use original with spaces
         isPreliminaryRequired: isPreliminary,
         courseThumbnail: thumbnailURL,
         fee: Number(fee),

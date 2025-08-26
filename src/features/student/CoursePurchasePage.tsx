@@ -1,7 +1,12 @@
+// Updated CoursePaymentPage.tsx
+// Imports from the single courseApi.ts file for course-related helpers.
+// Import checkEligibility from examApi.ts.
+// Removed direct axios calls; using helpers instead.
+// Assumed paths like '../../api/courseApi'; adjust based on your structure.
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { loadStripe } from '@stripe/stripe-js';
-import axios from 'axios';
 import Swal from 'sweetalert2';
 import { 
   Clock, 
@@ -15,6 +20,10 @@ import {
   Globe,
   Smartphone
 } from 'lucide-react';
+
+// Import helpers
+import { fetchCourseData, initiateCheckout } from './api/course.api';
+import { checkEligibility } from './api/exam.api';
 
 // ⚠️ Use .env.local to store your public key securely
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_...');
@@ -36,11 +45,12 @@ const CoursePaymentPage = () => {
         if (!schoolName) {
           throw new Error('School name not found in localStorage.');
         }
-        const response = await axios.get(`https://course.upskillr.online/api/${schoolName}/course/${courseId}`);
         
-        setCourse(response.data.data);
+        // Use helper for course data
+        const response = await fetchCourseData(schoolName, courseId);
+        setCourse(response);
 
-        if (response.data.data.isPreliminaryRequired) {
+        if (response.isPreliminaryRequired) {
           const studentStr = localStorage.getItem('student');
           const studentObj = studentStr ? JSON.parse(studentStr) : null;
           const studentId = studentObj?._id;
@@ -49,14 +59,11 @@ const CoursePaymentPage = () => {
             throw new Error('Student ID not found in localStorage.');
           }
 
-          const eligResponse = await axios.post('https://exam.upskillr.online/api/check-eligibility', {
-            userId: studentId,
-            courseId,
-            examType: 'final'
-          });
+          // Use eligibility helper
+          const eligResponse = await checkEligibility(studentId, courseId, 'final');
 
-          if (eligResponse.data.success) {
-            setEligibility(eligResponse.data.data);
+          if (eligResponse.success) {
+            setEligibility(eligResponse.data);
           } else {
             throw new Error('Eligibility check failed.');
           }
@@ -152,11 +159,10 @@ const CoursePaymentPage = () => {
         return;
       }
 
-      const response = await axios.post(
-        `https://course.upskillr.online/api/payment/checkout/${schoolName}/${courseId}`
-      );
+      // Use checkout helper
+      const response = await initiateCheckout(schoolName, courseId);
 
-      const { url } = response.data;
+      const { url } = response;
       window.location.href = url;
     } catch (error) {
       console.error('Payment Error:', error);

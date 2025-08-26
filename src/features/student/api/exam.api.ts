@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { Question } from '../types/exam';
 import courseAxios from '../../../utils/axios/course';
+import examAxios from '../../../utils/axios/exam';
 export const fetchQuestions = async (courseId: string, schoolName: string): Promise<Question[]> => {
   const response = await courseAxios.get(`/questions`, {
     params: { courseId, examType: 'final', schoolName }
@@ -37,11 +38,11 @@ export const initiatePayment = async (schoolName: string | undefined, courseId: 
 
 export const getPaymentSession = async (sessionId: string) => {
   try {
-    const { data } = await axios.get(`https://course.upskillr.online/api/payment/session/${sessionId}`);
+    const { data } = await courseAxios.get(`/payment/session/${sessionId}`);
     return data;
   } catch (error) {
     throw new Error('Failed to fetch payment session');
-  }
+  } 
 };
 
 export const savePayment = async (
@@ -99,7 +100,26 @@ export const savePayment = async (
 //   }
 // };
 
-
+export const checkEligibility = async (
+  userId: string,
+  courseId: string,
+  examType: 'final' = 'final'
+): Promise<{ success: boolean; data?: any; error?: string }> => {
+  try {
+    const { data } = await examAxios.post('/check-eligibility', {
+      userId,
+      courseId,
+      examType,
+    });
+    return { success: true, data: data.data };
+  } catch (err: any) {
+    const msg =
+      err.response?.data?.message ||
+      err.message ||
+      'Failed to check eligibility';
+    return { success: false, error: msg };
+  }
+};
 
     
 

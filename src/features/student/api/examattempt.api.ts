@@ -1,8 +1,9 @@
 import axios from "axios";
+import examAxios from "../../../utils/axios/exam";
 
 export async function submitExamStatus(userId: string, courseId: string, examType: string, isPassed: boolean) {
   try {
-    const { data } = await axios.post('https://exam.upskillr.online/api/submit-exam', {
+    const { data } = await examAxios.post('/submit-exam', {
       userId,
       courseId,
       examType,

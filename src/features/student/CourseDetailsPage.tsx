@@ -7,6 +7,7 @@ import Cookies from 'js-cookie';
 import { getSectionsByCourse } from '../school/api/course.api';
 import { useParams } from 'react-router-dom';
 import { useSetCourse } from '../../context/GlobalState';
+import { checkPreviousPurchase } from './api/course.api';
 
 const CourseDetailsPage: React.FC = () => {
   const { courseId } = useParams();
@@ -51,37 +52,19 @@ const CourseDetailsPage: React.FC = () => {
   }, [sections]);
 
   // Check if course is purchased
-  useEffect(() => {
-    const checkPurchaseStatus = async () => {
-      if (student?._id && courseId) {
-        try {
-          const response = await fetch(
-            `https://course.upskillr.online/api/checkprevious-purchase/${courseId}/${student._id}`,
-            {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-                // Uncomment if authentication is required
-                // 'Authorization': `Bearer ${Cookies.get('studentAccessToken')}`,
-              },
-            }
-          );
-          if (!response.ok) {
-            throw new Error('Failed to check purchase status');
-          }
-          const data = await response.json();
-          setIsPurchased(data.hasPurchased); // Extract boolean from { hasPurchased: boolean }
-        } catch (err) {
-          console.error('Error checking purchase status:', err);
-          setIsPurchased(false); // Default to false on error
-        }
-      } else {
-        setIsPurchased(false); // No student or courseId, assume not purchased
-      }
-    };
-
-    checkPurchaseStatus();
-  }, [courseId, student]);
+useEffect(() => {
+  const run = async () => {
+    if (!student?._id || !courseId) return setIsPurchased(false);
+    try {
+      const { hasPurchased } = await checkPreviousPurchase(courseId, student._id);
+      setIsPurchased(hasPurchased);
+    } catch (err) {
+      console.error('Error checking purchase status:', err);
+      setIsPurchased(false);
+    }
+  };
+  run();
+}, [courseId, student?._id]);
 
   // Load course and sections
   useEffect(() => {

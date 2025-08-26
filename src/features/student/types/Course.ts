@@ -29,4 +29,5 @@ export type CourseType = {
   courseThumbnail: string;
   description: string;
   sections: SectionType[];
+  isPreliminaryRequired: boolean;
 };

@@ -79,14 +79,14 @@ const ExamComponent = ({ exam, onSubmit, onCancel }: { exam: ExamType | null; on
   const calculateScore = () => {
     let score = 0;
     let totalMarks = 0;
-    (exam?.questions || []).forEach((q) => {  // Use optional chaining and fallback to empty array
+    (exam?.questions || []).forEach((q) => {
       const mark = q.marks || 1;
       totalMarks += mark;
       if (selectedAnswers[q._id] === q.correctAnswer) {
         score += mark;
       }
     });
-    return { score, totalMarks, percentage: totalMarks > 0 ? (score / totalMarks) * 100 : 0 };  // Avoid division by zero
+    return { score, totalMarks, percentage: totalMarks > 0 ? (score / totalMarks) * 100 : 0 };
   };
   
   const handleSubmit = () => {
@@ -94,15 +94,19 @@ const ExamComponent = ({ exam, onSubmit, onCancel }: { exam: ExamType | null; on
     onSubmit(percentage >= 50, score, totalMarks);
   };
   
-  if (!exam) {
+  if (!exam || !exam.questions) {
     return (
-      <div className="bg-yellow-100 p-4 rounded-lg text-yellow-800">
-        No exam data available for this section.
-      </div>
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-yellow-100 p-4 rounded-lg text-yellow-800"
+      >
+        No exam or questions available for this section. Please check the course data or contact support.
+      </motion.div>
     );
   }
 
-  const questions = exam.questions || [];  // Fallback to empty array
+  const questions = exam.questions || [];
 
   return (
     <motion.div 
@@ -114,13 +118,12 @@ const ExamComponent = ({ exam, onSubmit, onCancel }: { exam: ExamType | null; on
         <Award className="text-indigo-600" />
         {exam.title}
       </h2>
-      
       {questions.length === 0 ? (
         <div className="text-center text-gray-600 py-8">
-          <p>No questions available for this exam. Please contact support.</p>
+          No questions in this exam. You may proceed to the next section.
         </div>
       ) : (
-        questions.map((q, index) => (  // Safe to map now
+        questions.map((q, index) => (
           <div key={q._id} className="mb-6 p-4 border border-gray-200 rounded-lg">
             <h3 className="font-semibold mb-3">{index + 1}. {q.questionText}</h3>
             <div className="grid gap-2">
@@ -133,7 +136,7 @@ const ExamComponent = ({ exam, onSubmit, onCancel }: { exam: ExamType | null; on
                       ? 'bg-indigo-100 border-indigo-500' 
                       : 'border-gray-200 hover:bg-gray-50'
                   }`}
-                  aria-label={`Select option ${optIndex + 1}: ${opt}`}  // Accessibility improvement
+                  aria-label={`Option ${optIndex + 1}: ${opt}`}
                 >
                   {opt}
                 </button>
@@ -142,7 +145,6 @@ const ExamComponent = ({ exam, onSubmit, onCancel }: { exam: ExamType | null; on
           </div>
         ))
       )}
-      
       <div className="flex gap-4 mt-6">
         <button 
           onClick={handleSubmit}
@@ -161,6 +163,7 @@ const ExamComponent = ({ exam, onSubmit, onCancel }: { exam: ExamType | null; on
     </motion.div>
   );
 };
+
 
 const CourseShowPage = () => {
   useStudentAuthGuard();

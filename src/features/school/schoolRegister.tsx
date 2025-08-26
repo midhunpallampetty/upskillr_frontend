@@ -6,29 +6,42 @@ import { useFormReducer } from './reducers/useFormReducer';
 import { useRegisterReducer } from './reducers/useRegisterReducer';
 import useNavigateToSchool from './hooks/useNavigateIntoSchool';
 
+
 import { Country, State, City } from 'country-state-city';
 import Select from 'react-select';
 
+
 const LoadingButton = lazy(() => import('../shared/components/UI/Loader'));
+
 
 const CLOUD_NAME = import.meta.env.VITE_CLOUD_NAME;
 const UPLOAD_PRESET = import.meta.env.VITE_UPLOAD_PRESET;
 
+
 const SchoolRegister = () => {
   const navigate = useNavigate();
   useNavigateToSchool();
+
 
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, dispatchForm] = useFormReducer();
   const [state, dispatch] = useRegisterReducer();
   const { imageFile, coverImageFile, fieldErrors, loading, message, isLoading } = state;
 
+
   // Country/State/City selections
   const [selectedCountry, setSelectedCountry] = useState<any>(null);
   const [selectedStateVal, setSelectedStateVal] = useState<any>(null);
   const [selectedCityVal, setSelectedCityVal] = useState<any>(null);
 
+
+  // Show/hide password states
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+
   const allowedImageTypes = ['image/jpeg', 'image/png', 'image/webp'];
+
 
   const clearFieldError = (field: keyof SchoolFormData) => {
     setTimeout(() => {
@@ -36,12 +49,15 @@ const SchoolRegister = () => {
     }, 3000);
   };
 
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, files } = e.target as HTMLInputElement;
+
 
     if (files) {
       const file = files[0];
       if (!file) return;
+
 
       if (!allowedImageTypes.includes(file.type)) {
         dispatch({
@@ -52,6 +68,7 @@ const SchoolRegister = () => {
         return;
       }
 
+
       if (file.size > 2 * 1024 * 1024) {
         dispatch({
           type: 'SET_FIELD_ERRORS',
@@ -61,22 +78,26 @@ const SchoolRegister = () => {
         return;
       }
 
+
       if (name === 'image') {
         dispatch({ type: 'SET_IMAGE_FILE', payload: file });
       } else if (name === 'coverImage') {
         dispatch({ type: 'SET_COVER_IMAGE_FILE', payload: file });
       }
 
+
       dispatchForm({ type: 'UPDATE_FIELD', field: name as keyof SchoolFormData, value: file.name });
     } else {
       dispatchForm({ type: 'UPDATE_FIELD', field: name as keyof SchoolFormData, value });
     }
+
 
     dispatch({
       type: 'SET_FIELD_ERRORS',
       payload: { ...fieldErrors, [name]: '' },
     });
   };
+
 
   const validateFields = () => {
     const errors: Partial<SchoolFormData> = {};
@@ -87,7 +108,9 @@ const SchoolRegister = () => {
       ['email', 'password', 'confirmPassword'],
     ];
 
+
     const currentFields = stepsFields[currentStep];
+
 
     currentFields.forEach((field) => {
       if (!formData[field]?.trim() && field !== 'image' && field !== 'coverImage') {
@@ -95,11 +118,13 @@ const SchoolRegister = () => {
       }
     });
 
+
     if (currentStep === 0) {
       // Custom validation for schoolName
       if (formData.schoolName.trim().length < 3) {
         errors.schoolName = 'School name must be at least 3 characters';
       }
+
 
       if (!/^\d+$/.test(formData.experience) || parseInt(formData.experience) <= 0) {
         errors.experience = 'Experience must be a positive number';
@@ -110,6 +135,7 @@ const SchoolRegister = () => {
       }
     }
 
+
     if (currentStep === 1) {
       if (!/^\d{10}$/.test(formData.officialContact)) {
         errors.officialContact = 'Must be a valid 10-digit phone number';
@@ -119,9 +145,11 @@ const SchoolRegister = () => {
       if (!formData.city) errors.city = 'City is required';
     }
 
+
     if (currentStep === 2) {
       // No required checks for image and coverImage (now optional)
     }
+
 
     if (currentStep === 3) {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -139,19 +167,24 @@ const SchoolRegister = () => {
       }
     }
 
+
     dispatch({ type: 'SET_FIELD_ERRORS', payload: errors });
     Object.keys(errors).forEach((field) => clearFieldError(field as keyof SchoolFormData));
 
+
     return Object.keys(errors).length === 0;
   };
+
 
   const handleNext = () => {
     if (validateFields()) setCurrentStep((prev) => prev + 1);
   };
 
+
   const handleBack = () => {
     setCurrentStep((prev) => prev - 1);
   };
+
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -159,9 +192,12 @@ const SchoolRegister = () => {
     dispatch({ type: 'SET_MESSAGE', payload: '' });
     dispatch({ type: 'SET_IS_LOADING', payload: true });
 
+
     if (!validateFields()) return;
 
+
     dispatch({ type: 'SET_LOADING', payload: true });
+
 
     try {
       let imageUrl = '';
@@ -169,16 +205,19 @@ const SchoolRegister = () => {
         imageUrl = await uploadToCloudinary(imageFile, CLOUD_NAME, UPLOAD_PRESET);
       }
 
+
       let coverImageUrl = '';
       if (coverImageFile) {
         coverImageUrl = await uploadToCloudinary(coverImageFile, CLOUD_NAME, UPLOAD_PRESET);
       }
+
 
       await registerSchool({
         ...formData,
         image: imageUrl,
         coverImage: coverImageUrl,
       });
+
 
       dispatch({ type: 'SET_MESSAGE', payload: '✅ Registered successfully! Redirecting...' });
       setTimeout(() => navigate('/schoolLogin'), 2000);
@@ -191,6 +230,7 @@ const SchoolRegister = () => {
       dispatch({ type: 'SET_LOADING', payload: false });
     }
   };
+
 
   const steps = [
     {
@@ -222,6 +262,7 @@ const SchoolRegister = () => {
     },
   ];
 
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-gray-800 to-blue-800 px-4 py-6">
       <div className="bg-white w-full max-w-6xl rounded-xl overflow-hidden shadow-lg flex flex-col md:flex-row">
@@ -233,8 +274,10 @@ const SchoolRegister = () => {
           />
         </div>
 
+
         <div className="w-full md:w-1/2 p-6 md:p-10">
           <h1 className="text-2xl font-bold mb-6 text-center md:text-left">Register School</h1>
+
 
           <div className="flex justify-between mb-6">
             {steps.map((step, index) => (
@@ -251,9 +294,11 @@ const SchoolRegister = () => {
             ))}
           </div>
 
+
           {message && (
             <div className="md:col-span-2 text-center text-green-600 font-medium mb-4">{message}</div>
           )}
+
 
           <form
             onSubmit={currentStep === steps.length - 1 ? handleRegister : (e) => e.preventDefault()}
@@ -272,6 +317,23 @@ const SchoolRegister = () => {
                   />
                 ) : type === 'file' ? (
                   <input type="file" name={name} onChange={handleChange} className="w-full" />
+                ) : type === 'password' ? (
+                  <div className="relative">
+                    <input
+                      type={name === 'password' ? (showPassword ? 'text' : 'password') : (showConfirmPassword ? 'text' : 'password')}
+                      name={name}
+                      value={formData[name]}
+                      onChange={handleChange}
+                      className="w-full border rounded px-3 py-2 pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => name === 'password' ? setShowPassword(!showPassword) : setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm text-gray-600 hover:text-blue-600"
+                    >
+                      {name === 'password' ? (showPassword ? 'Hide' : 'Show') : (showConfirmPassword ? 'Hide' : 'Show')}
+                    </button>
+                  </div>
                 ) : (
                   <input
                     type={type}
@@ -286,6 +348,7 @@ const SchoolRegister = () => {
                 </p>
               </div>
             ))}
+
 
             {/* Dynamic Country/State/City for Step 1 */}
             {currentStep === 1 && (
@@ -315,6 +378,7 @@ const SchoolRegister = () => {
                   </p>
                 </div>
 
+
                 <div>
                   <label className="block mb-1 font-semibold">State</label>
                   <Select
@@ -343,6 +407,7 @@ const SchoolRegister = () => {
                     {fieldErrors.state || '\u00A0'}
                   </p>
                 </div>
+
 
                 <div>
                   <label className="block mb-1 font-semibold">City</label>
@@ -377,6 +442,7 @@ const SchoolRegister = () => {
               </>
             )}
 
+
             <div className="md:col-span-2 flex justify-between mt-4">
               {currentStep > 0 && (
                 <button
@@ -387,6 +453,7 @@ const SchoolRegister = () => {
                   Back
                 </button>
               )}
+
 
               <button
                 type={currentStep === steps.length - 1 ? 'submit' : 'button'}
@@ -403,6 +470,7 @@ const SchoolRegister = () => {
             </div>
           </form>
 
+
           <div className="md:col-span-2 text-center mt-4">
             <p className="text-sm text-gray-600">
               Already have an account?{' '}
@@ -416,5 +484,6 @@ const SchoolRegister = () => {
     </div>
   );
 };
+
 
 export default SchoolRegister;

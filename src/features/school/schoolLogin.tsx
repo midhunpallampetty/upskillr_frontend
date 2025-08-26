@@ -1,5 +1,5 @@
-import React, { useReducer } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useReducer, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Cookies from 'js-cookie';
 import { loginSchool } from '../../api/school';
 import useNavigateToSchool from './hooks/useNavigateIntoSchool';
@@ -11,8 +11,15 @@ import {
 const SchoolLogin = () => {
   const [state, dispatch] = useReducer(loginReducer, initialLoginState);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useNavigateToSchool();
+
+  useEffect(() => {
+    if (location.state?.fromRegistration) {
+      dispatch({ type: 'SET_MESSAGE', payload: '✅ Registration completed successfully! Please login.' });
+    }
+  }, [location.state]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -20,7 +27,7 @@ const SchoolLogin = () => {
       const data = await loginSchool(state.email, state.password);
       console.log(data,'school')
       const { accessToken, refreshToken, dbname } = data;
-const expiresIn15Minutes = new Date(new Date().getTime() + 15 * 60 * 1000); 
+      const expiresIn15Minutes = new Date(new Date().getTime() + 15 * 60 * 1000); 
       Cookies.set('accessToken', accessToken, {
         expires: expiresIn15Minutes,
         secure: true,

@@ -69,7 +69,7 @@ interface SectionType {
   exam?: ExamType | null;  // Make it optional to handle sections without exams
 }
 
-const ExamComponent = ({ exam, onSubmit, onCancel }: { exam: any; onSubmit: (passed: boolean, score: number, total: number) => void; onCancel: () => void }) => {
+const ExamComponent = ({ exam, onSubmit, onCancel }: { exam: ExamType | null; onSubmit: (passed: boolean, score: number, total: number) => void; onCancel: () => void }) => {
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, string>>({});
   
   const handleAnswerSelect = (questionId: string, answer: string) => {
@@ -79,14 +79,14 @@ const ExamComponent = ({ exam, onSubmit, onCancel }: { exam: any; onSubmit: (pas
   const calculateScore = () => {
     let score = 0;
     let totalMarks = 0;
-    exam.questions.forEach((q: any) => {
+    (exam?.questions || []).forEach((q) => {  // Use optional chaining and fallback to empty array
       const mark = q.marks || 1;
       totalMarks += mark;
       if (selectedAnswers[q._id] === q.correctAnswer) {
         score += mark;
       }
     });
-    return { score, totalMarks, percentage: (score / totalMarks) * 100 };
+    return { score, totalMarks, percentage: totalMarks > 0 ? (score / totalMarks) * 100 : 0 };  // Avoid division by zero
   };
   
   const handleSubmit = () => {
@@ -94,6 +94,16 @@ const ExamComponent = ({ exam, onSubmit, onCancel }: { exam: any; onSubmit: (pas
     onSubmit(percentage >= 50, score, totalMarks);
   };
   
+  if (!exam) {
+    return (
+      <div className="bg-yellow-100 p-4 rounded-lg text-yellow-800">
+        No exam data available for this section.
+      </div>
+    );
+  }
+
+  const questions = exam.questions || [];  // Fallback to empty array
+
   return (
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
@@ -104,31 +114,40 @@ const ExamComponent = ({ exam, onSubmit, onCancel }: { exam: any; onSubmit: (pas
         <Award className="text-indigo-600" />
         {exam.title}
       </h2>
-      {exam.questions.map((q: any, index: number) => (
-        <div key={q._id} className="mb-6 p-4 border border-gray-200 rounded-lg">
-          <h3 className="font-semibold mb-3">{index + 1}. {q.questionText}</h3>
-          <div className="grid gap-2">
-            {q.options.map((opt: string, optIndex: number) => (
-              <button 
-                key={optIndex}
-                onClick={() => handleAnswerSelect(q._id, opt)}
-                className={`p-3 text-left border rounded-lg transition-colors ${
-                  selectedAnswers[q._id] === opt 
-                    ? 'bg-indigo-100 border-indigo-500' 
-                    : 'border-gray-200 hover:bg-gray-50'
-                }`}
-              >
-                {opt}
-              </button>
-            ))}
-          </div>
+      
+      {questions.length === 0 ? (
+        <div className="text-center text-gray-600 py-8">
+          <p>No questions available for this exam. Please contact support.</p>
         </div>
-      ))}
+      ) : (
+        questions.map((q, index) => (  // Safe to map now
+          <div key={q._id} className="mb-6 p-4 border border-gray-200 rounded-lg">
+            <h3 className="font-semibold mb-3">{index + 1}. {q.questionText}</h3>
+            <div className="grid gap-2">
+              {q.options.map((opt, optIndex) => (
+                <button 
+                  key={optIndex}
+                  onClick={() => handleAnswerSelect(q._id, opt)}
+                  className={`p-3 text-left border rounded-lg transition-colors ${
+                    selectedAnswers[q._id] === opt 
+                      ? 'bg-indigo-100 border-indigo-500' 
+                      : 'border-gray-200 hover:bg-gray-50'
+                  }`}
+                  aria-label={`Select option ${optIndex + 1}: ${opt}`}  // Accessibility improvement
+                >
+                  {opt}
+                </button>
+              ))}
+            </div>
+          </div>
+        ))
+      )}
+      
       <div className="flex gap-4 mt-6">
         <button 
           onClick={handleSubmit}
           className="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition-colors flex items-center gap-2"
-          disabled={Object.keys(selectedAnswers).length < exam.questions.length}
+          disabled={Object.keys(selectedAnswers).length < questions.length}
         >
           <CheckCircle size={18} /> Submit Exam
         </button>

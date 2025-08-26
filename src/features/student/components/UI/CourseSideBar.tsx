@@ -51,7 +51,11 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
   passedSections,
   onTakeExam
 }) => {
-  const totalVideos = course?.sections.reduce((acc, section) => acc + section.videos.length, 0) || 0;
+  // Filter sections to only include those with videos
+  const filteredSections = course?.sections?.filter(section => section.videos.length > 0) || [];
+
+  // Calculate progress based on filtered sections
+  const totalVideos = filteredSections.reduce((acc, section) => acc + section.videos.length, 0) || 0;
   const completedCount = completedVideos.size;
   const progressPercentage = totalVideos > 0 ? (completedCount / totalVideos) * 100 : 0;
 
@@ -117,9 +121,9 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
 
             {/* Sections List */}
             <div className="flex-1 overflow-y-auto">
-              {course?.sections?.length ? (
+              {filteredSections.length ? (
                 <div className="p-2">
-                  {course.sections.map((section, sectionIndex) => {
+                  {filteredSections.map((section, sectionIndex) => {
                     const isUnlocked = isSectionUnlocked(sectionIndex);
                     const isVideosCompleted = isSectionCompleted(section);
                     const completedInSection = section.videos.filter(v => completedVideos.has(v._id)).length;
@@ -312,6 +316,7 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
                                       <button
                                         onClick={() => onTakeExam(section._id)}
                                         className="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
+                                        disabled={!isVideosCompleted} // Ensure videos are completed before enabling exam
                                       >
                                         <Award className="w-4 h-4" />
                                         Take Exam
@@ -354,7 +359,7 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
             exit={{ opacity: 0 }}
             className="p-2 space-y-2"
           >
-            {course?.sections?.slice(0, 8).map((section, index) => {
+            {filteredSections.slice(0, 8).map((section, index) => {
               const isUnlocked = isSectionUnlocked(index);
               const isVideosCompleted = isSectionCompleted(section);
               const hasExam = !!section.exam;

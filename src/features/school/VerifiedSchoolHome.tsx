@@ -34,6 +34,7 @@ const SchoolHome: React.FC = () => {
         let token=Cookies.get('accessToken')
         const res = await getSchoolBySubdomain(verifiedSchool,token);
         const schoolData = res.data.school;
+console.log("Fetched school data:", schoolData);
 
         setSchool(schoolData);
         Cookies.set('schoolData', JSON.stringify(schoolData), { expires: 1 });
@@ -102,7 +103,7 @@ const SchoolHome: React.FC = () => {
             <CoursesSection schoolId={school._id} />
           </>
         ) : activeView === 'students' ? (
-          <StudentManagementSection dispatchView={dispatchView} />
+<StudentManagementSection schoolData={school} dispatchView={dispatchView} />
         ) : null}
       </div>
     </div>

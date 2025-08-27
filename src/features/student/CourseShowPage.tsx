@@ -71,7 +71,7 @@ interface SectionType {
 
 const ExamComponent = ({ exam, onSubmit, onCancel }: { exam: any; onSubmit: (passed: boolean, score: number, total: number) => void; onCancel: () => void }) => {
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, string>>({});
-  
+  console.log(exam,'exam');
   const handleAnswerSelect = (questionId: string, answer: string) => {
     setSelectedAnswers(prev => ({ ...prev, [questionId]: answer }));
   };

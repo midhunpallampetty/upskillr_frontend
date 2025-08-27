@@ -8,11 +8,15 @@ const StudentList = lazy(() => import('../UI/StudentList'));
 
 interface StudentManagementSectionProps {
   dispatchView: (action: { type: string }) => void;
+  schoolData: any; // 🔹 replace `any` with your actual type (e.g., School type/interface)
 }
 
-const StudentManagementSection: React.FC<StudentManagementSectionProps> = ({ dispatchView }) => {
+const StudentManagementSection: React.FC<StudentManagementSectionProps> = ({ dispatchView, schoolData }) => {
   const { isDarkMode } = useGlobalState();
   const { verifiedSchool } = useParams();
+
+  console.log("Verified School in StudentManagementSection:", verifiedSchool);
+  console.log("School Data in StudentManagementSection:", schoolData);
 
   return (
     <div>
@@ -43,7 +47,8 @@ const StudentManagementSection: React.FC<StudentManagementSectionProps> = ({ dis
       </div>
 
       <Suspense fallback={<LoadingCard isDarkMode={isDarkMode} />}>
-        <StudentList dbname={verifiedSchool || ''} />
+        {/* ✅ now you can use both verifiedSchool and schoolData */}
+        <StudentList dbname={verifiedSchool || ''} schoolData={schoolData} />
       </Suspense>
     </div>
   );

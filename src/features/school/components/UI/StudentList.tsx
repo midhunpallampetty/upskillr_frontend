@@ -8,7 +8,20 @@ type Student = {
   createdAt?: string;
 };
 
-const StudentList: React.FC<{ dbname: string }> = ({ dbname }) => {
+// Define type for schoolData (replace `any` with your actual school type)
+type School = {
+  _id: string;
+  name: string;
+  subDomain?: string;
+  // add other fields if needed
+};
+
+interface StudentListProps {
+  dbname: string;
+  schoolData: School; // 🔹 new prop
+}
+
+const StudentList: React.FC<StudentListProps> = ({ dbname, schoolData }) => {
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
@@ -16,7 +29,10 @@ const StudentList: React.FC<{ dbname: string }> = ({ dbname }) => {
   useEffect(() => {
     const fetchStudents = async () => {
       try {
-        const data = await getAllStudents();
+        console.log("Fetching students for DB:", schoolData );
+        // 🔹 Pass dbname and/or schoolData to API if needed
+        const data = await getAllStudents( schoolData._id);
+        console.log("Fetched students:", data);
         setStudents(data.students);
       } catch (err) {
         setError('Failed to fetch students');
@@ -26,7 +42,7 @@ const StudentList: React.FC<{ dbname: string }> = ({ dbname }) => {
     };
 
     fetchStudents();
-  }, [dbname]);
+  }, [dbname, schoolData]);
 
   if (loading) return <p className="text-center text-gray-600">Loading students...</p>;
   if (error) return <p className="text-center text-red-500">{error}</p>;
@@ -48,7 +64,9 @@ const StudentList: React.FC<{ dbname: string }> = ({ dbname }) => {
             <tr key={student._id} className="border-t">
               <td className="px-4 py-2">{student.fullName}</td>
               <td className="px-4 py-2">{student.email}</td>
-              <td className="px-4 py-2">{new Date(student.createdAt || '').toLocaleDateString()}</td>
+              <td className="px-4 py-2">
+                {student.createdAt ? new Date(student.createdAt).toLocaleDateString() : 'N/A'}
+              </td>
             </tr>
           ))}
         </tbody>

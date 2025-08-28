@@ -40,7 +40,7 @@ const AddVideoToSectionWrapper = lazy(() => import('../features/school/component
 const PublicRoutes = () => (
   <Routes>
     <Route path="/" element={<LandingPage />} />
-    <Route path="/adminRegister" element={<AdminAuth />} />
+    <Route path="/adminLogin" element={<AdminAuth />} />
     <Route path="/school/:schoolname/profile" element={<SchoolProfilePage />} />
     <Route path='/student/profile'element={<StudentProfilePage/>}/>
     <Route path="*" element={<NotFound />} />

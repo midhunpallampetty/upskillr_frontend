@@ -10,7 +10,7 @@ const useAdminAuthGuard = () => {
     const refreshToken = Cookies.get('adminRefreshToken');
 
     if (!accessToken || !refreshToken) {
-      navigate('/adminRegister');
+      navigate('/adminLogin');
     }
   }, [navigate]);
 };

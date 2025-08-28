@@ -1,4 +1,4 @@
-import { useReducer, lazy, Suspense } from 'react';
+import { useReducer, lazy, Suspense, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   adminDashboardReducer,
@@ -46,205 +46,6 @@ const StatsCard = ({ icon: Icon, title, value, subtitle, color = "blue" }) => {
   );
 };
 
-const ManageStudents = () => (
-  <div className="space-y-6">
-    <div className="flex items-center justify-between">
-      <h3 className="text-xl font-semibold text-gray-800">Student Management</h3>
-      <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
-        Add Student
-      </button>
-    </div>
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      <StatsCard 
-        icon={Users} 
-        title="Total Students" 
-        value="2,847" 
-        subtitle="+12% from last month"
-        color="blue"
-      />
-      <StatsCard 
-        icon={Users} 
-        title="Active Students" 
-        value="2,643" 
-        subtitle="92.8% active rate"
-        color="green"
-      />
-      <StatsCard 
-        icon={Users} 
-        title="New This Month" 
-        value="284" 
-        subtitle="+24% increase"
-        color="purple"
-      />
-      <StatsCard 
-        icon={BarChart3} 
-        title="Completion Rate" 
-        value="87.2%" 
-        subtitle="+5.3% improvement"
-        color="orange"
-      />
-    </div>
-    <div className="bg-white rounded-lg border border-gray-200 p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h4 className="font-medium text-gray-900">Recent Student Activity</h4>
-        <div className="relative">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-          <input 
-            type="text" 
-            placeholder="Search students..." 
-            className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
-        </div>
-      </div>
-      <div className="text-center py-12 text-gray-500">
-        <Users className="w-12 h-12 mx-auto mb-3 text-gray-400" />
-        <p>Student management interface coming soon...</p>
-      </div>
-    </div>
-  </div>
-);
-
-const ManageContent = () => (
-  <div className="space-y-6">
-    <div className="flex items-center justify-between">
-      <h3 className="text-xl font-semibold text-gray-800">Content Management</h3>
-      <button className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors">
-        Upload Content
-      </button>
-    </div>
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      <StatsCard 
-        icon={BookOpen} 
-        title="Total Courses" 
-        value="156" 
-        subtitle="+8 this month"
-        color="purple"
-      />
-      <StatsCard 
-        icon={BookOpen} 
-        title="Published" 
-        value="142" 
-        subtitle="91% published"
-        color="green"
-      />
-      <StatsCard 
-        icon={BookOpen} 
-        title="Draft Content" 
-        value="14" 
-        subtitle="9% in draft"
-        color="orange"
-      />
-      <StatsCard 
-        icon={BarChart3} 
-        title="Views This Month" 
-        value="45.2K" 
-        subtitle="+18% increase"
-        color="blue"
-      />
-    </div>
-    <div className="bg-white rounded-lg border border-gray-200 p-6">
-      <div className="text-center py-12 text-gray-500">
-        <BookOpen className="w-12 h-12 mx-auto mb-3 text-gray-400" />
-        <p>Content management system coming soon...</p>
-      </div>
-    </div>
-  </div>
-);
-
-const WelcomeDashboard = () => (
-  <div className="space-y-6">
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      <StatsCard 
-        icon={Users} 
-        title="Total Users" 
-        value="3,247" 
-        subtitle="+12% from last month"
-        color="blue"
-      />
-      <StatsCard 
-        icon={School} 
-        title="Active Schools" 
-        value="89" 
-        subtitle="+3 new schools"
-        color="green"
-      />
-      <StatsCard 
-        icon={BookOpen} 
-        title="Course Content" 
-        value="156" 
-        subtitle="8+ added this week"
-        color="purple"
-      />
-      <StatsCard 
-        icon={BarChart3} 
-        title="Monthly Growth" 
-        value="+15.3%" 
-        subtitle="Above target"
-        color="orange"
-      />
-    </div>
-
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-800">Recent Activity</h3>
-          <Bell className="w-5 h-5 text-gray-400" />
-        </div>
-        <div className="space-y-4">
-          <div className="flex items-center space-x-3 p-3 bg-blue-50 rounded-lg">
-            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-            <div className="flex-1">
-              <p className="text-sm font-medium text-gray-900">New school registration</p>
-              <p className="text-xs text-gray-500">Lincoln High School - 2 minutes ago</p>
-            </div>
-          </div>
-          <div className="flex items-center space-x-3 p-3 bg-green-50 rounded-lg">
-            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-            <div className="flex-1">
-              <p className="text-sm font-medium text-gray-900">Content approved</p>
-              <p className="text-xs text-gray-500">Mathematics Course - 15 minutes ago</p>
-            </div>
-          </div>
-          <div className="flex items-center space-x-3 p-3 bg-purple-50 rounded-lg">
-            <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-            <div className="flex-1">
-              <p className="text-sm font-medium text-gray-900">New student batch</p>
-              <p className="text-xs text-gray-500">45 students enrolled - 1 hour ago</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="bg-gradient-to-br from-blue-600 to-purple-700 rounded-xl shadow-sm text-white p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold">Quick Actions</h3>
-          <Settings className="w-5 h-5 text-blue-200" />
-        </div>
-        <div className="space-y-3">
-          <button className="w-full bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg p-3 text-left transition-all">
-            <div className="flex items-center space-x-3">
-              <Users className="w-5 h-5" />
-              <span className="font-medium">Manage Students</span>
-            </div>
-          </button>
-          <button className="w-full bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg p-3 text-left transition-all">
-            <div className="flex items-center space-x-3">
-              <School className="w-5 h-5" />
-              <span className="font-medium">Review Schools</span>
-            </div>
-          </button>
-          <button className="w-full bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg p-3 text-left transition-all">
-            <div className="flex items-center space-x-3">
-              <BookOpen className="w-5 h-5" />
-              <span className="font-medium">Upload Content</span>
-            </div>
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-);
-
 const AdminDashboard = () => {
   useAdminAuthGuard();
   const navigate = useNavigate();
@@ -252,6 +53,29 @@ const AdminDashboard = () => {
     adminDashboardReducer,
     initialAdminDashboardState
   );
+  const [showDropdown, setShowDropdown] = useState(false);
+
+  // Set initial section to 'schools' on component mount to show SchoolGrid by default
+  useEffect(() => {
+    dispatch({ type: 'SET_SECTION', payload: 'schools' });
+  }, []);
+
+  // Handle click outside to close dropdown
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('.profile-dropdown')) {
+        setShowDropdown(false);
+      }
+    };
+
+    if (showDropdown) {
+      document.addEventListener('click', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [showDropdown]);
 
   const handleLogout = () => {
     localStorage.removeItem('admin');
@@ -259,21 +83,18 @@ const AdminDashboard = () => {
     Cookies.remove('adminRefreshToken');
 
     dispatch({ type: 'RESET' });
-    navigate('/adminRegister');
+    navigate('/adminLogin');
   };
-type NavItem = {
-  id: AdminSection;
-  label: string;
-  icon: React.ComponentType<{ className?: string }>; // Assumes Lucide icons (adjust if needed)
-};
 
-const navigationItems: NavItem[] = [
-  { id: 'welcome', label: 'Dashboard', icon: Home },
-  { id: 'students', label: 'Students', icon: Users },
-  { id: 'schools', label: 'Schools', icon: School },
-  { id: 'content', label: 'Content', icon: BookOpen },
-];
+  type NavItem = {
+    id: AdminSection;
+    label: string;
+    icon: React.ComponentType<{ className?: string }>; // Assumes Lucide icons (adjust if needed)
+  };
 
+  const navigationItems: NavItem[] = [
+    { id: 'schools', label: 'Schools', icon: School },
+  ];
 
   const renderContent = () => {
     return (
@@ -284,10 +105,7 @@ const navigationItems: NavItem[] = [
       }>
         {
           {
-            students: <ManageStudents />,
             schools: <SchoolGrid />,
-            content: <ManageContent />,
-            welcome: <WelcomeDashboard />,
           }[state.activeSection]
         }
       </Suspense>
@@ -386,8 +204,23 @@ const navigationItems: NavItem[] = [
                 <button className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors">
                   <Settings className="w-5 h-5" />
                 </button>
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center">
-                  <span className="text-white text-sm font-medium">A</span>
+                <div className="profile-dropdown relative">
+                  <button
+                    onClick={() => setShowDropdown(!showDropdown)}
+                    className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center focus:outline-none"
+                  >
+                    <span className="text-white text-sm font-medium">A</span>
+                  </button>
+                  {showDropdown && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10">
+                      <button
+                        onClick={handleLogout}
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                      >
+                        Sign Out
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

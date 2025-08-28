@@ -10,13 +10,23 @@ export const getSchools = async (
   sortOrder: 'asc' | 'desc' = 'desc',
   page: number = 1,
   limit: number = 6,
-  verified?: boolean // Optional: true for verified, false for unverified, undefined for all
+  verified?: boolean, // Optional: true for verified, false for unverified, undefined for all
+  fromDate?: string, // Optional ISO string for start of range
+  toDate?: string // Optional ISO string for end of range
 ): Promise<{ schools: School[]; total: number; totalPages: number }> => {
   const params: any = { search, sortBy, sortOrder, page, limit };
 
   // Conditionally add isVerified param as string ('true' or 'false')
   if (verified !== undefined) {
     params.isVerified = verified ? 'true' : 'false';
+  }
+
+  // Conditionally add date range params
+  if (fromDate) {
+    params.fromDate = fromDate;
+  }
+  if (toDate) {
+    params.toDate = toDate;
   }
 
   const res = await schoolAxios.get(`/getSchools`, { params });
@@ -28,6 +38,7 @@ export const getSchools = async (
     totalPages: res.data.totalPages,
   };
 };
+
 
 
 export const approveSchool = async (schoolId: string): Promise<void> => {

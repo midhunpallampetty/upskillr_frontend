@@ -25,9 +25,7 @@ import {
 import type { School } from '../../../school/types/School';
 import { getSchools, approveSchool } from '../../../school/api/school.api';
 
-
 const EditSchoolForm = lazy(() => import('../../../school/components/UI/EditSchoolForm'));
-
 
 const SchoolGrid: React.FC = () => {
   const [schools, setSchools] = useState<School[] | any[]>([]);
@@ -37,7 +35,6 @@ const SchoolGrid: React.FC = () => {
   const [modalLoading, setModalLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-
 
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -51,25 +48,48 @@ const SchoolGrid: React.FC = () => {
   // New state for verification filter: 'all' (undefined in API), 'true', or 'false'
   const [filterVerified, setFilterVerified] = useState<'all' | 'true' | 'false'>('all');
 
+  // New states for date range filter (renamed to match backend param names)
+  const [fromDate, setFromDate] = useState<string>('');
+  const [toDate, setToDate] = useState<string>('');
 
   useEffect(() => {
     const handler = setTimeout(() => setDebouncedSearch(search), 400);
     return () => clearTimeout(handler);
   }, [search]);
 
-
   const fetchSchools = async () => {
     setLoading(true);
     try {
       // Pass verified as boolean or undefined based on filter
       const verified = filterVerified === 'all' ? undefined : filterVerified === 'true';
+
+      // Handle date range: convert to ISO, adjust toDate to end of day for inclusive filtering
+      let from = fromDate ? new Date(fromDate) : undefined;
+      let to = toDate ? new Date(toDate) : undefined;
+
+      if (from) {
+        from.setHours(0, 0, 0, 0); // Start of the day
+        from = from.toISOString();
+      } else {
+        from = undefined;
+      }
+
+      if (to) {
+        to.setHours(23, 59, 59, 999); // End of the day
+        to = to.toISOString();
+      } else {
+        to = undefined;
+      }
+
       const { schools, totalPages, total } = await getSchools(
         debouncedSearch,
         sortBy,
         sortOrder,
         page,
         limit,
-        verified // Pass the optional verified param
+        verified, // Pass the optional verified param
+        from, // Pass adjusted fromDate
+        to // Pass adjusted toDate
       );
       setSchools(schools);
       setTotalPages(totalPages);
@@ -82,11 +102,9 @@ const SchoolGrid: React.FC = () => {
     }
   };
 
-
   useEffect(() => {
     fetchSchools();
-  }, [debouncedSearch, sortBy, sortOrder, page, filterVerified]); // Added filterVerified to dependencies
-
+  }, [debouncedSearch, sortBy, sortOrder, page, filterVerified, fromDate, toDate]); // Added fromDate and toDate to dependencies
 
   const handleEditClick = (school: School) => setEditSchool(school);
   const handleViewClick = (school: School) => setSelectedSchool(school);
@@ -95,7 +113,6 @@ const SchoolGrid: React.FC = () => {
     fetchSchools();
   };
 
-
   const handleApprove = async (schoolId: string) => {
     try {
       setModalLoading(true);
@@ -103,14 +120,11 @@ const SchoolGrid: React.FC = () => {
       const school = schools.find((s) => s._id === schoolId);
       if (!school) return;
 
-
       await approveSchool(schoolId);
-
 
       setSchools((prev) =>
         prev.map((s) => (s._id === schoolId ? { ...s, isVerified: true } : s))
       );
-
 
       setSuccessMessage('School approved successfully!');
       setTimeout(() => {
@@ -125,11 +139,9 @@ const SchoolGrid: React.FC = () => {
     }
   };
 
-
   const getSortIcon = () => {
     return sortOrder === 'asc' ? <SortAsc className="w-4 h-4" /> : <SortDesc className="w-4 h-4" />;
   };
-
 
   const getStatusBadge = (isVerified: boolean) => {
     return isVerified ? (
@@ -145,23 +157,19 @@ const SchoolGrid: React.FC = () => {
     );
   };
 
-
   const renderPagination = () => {
     const pages = [];
     const maxVisiblePages = 7;
     let startPage = Math.max(1, page - Math.floor(maxVisiblePages / 2));
     let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
 
-
     if (endPage - startPage + 1 < maxVisiblePages) {
       startPage = Math.max(1, endPage - maxVisiblePages + 1);
     }
 
-
     for (let i = startPage; i <= endPage; i++) {
       pages.push(i);
     }
-
 
     return (
       <div className="flex items-center justify-between px-6 py-4 bg-gray-50 border-t border-gray-200 sm:px-8">
@@ -227,7 +235,6 @@ const SchoolGrid: React.FC = () => {
     );
   };
 
-
   return (
     <div className="space-y-6">
       {/* Header with Stats */}
@@ -257,7 +264,6 @@ const SchoolGrid: React.FC = () => {
           </div>
         </div>
 
-
         {/* Search and Filters */}
         <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
           <div className="relative flex-1 max-w-md">
@@ -274,7 +280,7 @@ const SchoolGrid: React.FC = () => {
             />
           </div>
           
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
             <div className="flex items-center gap-2">
               <Filter className="w-4 h-4 text-gray-500" />
               <select
@@ -306,6 +312,32 @@ const SchoolGrid: React.FC = () => {
               </select>
             </div>
             
+            {/* New: Date Range Filter */}
+            <div className="flex items-center gap-2">
+              <Calendar className="w-4 h-4 text-gray-500" />
+              <input
+                type="date"
+                value={fromDate}
+                onChange={(e) => {
+                  setFromDate(e.target.value);
+                  setPage(1);
+                }}
+                className="border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="From Date"
+              />
+              <span className="text-gray-500">to</span>
+              <input
+                type="date"
+                value={toDate}
+                onChange={(e) => {
+                  setToDate(e.target.value);
+                  setPage(1);
+                }}
+                className="border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="To Date"
+              />
+            </div>
+            
             <button
               onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
               className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
@@ -316,7 +348,6 @@ const SchoolGrid: React.FC = () => {
           </div>
         </div>
       </div>
-
 
       {/* School Grid */}
       <div className="bg-white rounded-lg border border-gray-200">
@@ -423,7 +454,6 @@ const SchoolGrid: React.FC = () => {
         )}
       </div>
 
-
       {/* View Modal */}
       <Transition appear show={!!selectedSchool} as={Fragment}>
         <Dialog
@@ -464,7 +494,6 @@ const SchoolGrid: React.FC = () => {
                       </div>
                     </div>
 
-
                     <div className="p-8">
                       {successMessage && (
                         <div className="mb-6 p-4 bg-green-100 border border-green-200 text-green-700 rounded-lg">
@@ -483,7 +512,6 @@ const SchoolGrid: React.FC = () => {
                           </div>
                         </div>
                       )}
-
 
                       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         <div className="lg:col-span-2 space-y-6">
@@ -601,7 +629,6 @@ const SchoolGrid: React.FC = () => {
         </Dialog>
       </Transition>
 
-
       {/* Edit Modal */}
       <Transition appear show={!!editSchool} as={Fragment}>
         <Dialog
@@ -656,6 +683,5 @@ const SchoolGrid: React.FC = () => {
     </div>
   );
 };
-
 
 export default React.memo(SchoolGrid);

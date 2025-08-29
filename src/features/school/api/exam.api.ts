@@ -1,95 +1,46 @@
-
 import examAxios from '../../../utils/axios/exam';
+import { apiRequest } from './../../../utils/apiRequest';
 
-export const fetchExams = async (dbName) => {
-  try {
-    const res = await examAxios.get(`/exam/all-exams`, {
-      params: { schoolName: dbName },
-    });
-    return res.data;
-  } catch (err) {
-    console.error('Error fetching exams');
-    throw err;
-  }
+// Fetch all exams for a school
+export const fetchExams = (dbName: string) => {
+  return apiRequest(examAxios, 'get', '/exam/all-exams', undefined, {
+    params: { schoolName: dbName },
+  });
 };
 
-export const fetchQuestions = async (dbName) => {
-  try {
-    const res = await examAxios.get(`/question/get-all`, {
-      params: { schoolName: dbName },
-    });
-    return res.data;
-  } catch (err) {
-    console.error('Error fetching questions');
-    throw err;
-  }
+// Fetch all questions for a school
+export const fetchQuestions = (dbName: string) => {
+  return apiRequest(examAxios, 'get', '/question/get-all', undefined, {
+    params: { schoolName: dbName },
+  });
 };
 
-export const createExam = async (dbName, title) => {
-  try {
-    const res = await examAxios.post(`/exam`, {
-      schoolName: dbName,
-      title,
-    });
-    return res.data;
-  } catch (err) {
-    console.error('Error creating exam');
-    throw err;
-  }
+// Create a new exam
+export const createExam = (dbName: string, title: string) => {
+  return apiRequest(examAxios, 'post', '/exam', { schoolName: dbName, title });
 };
 
-export const updateExam = async (examId, dbName, title) => {
-  try {
-    const res = await examAxios.put(`/exam/${examId}/${dbName}`, {
-      title,
-    });
-    return res.data;
-  } catch (err) {
-    console.error('Update exam error:', err);
-    throw err;
-  }
+// Update an existing exam
+export const updateExam = (examId: string, dbName: string, title: string) => {
+  return apiRequest(examAxios, 'put', `/exam/${examId}/${dbName}`, { title });
 };
 
-export const deleteExam = async (examId, dbName) => {
-  try {
-    const res = await examAxios.delete(`/exam/${examId}/${dbName}`);
-    return res.data;
-  } catch (err) {
-    console.error('Delete exam error:', err);
-    throw err;
-  }
+// Delete an exam
+export const deleteExam = (examId: string, dbName: string) => {
+  return apiRequest(examAxios, 'delete', `/exam/${examId}/${dbName}`);
 };
 
-export const createQuestion = async (dbName, questionData) => {
-  try {
-    const res = await examAxios.post(`/question`, {
-      schoolName: dbName,
-      ...questionData,
-    });
-    console.log(questionData)
-    return res.data;
-  } catch (err) {
-    console.error('Error creating question:', err?.response?.data || err);
-    throw err;
-  }
+// Create a new question
+export const createQuestion = (dbName: string, questionData: any) => {
+  return apiRequest(examAxios, 'post', '/question', { schoolName: dbName, ...questionData });
 };
 
-export const updateQuestion = async (questionId, dbName, updateBody) => {
-  try {
-    const res = await examAxios.put(`/question/${questionId}/${dbName}`, updateBody);
-    return res.data;
-  } catch (err) {
-    console.error('Update error:', err);
-    throw err;
-  }
+// Update a question
+export const updateQuestion = (questionId: string, dbName: string, updateBody: any) => {
+  return apiRequest(examAxios, 'put', `/question/${questionId}/${dbName}`, updateBody);
 };
 
-export const deleteQuestion = async (questionId, dbName) => {
-  try {
-    const res = await examAxios.delete(`/question/${questionId}/${dbName}`);
-    return res.data;
-  } catch (err) {
-    console.error('Delete question error:', err);
-    throw err;
-  }
+// Delete a question
+export const deleteQuestion = (questionId: string, dbName: string) => {
+  return apiRequest(examAxios, 'delete', `/question/${questionId}/${dbName}`);
 };

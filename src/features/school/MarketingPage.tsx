@@ -264,7 +264,7 @@ const MarketingPage: React.FC = () => {
               <div className="relative group">
                 <div className="absolute -inset-4 bg-gradient-to-r from-pink-500 to-violet-500 rounded-full blur-lg opacity-30 group-hover:opacity-50 transition-opacity"></div>
                 <img 
-                  src={schoolData.image || 'https://via.placeholder.com/200x200/4F46E5/FFFFFF?text=LOGO'} 
+                  src={schoolData.image || 'https://images7.alphacoders.com/463/463447.jpg'} 
                   alt={`${schoolData.name} Logo`} 
                   className="relative w-32 h-32 rounded-full border-4 border-white/40 shadow-2xl backdrop-blur-sm hover:scale-110 transition-transform duration-300"
                 />

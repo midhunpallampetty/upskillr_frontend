@@ -553,7 +553,7 @@ const MarketingPage: React.FC = () => {
             <div className="bg-gradient-to-br from-purple-600 to-blue-600 rounded-3xl p-8 text-white shadow-2xl">
               <div className="text-center mb-8">
                 <img 
-                  src={schoolData.image || 'https://via.placeholder.com/200x200/4F46E5/FFFFFF?text=LOGO'} 
+                  src={schoolData.image || 'https://images7.alphacoders.com/463/463447.jpg'} 
                   alt={`${schoolData.name || 'School'} Logo`} 
                   className="w-24 h-24 rounded-full border-4 border-white/30 mx-auto mb-4" 
                 />
@@ -611,7 +611,7 @@ const MarketingPage: React.FC = () => {
             <div className="col-span-1 md:col-span-2">
               <div className="flex items-center space-x-4 mb-6">
                 <img 
-                  src={schoolData.image || 'https://via.placeholder.com/200x200/4F46E5/FFFFFF?text=LOGO'} 
+                  src={schoolData.image || 'https://images7.alphacoders.com/463/463447.jpg'} 
                   alt={`${schoolData.name || 'School'} Logo`} 
                   className="w-16 h-16 rounded-full border-2 border-purple-400" 
                 />

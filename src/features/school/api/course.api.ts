@@ -1,107 +1,71 @@
 import courseAxios from '../../../utils/axios/course';
-import { apiRequest } from '../../../utils/apiRequest';
 import { Course } from '../types/Course';
 import Section from '../../course/types/Section';
 import { Video } from '../types/Video';
-
-// Get courses by school
 export const getCoursesBySchool = async (
   schoolId: string,
   dbname: string
 ): Promise<Course[]> => {
+  let courses: Course[] = [];
+
   try {
-    const data = await apiRequest<{ courses: Course[] }>(
-      courseAxios,
-      'get',
+    const response = await courseAxios.get(
       `/${dbname}/courses?schoolId=${schoolId}`
     );
-    return data?.courses || [];
+    courses = response.data?.courses || [];
   } catch (error) {
     console.error('Error fetching courses:', error);
-    return [];
+  } finally {
+    return courses;
   }
 };
-
-// Get sections by course
 export const getSectionsByCourse = async (
   dbname: string,
   courseId: string
 ): Promise<Section[]> => {
-  const data = await apiRequest<{ data: Section[] }>(
-    courseAxios,
-    'get',
-    `/${dbname}/courses/${courseId}/sections`
-  );
-  return data?.data || [];
+  const res = await courseAxios.get(`/${dbname}/courses/${courseId}/sections`);
+  return res.data?.data || [];
 };
-
-// Soft delete video
-export const softDeleteVideoById = async (
-  schoolName: string,
-  videoId: string
-): Promise<any> => {
-  return apiRequest(
-    courseAxios,
-    'patch',
+export const softDeleteVideoById = async (schoolName: string, videoId: string) => {
+  const res = await courseAxios.patch(
     `/${schoolName}/videos/${videoId}/soft-delete`
   );
+  return res.data;
 };
-
-// Get video by ID
 export const getVideoById = async (
   dbname: string,
   videoId: string
 ): Promise<Video | null> => {
-  const data = await apiRequest<{ data: Video[] | Video }>(
-    courseAxios,
-    'get',
-    `/getvideo/${dbname}/${videoId}`
-  );
-
-  if (Array.isArray(data?.data)) {
-    return data.data[0] || null;
+  const res = await courseAxios.get(`/getvideo/${dbname}/${videoId}`);
+  const videoData = res.data?.data;
+  if (Array.isArray(videoData)) {
+    return videoData[0] || null;
   }
-  return (data as any)?.data || null;
+  return videoData || null;
 };
 
-// Update course by ID
 export const updateCourseById = async (
   dbname: string,
   courseId: string,
   updatedData: Partial<Course>
 ): Promise<void> => {
-  await apiRequest(
-    courseAxios,
-    'put',
-    `/${dbname}/course/${courseId}`,
-    updatedData
-  );
+  await courseAxios.put(`/${dbname}/course/${courseId}`, updatedData);
 };
-
-// Soft delete course by ID
 export const deleteCourseById = async (
   dbname: string,
   courseId: string
 ): Promise<void> => {
-  await apiRequest(
-    courseAxios,
-    'patch',
-    `/${dbname}/course/${courseId}/soft-delete`,
-    { isDeleted: true }
-  );
+  await courseAxios.patch(`/${dbname}/course/${courseId}/soft-delete`, {
+    isDeleted: true,
+  });
 };
-
-// Soft delete section by ID
-export const softDeleteSectionById = async (
-  schoolDb: string,
-  sectionId: string
-): Promise<any> => {
+export const softDeleteSectionById = async (schoolDb: string, sectionId: string) => {
   try {
-    return await apiRequest(
-      courseAxios,
-      'patch',
+    const response = await courseAxios.patch(
       `/${schoolDb}/sections/${sectionId}/soft-delete`
     );
+
+    return response.data; // Contains the message + data
   } catch (error: any) {
     const message =
       error.response?.data?.message || 'Failed to soft delete section';

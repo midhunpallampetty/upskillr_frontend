@@ -48,15 +48,17 @@ const MarketingPage: React.FC = () => {
     foundedYear: '',
     studentsGraduated: '',
     successRate: '',
-    subDomain: '',
+    subDomain: '', // Note: This is 'subDomain' to match API casing, but we'll use 'subdomain' for consistency
     experience: '',
     image: '',
     coverImage: '',
     coursesOffered: [] // Keep empty initially; will be set from API
   });
 
+  // New state for subdomain (computed once on mount)
+  const [subdomain, setSubdomain] = useState<string>(getSubdomain());
+
   useEffect(() => {
-    const subdomain = getSubdomain();
     if (subdomain) {
       const fetchSchoolData = async () => {
         try {
@@ -87,7 +89,7 @@ const MarketingPage: React.FC = () => {
             successRate: data.successRate || '', // If not provided, empty
             experience: data.experience || '',
             image: data.image || '',
-            subdomain: data.subDomain || '',
+            subDomain: data.subDomain || '', // API provides 'subDomain'
             coverImage: data.coverImage || '',
             coursesOffered: [] // Initialize empty; will be updated below
           };
@@ -105,7 +107,7 @@ const MarketingPage: React.FC = () => {
       // If no subdomain, redirect
       window.location.href = 'https://eduvia.space';
     }
-  }, []);
+  }, [subdomain]); // Depend on subdomain state
 
   // Separate useEffect to fetch courses after schoolData is updated
   useEffect(() => {
@@ -114,7 +116,7 @@ const MarketingPage: React.FC = () => {
         try {
           const schoolId = schoolData.id;
           console.log(schoolData.name, 'school name');
-          const dbname = getSubdomain(schoolData.subDomain); // Use schoolData.name as dbname
+          const dbname = getSubdomain(schoolData.subDomain); // Use schoolData.subDomain as dbname (note casing)
           console.log(dbname, 'dbname');
           
           const coursesResponse = await getCoursesBySchool(schoolId, dbname);
@@ -500,10 +502,11 @@ const MarketingPage: React.FC = () => {
                       <p className="text-gray-500 text-sm">Last Updated: {new Date(course.updatedAt).toLocaleDateString()}</p>
                     </div>
 
-                    {/* CTA Button */}
+                    {/* CTA Button - Now using the subdomain state */}
+                    {/* Alternative: Use schoolData.subDomain if you prefer the API value: `${schoolData.subDomain}` */}
                     <button
                       className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-4 text-lg font-bold rounded-2xl hover:from-purple-700 hover:to-pink-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-                      onClick={() => window.location.href = "#contact"}
+                      onClick={() => window.location.href = `https://www.eduvia.space/school/${subdomain}/home`}
                     >
                       Start Learning Today →
                     </button>

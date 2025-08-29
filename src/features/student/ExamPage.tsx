@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Cookies from 'js-cookie';
+import Swal from 'sweetalert2'; // Import SweetAlert2
 import { Question } from './types/exam';
 import { useExamTimer } from './hooks/useTimer';
 import { ExamHeader } from './components/UI/ExamHeader';
@@ -46,7 +47,36 @@ export function ExamPage() {
         const fetchedQuestions = await fetchQuestions(courseId, schoolName);
         setQuestions(fetchedQuestions);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch questions');
+        // Handle specific 500 error for no exam available
+        if (err.response && err.response.status === 500) {
+          // Show SweetAlert with dark theme
+          Swal.fire({
+            title: 'No Exam Available',
+            text: 'No exam available so you can continue next steps.',
+            icon: 'info',
+            theme: 'dark', // Dark theme
+            confirmButtonText: 'OK'
+          }).then(async () => {
+            // Redirect directly to payment URL after alert
+            try {
+              const schoolName = Cookies.get('dbname');
+              if (!schoolName) {
+                throw new Error('Missing schoolName for payment initiation');
+              }
+              const paymentUrl = await initiatePayment(schoolName, courseId);
+              if (paymentUrl) {
+                window.location.href = paymentUrl;
+              } else {
+                setError('Payment initiation failed. Please try again later.');
+              }
+            } catch (error) {
+              console.error('Payment redirect error:', error);
+              setError('Payment setup failed. Please try again later.');
+            }
+          });
+        } else {
+          setError(err instanceof Error ? err.message : 'Failed to fetch questions');
+        }
       } finally {
         setIsLoading(false);
       }

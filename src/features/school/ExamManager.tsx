@@ -20,7 +20,7 @@ import Cookies from 'js-cookie';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const API_BASE = 'https://exam.upskillr.online/api';
+const API_BASE = 'http://exam.localhost:5000/api';
 
 const ExamManager = () => {
   useSchoolAuthGuard();

@@ -1,17 +1,25 @@
+import { apiRequest } from '../../../utils/apiRequest';   // <-- import common apiRequest
 import adminAxios from '../../../utils/axios/admin';
 import { AuthResponse } from '../types/AuthResponse';
 
-
-export const registerAdmin = async (email: string, password: string): Promise<AuthResponse> => {
-  const response = await adminAxios.post('/register', { email, password }, { withCredentials: false } );
-  return response.data;
+// Register Admin
+export const registerAdmin = (email: string, password: string): Promise<AuthResponse> => {
+  return apiRequest<AuthResponse>(
+    adminAxios,
+    'post',
+    '/register',
+    { email, password },
+    { withCredentials: false }
+  );
 };
 
-export const loginAdmin = async (email: string, password: string): Promise<AuthResponse> => {
-  const response = await adminAxios.post(
+// Login Admin
+export const loginAdmin = (email: string, password: string): Promise<AuthResponse> => {
+  return apiRequest<AuthResponse>(
+    adminAxios,
+    'post',
     '/login',
     { email, password },
-    { withCredentials: false } 
+    { withCredentials: false }
   );
-  return response.data;
 };

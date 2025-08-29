@@ -1,6 +1,8 @@
+// Updated ModalExamSelector component using the separated API functions
+
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 import { Props, Exam } from '../../types/Props';
+import { fetchAllExams, updateCourseExam } from '../../api/exam.controll'; // Adjust path to your API file
 
 const ModalExamSelector: React.FC<Props> = ({ 
   schoolName, 
@@ -17,15 +19,15 @@ const ModalExamSelector: React.FC<Props> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchExams = async () => {
+  const loadExams = async () => {
     setLoading(true);
     setError(null);
     try {
-      const { data } = await axios.get('https://exam.upskillr.online/api/exam/all-exams', { params: { schoolName } });
+      const data = await fetchAllExams(schoolName);
       setExams(data);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error fetching exams:', err);
-      setError('Failed to load exams. Check network or server CORS settings.');
+      setError(err.message || 'Failed to load exams. Check network or server CORS settings.');
     } finally {
       setLoading(false);
     }
@@ -41,26 +43,23 @@ const ModalExamSelector: React.FC<Props> = ({
     setLoading(true);
     setError(null);
     try {
-      await axios.put(`https://course.upskillr.online/api/${schoolName}/courses/${courseId}/exams`, {
-        examId: selectedExam,
-        examType,
-      });
+      await updateCourseExam(schoolName, courseId, selectedExam, examType);
       alert(`Successfully updated ${examType} exam`);
       onSuccess();
       onClose();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error updating course exam:', err);
-      setError('Failed to update exam. Check console for details.');
+      setError(err.message || 'Failed to update exam. Check console for details.');
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (isOpen && schoolName) {  // Add schoolName check to avoid invalid requests
-      fetchExams();
+    if (isOpen && schoolName) {
+      loadExams();
     }
-  }, [isOpen, schoolName]);  // Add schoolName as dependency if it can change
+  }, [isOpen, schoolName]);
 
   useEffect(() => {
     const current = examType === 'preliminary' ? currentPreliminaryExam : currentFinalExam;

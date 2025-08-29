@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import { 
   BookOpen, 
   Plus, 
@@ -19,8 +20,7 @@ import Cookies from 'js-cookie';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-import { fetchExams, createExam, deleteExam } from './api/exam.manage.api';
-import { fetchQuestions, createQuestion, updateQuestion, deleteQuestion } from './api/question.api';
+const API_BASE = 'https://exam.upskillr.online/api';
 
 const ExamManager = () => {
   useSchoolAuthGuard();
@@ -71,10 +71,15 @@ const ExamManager = () => {
     }
 
     try {
-      await updateQuestion(editingQuestionId, dbName, question, options, options[answer], selectedExam);
+      await axios.put(`${API_BASE}/question/${editingQuestionId}/${dbName}`, {
+        question,
+        options,
+        correctAnswer: options[answer],
+        examId: selectedExam,
+      });
       toast.success('✅ Question updated successfully!');
-      fetchQuestionsHandler();
-      fetchExamsHandler();
+      fetchQuestions();
+      fetchExams();
       resetForm();
     } catch (err) {
       console.error('Update error:', err);
@@ -82,11 +87,13 @@ const ExamManager = () => {
     }
   };
 
-  const fetchExamsHandler = async () => {
+  const fetchExams = async () => {
     try {
       setLoading(true);
-      const data = await fetchExams(dbName);
-      setExams(data);
+      const res = await axios.get(`${API_BASE}/exam/all-exams`, {
+        params: { schoolName: dbName },
+      });
+      setExams(res.data);
     } catch (err) {
       console.error('Error fetching exams');
       toast.error('❌ Error fetching exams');
@@ -95,11 +102,13 @@ const ExamManager = () => {
     }
   };
 
-  const fetchQuestionsHandler = async () => {
+  const fetchQuestions = async () => {
     try {
       setLoading(true);
-      const data = await fetchQuestions(dbName);
-      setQuestions(data);
+      const res = await axios.get(`${API_BASE}/question/get-all`, {
+        params: { schoolName: dbName },
+      });
+      setQuestions(res.data);
     } catch (err) {
       console.error('Error fetching questions', err);
       toast.error('❌ Error fetching questions');
@@ -113,8 +122,8 @@ const ExamManager = () => {
       toast.error('No school database selected!');
       return;
     }
-    fetchExamsHandler();
-    fetchQuestionsHandler();
+    fetchExams();
+    fetchQuestions();
   }, [dbName]);
 
   const handleCreateExam = async () => {
@@ -122,9 +131,12 @@ const ExamManager = () => {
     if (!dbName) return toast.error('No school database selected!');
 
     try {
-      await createExam(dbName, examName);
+      await axios.post(`${API_BASE}/exam`, {
+        schoolName: dbName,
+        title: examName,
+      });
       setExamName('');
-      fetchExamsHandler();
+      fetchExams();
       toast.success('✅ Exam created successfully');
     } catch (err) {
       console.error('Error creating exam');
@@ -146,16 +158,22 @@ const ExamManager = () => {
     }
 
     try {
-      await createQuestion(dbName, question, options, answer, selectedExam);
+      await axios.post(`${API_BASE}/question`, {
+        schoolName: dbName,
+        question,
+        options,
+        answer,
+        examId: selectedExam,
+      });
       setQuestion('');
       setOptions(['', '', '', '']);
       setAnswer(0);
-      fetchQuestionsHandler();
-      fetchExamsHandler();
+      fetchQuestions();
+      fetchExams();
       toast.success('✅ Question created successfully');
     } catch (err) {
-      console.error('Error creating question:', err);
-      toast.error(err.message || '❌ Failed to create question');
+      console.error('Error creating question:', err?.response?.data || err);
+      toast.error(err?.response?.data?.message || '❌ Failed to create question');
     }
   };
 
@@ -169,8 +187,8 @@ const ExamManager = () => {
     if (!window.confirm('Are you sure you want to delete this exam?')) return;
 
     try {
-      await deleteExam(examId, dbName);
-      fetchExamsHandler();
+      await axios.delete(`${API_BASE}/exam/${examId}/${dbName}`);
+      fetchExams();
       toast.success('✅ Exam deleted successfully');
     } catch (err) {
       console.error('Delete exam error:', err);
@@ -182,9 +200,9 @@ const ExamManager = () => {
     if (!window.confirm('Are you sure you want to delete this question?')) return;
 
     try {
-      await deleteQuestion(questionId, dbName);
-      fetchQuestionsHandler();
-      fetchExamsHandler();
+      await axios.delete(`${API_BASE}/question/${questionId}/${dbName}`);
+      fetchQuestions();
+      fetchExams();
       toast.success('✅ Question deleted successfully');
     } catch (err) {
       console.error('Delete question error:', err);

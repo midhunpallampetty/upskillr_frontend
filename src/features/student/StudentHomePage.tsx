@@ -54,16 +54,13 @@ const StudentHomePage: React.FC = () => {
           limit: ITEMS_PER_PAGE,
           fromDate,
           toDate,
-          isVerified: true, // Explicitly filter for verified schools
+          isVerified: true,
         });
 
-        // Client-side filtering for extra safety
-        const verifiedSchools = response.schools.filter((school: School) => school.isVerified === true);
-
         // Apply client-side sorting if sorting by name (case-insensitive)
-        let sortedSchools = verifiedSchools;
+        let sortedSchools = response.schools;
         if (sortBy === 'name') {
-          sortedSchools = [...verifiedSchools].sort((a, b) => {
+          sortedSchools = [...response.schools].sort((a, b) => {
             const compareResult = a.name.localeCompare(b.name, 'en', { sensitivity: 'base' });
             return sortOrder === 'asc' ? compareResult : -compareResult;
           });
@@ -72,8 +69,6 @@ const StudentHomePage: React.FC = () => {
         setSchoolData({
           ...response,
           schools: sortedSchools,
-          total: sortedSchools.length, // Update total to reflect filtered count
-          totalPages: Math.ceil(sortedSchools.length / ITEMS_PER_PAGE), // Recalculate total pages
         });
       } catch (error) {
         console.error('Error fetching schools:', error);
@@ -246,7 +241,7 @@ const StudentHomePage: React.FC = () => {
                 className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow hover:shadow-lg transition-all duration-300 cursor-pointer"
               >
                 <img
-                  src={school.image}
+                  src={school.image || 'https://asset.gecdesigns.com/img/background-templates/abstract-yellow-and-grey-wavy-background-template-sr17012401-1705501529081-cover.webp'}
                   alt={school.name}
                   className="w-full h-44 object-cover"
                 />
@@ -254,7 +249,6 @@ const StudentHomePage: React.FC = () => {
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">{school.name}</h3>
                   <div className="text-sm text-gray-600 flex justify-between mb-2">
                     <span><Clock className="inline w-4 h-4" /> {school.experience} yrs</span>
-                    <span><BookOpen className="inline w-4 h-4" /> 0 students</span>
                   </div>
                   <div className="text-sm text-gray-600 mb-2">
                     <span>{school.address}, {school.city}, {school.state}, {school.country}</span>

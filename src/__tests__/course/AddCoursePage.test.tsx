@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import AddCoursePage from '../features/course/AddCoursePage';
+import AddCoursePage from '../../features/course/AddCoursePage';
 import axios from 'axios';
 import '@testing-library/jest-dom';
 import Cookies from 'js-cookie';

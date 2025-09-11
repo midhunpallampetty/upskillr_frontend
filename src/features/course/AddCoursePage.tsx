@@ -35,8 +35,8 @@ const NumberInput = lazy(() => import('./components/NumberInput'));
 const Checkbox = lazy(() => import('./components/Checkbox'));
 const LoadingButton = lazy(() => import('../shared/components/UI/Loader'));
 
-const CLOUD_NAME = import.meta.env.VITE_CLOUD_NAME;
-const UPLOAD_PRESET = import.meta.env.VITE_UPLOAD_PRESET;
+// const CLOUD_NAME = import.meta.env.VITE_CLOUD_NAME;
+// const UPLOAD_PRESET = import.meta.env.VITE_UPLOAD_PRESET;
 
 // Enhanced Error Message Component
 const ErrorMessage: React.FC<{ error: string; className?: string }> = ({ error, className = '' }) => {

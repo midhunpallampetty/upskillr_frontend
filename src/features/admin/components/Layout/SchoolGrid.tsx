@@ -172,7 +172,7 @@ const SchoolGrid: React.FC = () => {
     }
 
     return (
-      <div className="flex items-center justify-between px-6 py-4 bg-gray-50 border-t border-gray-200 sm:px-8">
+      <div className="flex items-center justify-between px-4 py-3 bg-gray-50 border-t border-gray-200 sm:px-6">
         <div className="flex justify-between flex-1 sm:hidden">
           <button
             onClick={() => setPage(Math.max(1, page - 1))}
@@ -238,13 +238,13 @@ const SchoolGrid: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header with Stats */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <div className="flex items-center justify-between mb-6">
+      <div className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 space-y-4 sm:space-y-0">
           <div>
             <h2 className="text-2xl font-bold text-gray-900">School Management</h2>
             <p className="text-gray-600 mt-1">Manage and review educational institutions</p>
           </div>
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-4 sm:space-x-6">
             <div className="text-center">
               <div className="text-2xl font-bold text-blue-600">{totalSchools}</div>
               <div className="text-sm text-gray-500">Total Schools</div>
@@ -265,7 +265,7 @@ const SchoolGrid: React.FC = () => {
         </div>
 
         {/* Search and Filters */}
-        <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
+        <div className="flex flex-col space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0 lg:gap-4">
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
@@ -280,13 +280,13 @@ const SchoolGrid: React.FC = () => {
             />
           </div>
           
-          <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:gap-3 sm:space-y-0 sm:flex-wrap lg:flex-nowrap">
             <div className="flex items-center gap-2">
               <Filter className="w-4 h-4 text-gray-500" />
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full sm:w-auto"
               >
                 <option value="createdAt">Date Created</option>
                 <option value="name">School Name</option>
@@ -304,7 +304,7 @@ const SchoolGrid: React.FC = () => {
                   setFilterVerified(e.target.value as 'all' | 'true' | 'false');
                   setPage(1); // Reset to first page on filter change
                 }}
-                className="border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full sm:w-auto"
               >
                 <option value="all">All Statuses</option>
                 <option value="true">Verified</option>
@@ -313,8 +313,8 @@ const SchoolGrid: React.FC = () => {
             </div>
             
             {/* New: Date Range Filter */}
-            <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-gray-500" />
+            <div className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:gap-2 sm:space-y-0">
+              <Calendar className="w-4 h-4 text-gray-500 hidden sm:block" />
               <input
                 type="date"
                 value={fromDate}
@@ -322,10 +322,10 @@ const SchoolGrid: React.FC = () => {
                   setFromDate(e.target.value);
                   setPage(1);
                 }}
-                className="border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full sm:w-auto"
                 placeholder="From Date"
               />
-              <span className="text-gray-500">to</span>
+              <span className="text-gray-500 hidden sm:block">to</span>
               <input
                 type="date"
                 value={toDate}
@@ -333,14 +333,14 @@ const SchoolGrid: React.FC = () => {
                   setToDate(e.target.value);
                   setPage(1);
                 }}
-                className="border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full sm:w-auto"
                 placeholder="To Date"
               />
             </div>
             
             <button
               onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-              className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              className="flex items-center justify-center gap-2 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors w-full sm:w-auto"
             >
               {getSortIcon()}
               <span className="text-sm">{sortOrder === 'asc' ? 'Ascending' : 'Descending'}</span>
@@ -381,8 +381,8 @@ const SchoolGrid: React.FC = () => {
           </div>
         ) : (
           <>
-            <div className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
+            <div className="p-4 sm:p-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {schools.map((school) => (
                   <div
                     key={school._id}
@@ -478,15 +478,15 @@ const SchoolGrid: React.FC = () => {
                   </div>
                 ) : selectedSchool && (
                   <>
-                    <div className="relative h-64 bg-gradient-to-r from-blue-600 to-purple-600">
+                    <div className="relative h-48 sm:h-64 bg-gradient-to-r from-blue-600 to-purple-600">
                       <img
                         src={selectedSchool.coverImage || 'https://images.pexels.com/photos/207692/pexels-photo-207692.jpeg?auto=compress&cs=tinysrgb&w=800'}
                         alt="Cover"
                         className="w-full h-full object-cover opacity-30"
                       />
-                      <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="absolute inset-0 flex items-center justify-center p-4">
                         <div className="text-center text-white">
-                          <h1 className="text-4xl font-bold mb-2">{selectedSchool.name}</h1>
+                          <h1 className="text-2xl sm:text-4xl font-bold mb-2">{selectedSchool.name}</h1>
                           <div className="flex items-center justify-center">
                             {getStatusBadge(selectedSchool.isVerified)}
                           </div>
@@ -494,7 +494,7 @@ const SchoolGrid: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="p-8">
+                    <div className="p-4 sm:p-8">
                       {successMessage && (
                         <div className="mb-6 p-4 bg-green-100 border border-green-200 text-green-700 rounded-lg">
                           <div className="flex items-center">
@@ -513,7 +513,7 @@ const SchoolGrid: React.FC = () => {
                         </div>
                       )}
 
-                      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
                         <div className="lg:col-span-2 space-y-6">
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-4">
@@ -597,12 +597,12 @@ const SchoolGrid: React.FC = () => {
                         </div>
                       </div>
                       
-                      <div className="mt-8 flex justify-end gap-3">
+                      <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row sm:justify-end sm:gap-3 space-y-3 sm:space-y-0">
                         {!selectedSchool.isVerified && (
                           <button
                             onClick={() => handleApprove(selectedSchool._id)}
                             disabled={modalLoading}
-                            className={`flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg font-medium transition-colors ${
+                            className={`flex items-center justify-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg font-medium transition-colors ${
                               modalLoading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-green-700'
                             }`}
                           >
@@ -613,7 +613,7 @@ const SchoolGrid: React.FC = () => {
                         <button
                           onClick={() => setSelectedSchool(null)}
                           disabled={modalLoading}
-                          className={`px-6 py-3 bg-gray-600 text-white rounded-lg font-medium transition-colors ${
+                          className={`flex items-center justify-center px-6 py-3 bg-gray-600 text-white rounded-lg font-medium transition-colors ${
                             modalLoading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-700'
                           }`}
                         >
@@ -654,7 +654,7 @@ const SchoolGrid: React.FC = () => {
                   </Dialog.Title>
                 </div>
                 
-                <div className="p-6">
+                <div className="p-4 sm:p-6">
                   <Suspense fallback={
                     <div className="flex items-center justify-center h-32">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>

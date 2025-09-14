@@ -26,9 +26,7 @@ import type { School } from '../../../school/types/School';
 import { getSchools, approveSchool, setSchoolBlockStatus } from '../../../school/api/school.api';
 import Swal from 'sweetalert2';
 
-
 const EditSchoolForm = lazy(() => import('../../../school/components/UI/EditSchoolForm'));
-
 
 const SchoolGrid: React.FC = () => {
   const [schools, setSchools] = useState<School[] | any[]>([]);
@@ -39,7 +37,6 @@ const SchoolGrid: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [sortBy, setSortBy] = useState('createdAt');
@@ -49,21 +46,17 @@ const SchoolGrid: React.FC = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [totalSchools, setTotalSchools] = useState(0);
 
-
   // New state for verification filter: 'all' (undefined in API), 'true', or 'false'
   const [filterVerified, setFilterVerified] = useState<'all' | 'true' | 'false'>('all');
-
 
   // New states for date range filter (renamed to match backend param names)
   const [fromDate, setFromDate] = useState<string>('');
   const [toDate, setToDate] = useState<string>('');
 
-
   useEffect(() => {
     const handler = setTimeout(() => setDebouncedSearch(search), 400);
     return () => clearTimeout(handler);
   }, [search]);
-
 
   const fetchSchools = async () => {
     setLoading(true);
@@ -71,11 +64,9 @@ const SchoolGrid: React.FC = () => {
       // Pass verified as boolean or undefined based on filter
       const verified = filterVerified === 'all' ? undefined : filterVerified === 'true';
 
-
       // Handle date range: convert to ISO, adjust toDate to end of day for inclusive filtering
       let from: string | undefined = undefined;
       let to: string | undefined = undefined;
-
 
       if (fromDate) {
         const fromDateObj = new Date(fromDate);
@@ -83,13 +74,11 @@ const SchoolGrid: React.FC = () => {
         from = fromDateObj.toISOString();
       }
 
-
       if (toDate) {
         const toDateObj = new Date(toDate);
         toDateObj.setHours(23, 59, 59, 999); // End of the day
         to = toDateObj.toISOString();
       }
-
 
       const { schools, totalPages, total } = await getSchools(
         debouncedSearch,
@@ -112,11 +101,9 @@ const SchoolGrid: React.FC = () => {
     }
   };
 
-
   useEffect(() => {
     fetchSchools();
   }, [debouncedSearch, sortBy, sortOrder, page, filterVerified, fromDate, toDate]); // Added fromDate and toDate to dependencies
-
 
   const handleEditClick = (school: School) => setEditSchool(school);
   const handleViewClick = (school: School) => setSelectedSchool(school);
@@ -125,7 +112,6 @@ const SchoolGrid: React.FC = () => {
     fetchSchools();
   };
 
-
   const handleApprove = async (schoolId: string) => {
     try {
       setModalLoading(true);
@@ -133,14 +119,11 @@ const SchoolGrid: React.FC = () => {
       const school = schools.find((s) => s._id === schoolId);
       if (!school) return;
 
-
       await approveSchool(schoolId);
-
 
       setSchools((prev) =>
         prev.map((s) => (s._id === schoolId ? { ...s, isVerified: true } : s))
       );
-
 
       setSuccessMessage('School approved successfully!');
       setTimeout(() => {
@@ -155,7 +138,6 @@ const SchoolGrid: React.FC = () => {
     }
   };
 
-
   const handleBlockToggle = async (schoolId: string, isCurrentlyBlocked: boolean) => {
     const action = isCurrentlyBlocked ? 'unblock' : 'block';
     const result = await Swal.fire({
@@ -168,23 +150,19 @@ const SchoolGrid: React.FC = () => {
       confirmButtonText: `Yes, ${action} it!`
     });
 
-
     if (result.isConfirmed) {
       try {
         setModalLoading(true);
         setSuccessMessage(null);
         setError(null);
 
-
         await setSchoolBlockStatus(schoolId, !isCurrentlyBlocked);
-
 
         setSchools((prev) =>
           prev.map((s) =>
             s._id === schoolId ? { ...s, isBlocked: !isCurrentlyBlocked } : s
           )
         );
-
 
         setSuccessMessage(
           !isCurrentlyBlocked
@@ -209,11 +187,9 @@ const SchoolGrid: React.FC = () => {
     }
   };
 
-
   const getSortIcon = () => {
     return sortOrder === 'asc' ? <SortAsc className="w-4 h-4" /> : <SortDesc className="w-4 h-4" />;
   };
-
 
   const getStatusBadge = (isVerified: boolean, isBlocked: boolean) => {
     if (isBlocked) {
@@ -237,23 +213,19 @@ const SchoolGrid: React.FC = () => {
     );
   };
 
-
   const renderPagination = () => {
     const pages = [];
     const maxVisiblePages = 7;
     let startPage = Math.max(1, page - Math.floor(maxVisiblePages / 2));
     let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
 
-
     if (endPage - startPage + 1 < maxVisiblePages) {
       startPage = Math.max(1, endPage - maxVisiblePages + 1);
     }
 
-
     for (let i = startPage; i <= endPage; i++) {
       pages.push(i);
     }
-
 
     return (
       <div className="flex items-center justify-between px-4 py-3 bg-gray-50 border-t border-gray-200 sm:px-6">
@@ -319,7 +291,6 @@ const SchoolGrid: React.FC = () => {
     );
   };
 
-
   return (
     <div className="space-y-6">
       {/* Header with Stats */}
@@ -349,92 +320,99 @@ const SchoolGrid: React.FC = () => {
           </div>
         </div>
 
-
         {/* Search and Filters */}
-        <div className="flex flex-col space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0 lg:gap-4">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <input
-              type="text"
-              placeholder="Search schools by name, address, or email..."
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setPage(1);
-              }}
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-          
-          <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:gap-3 sm:space-y-0 sm:flex-wrap lg:flex-nowrap">
-            <div className="flex items-center gap-2">
-              <Filter className="w-4 h-4 text-gray-500" />
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full sm:w-auto"
-              >
-                <option value="createdAt">Date Created</option>
-                <option value="name">School Name</option>
-                <option value="experience">Experience</option>
-                <option value="isVerified">Verification Status</option>
-              </select>
-            </div>
-            
-            {/* New: Verification Status Filter */}
-            <div className="flex items-center gap-2">
-              <Filter className="w-4 h-4 text-gray-500" />
-              <select
-                value={filterVerified}
-                onChange={(e) => {
-                  setFilterVerified(e.target.value as 'all' | 'true' | 'false');
-                  setPage(1); // Reset to first page on filter change
-                }}
-                className="border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full sm:w-auto"
-              >
-                <option value="all">All Statuses</option>
-                <option value="true">Verified</option>
-                <option value="false">Pending</option>
-              </select>
-            </div>
-            
-            {/* New: Date Range Filter */}
-            <div className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:gap-2 sm:space-y-0">
-              <Calendar className="w-4 h-4 text-gray-500 hidden sm:block" />
-              <input
-                type="date"
-                value={fromDate}
-                onChange={(e) => {
-                  setFromDate(e.target.value);
-                  setPage(1);
-                }}
-                className="border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full sm:w-auto"
-                placeholder="From Date"
-              />
-              <span className="text-gray-500 hidden sm:block">to</span>
-              <input
-                type="date"
-                value={toDate}
-                onChange={(e) => {
-                  setToDate(e.target.value);
-                  setPage(1);
-                }}
-                className="border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full sm:w-auto"
-                placeholder="To Date"
-              />
-            </div>
-            
-            <button
-              onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-              className="flex items-center justify-center gap-2 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors w-full sm:w-auto"
-            >
-              {getSortIcon()}
-              <span className="text-sm">{sortOrder === 'asc' ? 'Ascending' : 'Descending'}</span>
-            </button>
-          </div>
-        </div>
-      </div>
+{/* Search and Filters */}
+<div className="flex flex-col space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0 lg:gap-4">
+  {/* Search Input */}
+  <div className="relative w-full lg:max-w-md">
+    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+    <input
+      type="text"
+      placeholder="Search schools by name, address, or email..."
+      value={search}
+      onChange={(e) => {
+        setSearch(e.target.value);
+        setPage(1);
+      }}
+      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+    />
+  </div>
 
+  {/* Filters & Sort Options */}
+  <div className="flex flex-wrap gap-3 sm:gap-4 justify-center lg:justify-end items-center">
+    {/* Sort By */}
+    <div className="flex items-center gap-2 w-full sm:w-auto">
+      <Filter className="w-4 h-4 text-gray-500" />
+      <select
+        value={sortBy}
+        onChange={(e) => setSortBy(e.target.value)}
+        className="border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full sm:w-auto"
+      >
+        <option value="createdAt">Date Created</option>
+        <option value="name">School Name</option>
+        <option value="experience">Experience</option>
+        <option value="isVerified">Verification Status</option>
+      </select>
+    </div>
+
+    {/* Verification Filter */}
+    <div className="flex items-center gap-2 w-full sm:w-auto">
+      <Filter className="w-4 h-4 text-gray-500" />
+      <select
+        value={filterVerified}
+        onChange={(e) => {
+          setFilterVerified(e.target.value as 'all' | 'true' | 'false');
+          setPage(1);
+        }}
+        className="border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full sm:w-auto"
+      >
+        <option value="all">All Statuses</option>
+        <option value="true">Verified</option>
+        <option value="false">Pending</option>
+      </select>
+    </div>
+
+    {/* Date Range */}
+    <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto">
+      <div className="flex items-center gap-2 w-full sm:w-auto">
+        <Calendar className="w-4 h-4 text-gray-500" />
+        <input
+          type="date"
+          value={fromDate}
+          onChange={(e) => {
+            setFromDate(e.target.value);
+            setPage(1);
+          }}
+          className="border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full sm:w-auto"
+          placeholder="From Date"
+        />
+      </div>
+      <div className="flex items-center gap-2 w-full sm:w-auto">
+        <input
+          type="date"
+          value={toDate}
+          onChange={(e) => {
+            setToDate(e.target.value);
+            setPage(1);
+          }}
+          className="border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full sm:w-auto"
+          placeholder="To Date"
+        />
+      </div>
+    </div>
+
+    {/* Sort Order Toggle */}
+    <button
+      onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+      className="flex items-center justify-center gap-2 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors w-full sm:w-auto"
+    >
+      {getSortIcon()}
+      <span className="text-sm">{sortOrder === 'asc' ? 'Ascending' : 'Descending'}</span>
+    </button>
+  </div>
+</div>
+
+      </div>
 
       {/* School Grid */}
       <div className="bg-white rounded-lg border border-gray-200">
@@ -541,7 +519,6 @@ const SchoolGrid: React.FC = () => {
         )}
       </div>
 
-
       {/* View Modal */}
       <Transition appear show={!!selectedSchool} as={Fragment}>
         <Dialog
@@ -582,7 +559,6 @@ const SchoolGrid: React.FC = () => {
                       </div>
                     </div>
 
-
                     <div className="p-4 sm:p-8">
                       {successMessage && (
                         <div className="mb-6 p-4 bg-green-100 border border-green-200 text-green-700 rounded-lg">
@@ -601,7 +577,6 @@ const SchoolGrid: React.FC = () => {
                           </div>
                         </div>
                       )}
-
 
                       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
                         <div className="lg:col-span-2 space-y-6">
@@ -691,9 +666,9 @@ const SchoolGrid: React.FC = () => {
                         {!selectedSchool.isVerified && (
                           <button
                             onClick={() => handleApprove(selectedSchool._id)}
-                            disabled={modalLoading || (!selectedSchool.isVerified && selectedSchool.isBlocked)}
+                            disabled={modalLoading}
                             className={`flex items-center justify-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg font-medium transition-colors ${
-                              modalLoading || (!selectedSchool.isVerified && selectedSchool.isBlocked) ? 'opacity-50 cursor-not-allowed' : 'hover:bg-green-700'
+                              modalLoading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-green-700'
                             }`}
                           >
                             <CheckCircle className="w-5 h-5" />
@@ -739,7 +714,6 @@ const SchoolGrid: React.FC = () => {
           </div>
         </Dialog>
       </Transition>
-
 
       {/* Edit Modal */}
       <Transition appear show={!!editSchool} as={Fragment}>
@@ -795,6 +769,5 @@ const SchoolGrid: React.FC = () => {
     </div>
   );
 };
-
 
 export default React.memo(SchoolGrid);

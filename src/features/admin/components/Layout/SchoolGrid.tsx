@@ -26,7 +26,9 @@ import type { School } from '../../../school/types/School';
 import { getSchools, approveSchool, setSchoolBlockStatus } from '../../../school/api/school.api';
 import Swal from 'sweetalert2';
 
+
 const EditSchoolForm = lazy(() => import('../../../school/components/UI/EditSchoolForm'));
+
 
 const SchoolGrid: React.FC = () => {
   const [schools, setSchools] = useState<School[] | any[]>([]);
@@ -37,6 +39,7 @@ const SchoolGrid: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
+
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [sortBy, setSortBy] = useState('createdAt');
@@ -46,17 +49,21 @@ const SchoolGrid: React.FC = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [totalSchools, setTotalSchools] = useState(0);
 
+
   // New state for verification filter: 'all' (undefined in API), 'true', or 'false'
   const [filterVerified, setFilterVerified] = useState<'all' | 'true' | 'false'>('all');
+
 
   // New states for date range filter (renamed to match backend param names)
   const [fromDate, setFromDate] = useState<string>('');
   const [toDate, setToDate] = useState<string>('');
 
+
   useEffect(() => {
     const handler = setTimeout(() => setDebouncedSearch(search), 400);
     return () => clearTimeout(handler);
   }, [search]);
+
 
   const fetchSchools = async () => {
     setLoading(true);
@@ -64,17 +71,25 @@ const SchoolGrid: React.FC = () => {
       // Pass verified as boolean or undefined based on filter
       const verified = filterVerified === 'all' ? undefined : filterVerified === 'true';
 
+
       // Handle date range: convert to ISO, adjust toDate to end of day for inclusive filtering
-      let from = fromDate ? new Date(fromDate).toISOString() : undefined;
-      let to = toDate ? new Date(toDate).toISOString() : undefined;
+      let from: string | undefined = undefined;
+      let to: string | undefined = undefined;
 
-      if (from) {
-        from = new Date(fromDate).toISOString();
+
+      if (fromDate) {
+        const fromDateObj = new Date(fromDate);
+        fromDateObj.setHours(0, 0, 0, 0); // Start of the day
+        from = fromDateObj.toISOString();
       }
 
-      if (to) {
-        to = new Date(toDate).toISOString();
+
+      if (toDate) {
+        const toDateObj = new Date(toDate);
+        toDateObj.setHours(23, 59, 59, 999); // End of the day
+        to = toDateObj.toISOString();
       }
+
 
       const { schools, totalPages, total } = await getSchools(
         debouncedSearch,
@@ -97,9 +112,11 @@ const SchoolGrid: React.FC = () => {
     }
   };
 
+
   useEffect(() => {
     fetchSchools();
   }, [debouncedSearch, sortBy, sortOrder, page, filterVerified, fromDate, toDate]); // Added fromDate and toDate to dependencies
+
 
   const handleEditClick = (school: School) => setEditSchool(school);
   const handleViewClick = (school: School) => setSelectedSchool(school);
@@ -108,6 +125,7 @@ const SchoolGrid: React.FC = () => {
     fetchSchools();
   };
 
+
   const handleApprove = async (schoolId: string) => {
     try {
       setModalLoading(true);
@@ -115,11 +133,14 @@ const SchoolGrid: React.FC = () => {
       const school = schools.find((s) => s._id === schoolId);
       if (!school) return;
 
+
       await approveSchool(schoolId);
+
 
       setSchools((prev) =>
         prev.map((s) => (s._id === schoolId ? { ...s, isVerified: true } : s))
       );
+
 
       setSuccessMessage('School approved successfully!');
       setTimeout(() => {
@@ -134,6 +155,7 @@ const SchoolGrid: React.FC = () => {
     }
   };
 
+
   const handleBlockToggle = async (schoolId: string, isCurrentlyBlocked: boolean) => {
     const action = isCurrentlyBlocked ? 'unblock' : 'block';
     const result = await Swal.fire({
@@ -146,19 +168,23 @@ const SchoolGrid: React.FC = () => {
       confirmButtonText: `Yes, ${action} it!`
     });
 
+
     if (result.isConfirmed) {
       try {
         setModalLoading(true);
         setSuccessMessage(null);
         setError(null);
 
+
         await setSchoolBlockStatus(schoolId, !isCurrentlyBlocked);
+
 
         setSchools((prev) =>
           prev.map((s) =>
             s._id === schoolId ? { ...s, isBlocked: !isCurrentlyBlocked } : s
           )
         );
+
 
         setSuccessMessage(
           !isCurrentlyBlocked
@@ -183,9 +209,11 @@ const SchoolGrid: React.FC = () => {
     }
   };
 
+
   const getSortIcon = () => {
     return sortOrder === 'asc' ? <SortAsc className="w-4 h-4" /> : <SortDesc className="w-4 h-4" />;
   };
+
 
   const getStatusBadge = (isVerified: boolean, isBlocked: boolean) => {
     if (isBlocked) {
@@ -209,19 +237,23 @@ const SchoolGrid: React.FC = () => {
     );
   };
 
+
   const renderPagination = () => {
     const pages = [];
     const maxVisiblePages = 7;
     let startPage = Math.max(1, page - Math.floor(maxVisiblePages / 2));
     let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
 
+
     if (endPage - startPage + 1 < maxVisiblePages) {
       startPage = Math.max(1, endPage - maxVisiblePages + 1);
     }
 
+
     for (let i = startPage; i <= endPage; i++) {
       pages.push(i);
     }
+
 
     return (
       <div className="flex items-center justify-between px-4 py-3 bg-gray-50 border-t border-gray-200 sm:px-6">
@@ -287,6 +319,7 @@ const SchoolGrid: React.FC = () => {
     );
   };
 
+
   return (
     <div className="space-y-6">
       {/* Header with Stats */}
@@ -315,6 +348,7 @@ const SchoolGrid: React.FC = () => {
             </div>
           </div>
         </div>
+
 
         {/* Search and Filters */}
         <div className="flex flex-col space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0 lg:gap-4">
@@ -401,6 +435,7 @@ const SchoolGrid: React.FC = () => {
         </div>
       </div>
 
+
       {/* School Grid */}
       <div className="bg-white rounded-lg border border-gray-200">
         {loading ? (
@@ -470,38 +505,20 @@ const SchoolGrid: React.FC = () => {
                         <span className="truncate">{school.email}</span>
                       </div>
                       
-                      <div className="grid grid-cols-3 gap-3 pt-3">
+                      <div className="grid grid-cols-2 gap-3 pt-3">
                         <button
                           onClick={() => handleViewClick(school)}
-                          className="flex items-center justify-center gap-2 bg-blue-600 text-white py-2 px-2 rounded-lg hover:bg-blue-700 transition-all duration-200 text-xs font-medium shadow-sm hover:shadow-md"
+                          className="flex items-center justify-center gap-2 bg-blue-600 text-white py-2.5 px-4 rounded-lg hover:bg-blue-700 transition-all duration-200 text-sm font-medium shadow-sm hover:shadow-md"
                         >
                           <Eye className="w-4 h-4" />
                           View
                         </button>
                         <button
                           onClick={() => handleEditClick(school)}
-                          className="flex items-center justify-center gap-2 bg-gray-600 text-white py-2 px-2 rounded-lg hover:bg-gray-700 transition-all duration-200 text-xs font-medium shadow-sm hover:shadow-md"
+                          className="flex items-center justify-center gap-2 bg-gray-600 text-white py-2.5 px-4 rounded-lg hover:bg-gray-700 transition-all duration-200 text-sm font-medium shadow-sm hover:shadow-md"
                         >
                           <Edit3 className="w-4 h-4" />
                           Edit
-                        </button>
-                        <button
-                          onClick={() => handleBlockToggle(school._id, school.isBlocked || false)}
-                          className={`flex items-center justify-center gap-2 py-2 px-2 rounded-lg transition-all duration-200 text-xs font-medium shadow-sm hover:shadow-md ${
-                            school.isBlocked ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-red-600 text-white hover:bg-red-700'
-                          }`}
-                        >
-                          {school.isBlocked ? (
-                            <>
-                              <CheckCircle className="w-4 h-4" />
-                              Unblock
-                            </>
-                          ) : (
-                            <>
-                              <XCircle className="w-4 h-4" />
-                              Block
-                            </>
-                          )}
                         </button>
                       </div>
                     </div>
@@ -523,6 +540,7 @@ const SchoolGrid: React.FC = () => {
           </>
         )}
       </div>
+
 
       {/* View Modal */}
       <Transition appear show={!!selectedSchool} as={Fragment}>
@@ -564,6 +582,7 @@ const SchoolGrid: React.FC = () => {
                       </div>
                     </div>
 
+
                     <div className="p-4 sm:p-8">
                       {successMessage && (
                         <div className="mb-6 p-4 bg-green-100 border border-green-200 text-green-700 rounded-lg">
@@ -582,6 +601,7 @@ const SchoolGrid: React.FC = () => {
                           </div>
                         </div>
                       )}
+
 
                       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
                         <div className="lg:col-span-2 space-y-6">
@@ -671,9 +691,9 @@ const SchoolGrid: React.FC = () => {
                         {!selectedSchool.isVerified && (
                           <button
                             onClick={() => handleApprove(selectedSchool._id)}
-                            disabled={modalLoading}
+                            disabled={modalLoading || (!selectedSchool.isVerified && selectedSchool.isBlocked)}
                             className={`flex items-center justify-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg font-medium transition-colors ${
-                              modalLoading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-green-700'
+                              modalLoading || (!selectedSchool.isVerified && selectedSchool.isBlocked) ? 'opacity-50 cursor-not-allowed' : 'hover:bg-green-700'
                             }`}
                           >
                             <CheckCircle className="w-5 h-5" />
@@ -719,6 +739,7 @@ const SchoolGrid: React.FC = () => {
           </div>
         </Dialog>
       </Transition>
+
 
       {/* Edit Modal */}
       <Transition appear show={!!editSchool} as={Fragment}>
@@ -774,5 +795,6 @@ const SchoolGrid: React.FC = () => {
     </div>
   );
 };
+
 
 export default React.memo(SchoolGrid);

@@ -113,3 +113,7 @@ export const uploadToCloudinary = async (file: File): Promise<string> => {
   return response.data.secure_url;
 };
 
+export const setSchoolBlockStatus = async (schoolId: string, isBlocked: boolean): Promise<void> => {
+  // Convert boolean to string to avoid Axios ignoring 'false'
+  await schoolAxios.put(`/schools/${schoolId}/block-status`, { isBlocked });
+};

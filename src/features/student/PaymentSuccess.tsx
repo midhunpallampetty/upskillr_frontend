@@ -85,8 +85,8 @@ const PaymentSuccess = () => {
     <div className="min-h-screen flex items-center justify-center">
       <div className="text-green-600 text-xl font-semibold">
         🎉 Payment Successful! You're enrolled.
-        <p onClick={() => navigate(-5)} className="text-blue-600 underline ml-2">
-          Go to Courses
+        <p onClick={() => navigate('/studenthome')} className="text-blue-600 underline ml-2">
+          Go to Home
         </p>
       </div>
     </div>

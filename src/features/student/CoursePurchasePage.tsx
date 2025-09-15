@@ -23,7 +23,7 @@ import {
 
 // Import helpers
 import { fetchCourseData, initiateCheckout } from './api/course.api';
-import { checkEligibility } from './api/exam.api';
+import { checkEligibility, fetchQuestions } from './api/exam.api';
 
 // ⚠️ Use .env.local to store your public key securely
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_...');
@@ -33,6 +33,7 @@ const CoursePaymentPage = () => {
   const navigate = useNavigate();
   const [course, setCourse] = useState(null);
   const [eligibility, setEligibility] = useState(null);
+  const [examExists, setExamExists] = useState(false);
   const [loading, setLoading] = useState(false);
   const [fetchLoading, setFetchLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -50,22 +51,37 @@ const CoursePaymentPage = () => {
         const response = await fetchCourseData(schoolName, courseId);
         setCourse(response);
 
+        // Check if preliminary exam is required
         if (response.isPreliminaryRequired) {
-          const studentStr = localStorage.getItem('student');
-          const studentObj = studentStr ? JSON.parse(studentStr) : null;
-          const studentId = studentObj?._id;
+          // First check if exam actually exists by trying to fetch questions
+          try {
+            await fetchQuestions(courseId, schoolName);
+            setExamExists(true);
 
-          if (!studentId) {
-            throw new Error('Student ID not found in localStorage.');
-          }
+            // If exam exists, then check eligibility
+            const studentStr = localStorage.getItem('student');
+            const studentObj = studentStr ? JSON.parse(studentStr) : null;
+            const studentId = studentObj?._id;
 
-          // Use eligibility helper
-          const eligResponse = await checkEligibility(studentId, courseId, 'final');
+            if (!studentId) {
+              throw new Error('Student ID not found in localStorage.');
+            }
 
-          if (eligResponse.success) {
-            setEligibility(eligResponse.data);
-          } else {
-            throw new Error('Eligibility check failed.');
+            const eligResponse = await checkEligibility(studentId, courseId, 'final');
+
+            if (eligResponse.success) {
+              setEligibility(eligResponse.data);
+            } else {
+              throw new Error('Eligibility check failed.');
+            }
+          } catch (examError) {
+            // If exam doesn't exist (500 error), set examExists to false
+            if (examError.response && examError.response.status === 500) {
+              setExamExists(false);
+              console.log('No exam available for this course, proceeding directly to payment');
+            } else {
+              throw examError;
+            }
           }
         }
       } catch (err) {
@@ -105,8 +121,9 @@ const CoursePaymentPage = () => {
       return;
     }
 
-    if (course.isPreliminaryRequired === true) {
-      if (eligibility.eligible) {
+    // Check if preliminary exam is required AND exam exists
+    if (course.isPreliminaryRequired === true && examExists) {
+      if (eligibility?.eligible) {
         Swal.fire({
           title: 'Preliminary Exam Required',
           text: 'You need to pass an exam before purchasing this course.',
@@ -119,7 +136,7 @@ const CoursePaymentPage = () => {
           }
         });
         return;
-      } else if (eligibility.reason === 'lockout') {
+      } else if (eligibility?.reason === 'lockout') {
         Swal.fire({
           title: 'Enrollment Locked',
           text: `You have exceeded the attempt limit. Please try again in ${eligibility.daysRemaining} days.`,
@@ -129,10 +146,14 @@ const CoursePaymentPage = () => {
         });
         return;
       }
-      // If already_passed, proceed to payment
+      // If eligibility.reason === 'already_passed', proceed to payment
     }
+    
+    // If no exam exists OR exam is not required OR student already passed, proceed to payment
+    proceedToPayment();
+  };
 
-    // ✅ Proceed to payment
+  const proceedToPayment = async () => {
     setLoading(true);
     try {
       const stripe = await stripePromise;
@@ -161,7 +182,6 @@ const CoursePaymentPage = () => {
 
       // Use checkout helper
       const response = await initiateCheckout(schoolName, courseId);
-
       const { url } = response;
       window.location.href = url;
     } catch (error) {
@@ -193,6 +213,27 @@ const CoursePaymentPage = () => {
       </div>
     );
   }
+
+  // Determine button text and state
+  const getButtonText = () => {
+    if (loading) return 'Processing...';
+    
+    if (course.isPreliminaryRequired && examExists) {
+      if (eligibility?.eligible) {
+        return 'Take Exam First';
+      } else if (eligibility?.reason === 'lockout') {
+        return 'Enrollment Locked';
+      } else if (eligibility?.reason === 'already_passed') {
+        return 'Enroll Now';
+      }
+    }
+    
+    return 'Enroll Now';
+  };
+
+  const isButtonDisabled = () => {
+    return loading || (course.isPreliminaryRequired && examExists && eligibility?.reason === 'lockout');
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
@@ -286,6 +327,34 @@ const CoursePaymentPage = () => {
               </div>
             </div>
 
+            {/* Exam Status Information */}
+            {course.isPreliminaryRequired && (
+              <div className="bg-white rounded-2xl shadow-lg p-8">
+                <h3 className="text-2xl font-bold text-gray-900 mb-6">Enrollment Requirements</h3>
+                <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-4">
+                  <div className="flex">
+                    <BookOpen className="w-5 h-5 text-blue-400 mt-0.5 mr-3" />
+                    <div>
+                      <h4 className="text-blue-800 font-semibold">Preliminary Assessment</h4>
+                      <p className="text-blue-700 mt-1">
+                        {!examExists ? (
+                          'No preliminary exam available. You can enroll directly.'
+                        ) : eligibility?.reason === 'already_passed' ? (
+                          'Great! You have already passed the preliminary exam. You can now enroll in this course.'
+                        ) : eligibility?.eligible ? (
+                          'A preliminary exam is required before enrollment. You are eligible to take the exam.'
+                        ) : eligibility?.reason === 'lockout' ? (
+                          `You have exceeded the attempt limit. Please try again in ${eligibility.daysRemaining} days.`
+                        ) : (
+                          'Checking exam eligibility...'
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Real-World Projects */}
             <div className="bg-white rounded-2xl shadow-lg p-8">
               <h3 className="text-2xl font-bold text-gray-900 mb-6">Real-World Projects</h3>
@@ -309,7 +378,7 @@ const CoursePaymentPage = () => {
                 </div>
                 <div>
                   <span className="font-medium text-gray-900">Preliminary Required: </span>
-                  {course.isPreliminaryRequired ? 'Yes' : 'No'}
+                  {course.isPreliminaryRequired ? (examExists ? 'Yes (Exam Available)' : 'Yes (No Exam)') : 'No'}
                 </div>
                 <div>
                   <span className="font-medium text-gray-900">Deleted: </span>
@@ -348,9 +417,9 @@ const CoursePaymentPage = () => {
               {/* Purchase Button */}
               <button
                 onClick={handlePayment}
-                disabled={loading || (course.isPreliminaryRequired && eligibility?.reason === 'lockout')}
+                disabled={isButtonDisabled()}
                 className={`w-full py-4 rounded-xl text-white font-bold text-lg transition-all duration-200 transform ${
-                  loading || (course.isPreliminaryRequired && eligibility?.reason === 'lockout')
+                  isButtonDisabled()
                     ? 'bg-gray-500 cursor-not-allowed' 
                     : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 hover:scale-105 shadow-lg hover:shadow-xl'
                 }`}
@@ -361,11 +430,11 @@ const CoursePaymentPage = () => {
                     <span>Processing...</span>
                   </div>
                 ) : (
-                  'Enroll Now'
+                  getButtonText()
                 )}
               </button>
 
-              {course.isPreliminaryRequired && eligibility?.reason === 'lockout' && (
+              {course.isPreliminaryRequired && examExists && eligibility?.reason === 'lockout' && (
                 <p className="text-center text-sm text-red-600 mt-3">
                   Enrollment locked. Please try again in {eligibility.daysRemaining} days.
                 </p>

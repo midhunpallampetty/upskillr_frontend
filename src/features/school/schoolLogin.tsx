@@ -8,39 +8,16 @@ import {
   initialLoginState,
 } from './reducers/schoolLogin.reducer';
 
-// Utility function to extract subdomain from current URL
-const getSubdomain = (): string => {
-  try {
-    const hostname = window.location.hostname; // e.g., "schoolname.eduvia.space"
-    const parts = hostname.split('.');
-    if (
-      parts.length >= 3 &&
-      parts[parts.length - 2] === 'eduvia' &&
-      parts[parts.length - 1] === 'space'
-    ) {
-      return parts.slice(0, -2).join('.');
-    }
-    return '';
-  } catch (error) {
-    console.error('Error extracting subdomain:', error);
-    return '';
-  }
-};
-
 const SchoolLogin = () => {
   const [state, dispatch] = useReducer(loginReducer, initialLoginState);
   const navigate = useNavigate();
   const location = useLocation();
-  const currentSubdomain = getSubdomain();
 
   useNavigateToSchool();
 
   useEffect(() => {
     if (location.state?.fromRegistration) {
-      dispatch({
-        type: 'SET_MESSAGE',
-        payload: '✅ Registration completed successfully! Please login.',
-      });
+      dispatch({ type: 'SET_MESSAGE', payload: '✅ Registration completed successfully! Please login.' });
     }
   }, [location.state]);
 
@@ -48,11 +25,9 @@ const SchoolLogin = () => {
     e.preventDefault();
     try {
       const data = await loginSchool(state.email, state.password);
-      console.log(data, 'school');
-
+      console.log(data,'school')
       const { accessToken, refreshToken, dbname } = data;
-      const expiresIn15Minutes = new Date(new Date().getTime() + 15 * 60 * 1000);
-
+      const expiresIn15Minutes = new Date(new Date().getTime() + 15 * 60 * 1000); 
       Cookies.set('accessToken', accessToken, {
         expires: expiresIn15Minutes,
         secure: true,
@@ -80,7 +55,6 @@ const SchoolLogin = () => {
       localStorage.setItem('accessToken', JSON.stringify(accessToken));
       dispatch({ type: 'SET_MESSAGE', payload: `✅ Welcome ${data.school.name}` });
 
-      // Handle subdomain navigation
       if (!data.school.subDomain || data.school.subDomain === 'null') {
         navigate('/schoolStatus');
         return;
@@ -94,12 +68,7 @@ const SchoolLogin = () => {
         slug = data.school.subDomain;
       }
 
-      if (currentSubdomain && currentSubdomain !== slug) {
-        console.warn('Subdomain mismatch! Redirecting...');
-        navigate(`/school/${slug}`);
-      } else {
-        navigate(`/school/${slug}`);
-      }
+      navigate(`/school/${slug}`);
     } catch (err) {
       dispatch({
         type: 'SET_MESSAGE',
@@ -150,9 +119,7 @@ const SchoolLogin = () => {
             <button
               type="button"
               className="text-sm text-teal-600 hover:text-teal-700 font-medium transition-colors"
-              onClick={() =>
-                navigate(currentSubdomain ? `/${currentSubdomain}/forgot-password` : '/school/forgot-password')
-              }
+              onClick={() => navigate('/school/forgot-password')}
             >
               Forgot Password?
             </button>
@@ -169,9 +136,7 @@ const SchoolLogin = () => {
             Don’t have an account?{' '}
             <button
               type="button"
-              onClick={() =>
-                navigate(currentSubdomain ? `/${currentSubdomain}/register` : '/schoolRegister')
-              }
+              onClick={() => navigate('/schoolRegister')}
               className="text-teal-600 hover:text-teal-700 font-medium transition-colors"
             >
               Register here

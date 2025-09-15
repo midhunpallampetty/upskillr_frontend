@@ -54,7 +54,7 @@ const StudentLogin = () => {
       localStorage.setItem('student', JSON.stringify(student));
 
       toast.success(`🎉 Welcome ${student.fullName}`, { position: 'top-right' });
-      navigate('https://www.eduvia.space/studenthome');
+window.location.href = 'https://www.eduvia.space/studenthome';
     } catch (err: any) {
       const msg = err?.msg || err.message || 'Login failed';
       if (msg.toLowerCase().includes('school')) {

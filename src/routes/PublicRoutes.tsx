@@ -42,7 +42,6 @@ interface PublicRoutesProps {
 }
 const PublicRoutes: React.FC<PublicRoutesProps> = ({ subdomain }) => (
   <Routes>
-    {!subdomain && <Route path="/" element={<LandingPage />} />}
         <Route path="/adminLogin" element={<AdminAuth />} />
     <Route path="/school/:schoolname/profile" element={<SchoolProfilePage />} />
     <Route path='/student/profile'element={<StudentProfilePage/>}/>

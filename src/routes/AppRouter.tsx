@@ -10,10 +10,13 @@ interface Props {
 const AppRouter: React.FC<Props> = ({ subdomain }) => {
   return (
     <Routes>
-      {/* Show MarketingPage only for subdomain root path */}
-      {subdomain && <Route path="/" element={<MarketingPage />} />}
+      {/* Specific root route - must come BEFORE wildcard */}
+      <Route 
+        path="/" 
+        element={subdomain ? <MarketingPage /> : <PublicRoutes subdomain={subdomain} />} 
+      />
       
-      {/* Let PublicRoutes handle all other paths */}
+      {/* All other paths go to PublicRoutes */}
       <Route path="/*" element={<PublicRoutes subdomain={subdomain} />} />
     </Routes>
   );

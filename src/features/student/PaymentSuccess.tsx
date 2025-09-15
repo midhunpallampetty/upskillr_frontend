@@ -378,7 +378,7 @@ const PaymentSuccess = () => {
             </div>
 
             {/* Special Offer */}
-            <div className="bg-gradient-to-br from-yellow-400 to-orange-500 rounded-2xl shadow-lg p-6 text-white">
+            {/* <div className="bg-gradient-to-br from-yellow-400 to-orange-500 rounded-2xl shadow-lg p-6 text-white">
               <div className="flex items-center space-x-2 mb-3">
                 <Gift className="w-6 h-6" />
                 <h3 className="text-xl font-bold">Special Offer!</h3>
@@ -389,7 +389,7 @@ const PaymentSuccess = () => {
               <button className="bg-white text-orange-600 hover:bg-gray-100 px-4 py-2 rounded-lg font-semibold text-sm transition-colors">
                 Claim Discount
               </button>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

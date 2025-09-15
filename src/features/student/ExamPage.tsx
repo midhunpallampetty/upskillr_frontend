@@ -35,46 +35,45 @@ export function ExamPage() {
 
   const { timeRemaining, formatTime, stop } = useExamTimer(EXAM_DURATION, handleTimeUp);
 
-useEffect(() => {
-  const loadQuestions = async () => {
-    try {
-      setIsLoading(true);
-      const schoolName = Cookies.get('dbname');
-      if (!courseId || !schoolName) {
-        throw new Error('Missing courseId or schoolName');
-      }
-
-      const fetchedQuestions = await fetchQuestions(courseId, schoolName);
-      setQuestions(fetchedQuestions);
-    } catch (err) {
-      // If it's a 500 error indicating no exam, redirect immediately
-      if (err.response && err.response.status === 500) {
-        try {
-          const schoolName = Cookies.get('dbname');
-          if (!schoolName) {
-            throw new Error('Missing schoolName for payment initiation');
-          }
-          const paymentUrl = await initiatePayment(schoolName, courseId);
-          if (paymentUrl) {
-            window.location.href = paymentUrl;
-          } else {
-            setError('Payment initiation failed. Please try again later.');
-          }
-        } catch (error) {
-          console.error('Payment redirect error:', error);
-          setError('Payment setup failed. Please try again later.');
+  useEffect(() => {
+    const loadQuestions = async () => {
+      try {
+        setIsLoading(true);
+        const schoolName = Cookies.get('dbname');
+        if (!courseId || !schoolName) {
+          throw new Error('Missing courseId or schoolName');
         }
-      } else {
-        setError(err instanceof Error ? err.message : 'Failed to fetch questions');
+
+        const fetchedQuestions = await fetchQuestions(courseId, schoolName);
+        setQuestions(fetchedQuestions);
+      } catch (err) {
+        // If it's a 500 error indicating no exam, redirect immediately
+        if (err.response && err.response.status === 500) {
+          try {
+            const schoolName = Cookies.get('dbname');
+            if (!schoolName) {
+              throw new Error('Missing schoolName for payment initiation');
+            }
+            const paymentUrl = await initiatePayment(schoolName, courseId);
+            if (paymentUrl) {
+              window.location.href = paymentUrl;
+            } else {
+              setError('Payment initiation failed. Please try again later.');
+            }
+          } catch (error) {
+            console.error('Payment redirect error:', error);
+            setError('Payment setup failed. Please try again later.');
+          }
+        } else {
+          setError(err instanceof Error ? err.message : 'Failed to fetch questions');
+        }
+      } finally {
+        setIsLoading(false);
       }
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    };
 
-  loadQuestions();
-}, [courseId]);
-
+    loadQuestions();
+  }, [courseId]);
 
   // Check for pending submissions on mount
   useEffect(() => {
@@ -181,9 +180,29 @@ useEffect(() => {
       return; // Stop further processing if status submission fails
     }
 
-    // Handle pass/fail logic
+    // Handle pass/fail logic with SweetAlert2
     if (isPassed) {
-      alert(`🎉 Congratulations! You passed with ${score.percentage}%`);
+      // Success Alert with celebration
+      await Swal.fire({
+        title: '🎉 Congratulations!',
+        html: `<div style="text-align: center;">
+          <h3 style="color: #28a745; margin: 10px 0;">You Passed the Exam!</h3>
+          <p style="font-size: 18px; margin: 15px 0;">Score: <strong style="color: #28a745;">${score.percentage}%</strong></p>
+          <div style="background: linear-gradient(135deg, #28a745, #20c997); padding: 15px; border-radius: 10px; margin: 10px 0;">
+            <p style="color: white; margin: 5px 0;">✅ Correct Answers: ${score.correctAnswers}/${score.totalQuestions}</p>
+            <p style="color: white; margin: 5px 0;">📊 Marks Obtained: ${score.obtainedMarks}/${score.totalMarks}</p>
+          </div>
+        </div>`,
+        icon: 'success',
+        confirmButtonText: 'Proceed to Certificate',
+        confirmButtonColor: '#28a745',
+        allowOutsideClick: false,
+        customClass: {
+          popup: 'swal2-show',
+          title: 'swal2-title',
+          content: 'swal2-content'
+        }
+      });
 
       if (studentId) {
         localStorage.setItem(`examPassed-${courseId}-${studentId}`, 'true');
@@ -205,9 +224,30 @@ useEffect(() => {
         setError('Payment setup failed. Please try again later.');
       }
     } else {
-      alert(
-        `❌ Sorry, you failed with ${score.percentage}%\nCorrect: ${score.correctAnswers}/${score.totalQuestions}, Marks: ${score.obtainedMarks}/${score.totalMarks}`
-      );
+      // Failure Alert with detailed breakdown
+      await Swal.fire({
+        title: '❌ Exam Not Passed',
+        html: `<div style="text-align: center;">
+          <h3 style="color: #dc3545; margin: 10px 0;">Better luck next time!</h3>
+          <p style="font-size: 18px; margin: 15px 0;">Score: <strong style="color: #dc3545;">${score.percentage}%</strong></p>
+          <p style="color: #6c757d; margin: 10px 0;">Minimum required: <strong>40%</strong></p>
+          <div style="background: linear-gradient(135deg, #dc3545, #e74c3c); padding: 15px; border-radius: 10px; margin: 10px 0;">
+            <p style="color: white; margin: 5px 0;">✅ Correct Answers: ${score.correctAnswers}/${score.totalQuestions}</p>
+            <p style="color: white; margin: 5px 0;">❌ Wrong Answers: ${score.wrongAnswers}/${score.totalQuestions}</p>
+            <p style="color: white; margin: 5px 0;">📊 Marks: ${score.obtainedMarks}/${score.totalMarks}</p>
+          </div>
+          <p style="color: #6c757d; font-size: 14px; margin-top: 15px;">💡 Review the course material and try again!</p>
+        </div>`,
+        icon: 'error',
+        confirmButtonText: 'Try Again Later',
+        confirmButtonColor: '#dc3545',
+        allowOutsideClick: false,
+        customClass: {
+          popup: 'swal2-show',
+          title: 'swal2-title',
+          content: 'swal2-content'
+        }
+      });
     }
 
     setIsSubmitting(false);

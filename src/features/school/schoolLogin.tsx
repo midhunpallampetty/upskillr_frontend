@@ -31,12 +31,16 @@ const SchoolLogin = () => {
   const [state, dispatch] = useReducer(loginReducer, initialLoginState);
   const navigate = useNavigate();
   const location = useLocation();
+  const currentSubdomain = getSubdomain();
 
   useNavigateToSchool();
 
   useEffect(() => {
     if (location.state?.fromRegistration) {
-      dispatch({ type: 'SET_MESSAGE', payload: '✅ Registration completed successfully! Please login.' });
+      dispatch({
+        type: 'SET_MESSAGE',
+        payload: '✅ Registration completed successfully! Please login.',
+      });
     }
   }, [location.state]);
 
@@ -76,10 +80,7 @@ const SchoolLogin = () => {
       localStorage.setItem('accessToken', JSON.stringify(accessToken));
       dispatch({ type: 'SET_MESSAGE', payload: `✅ Welcome ${data.school.name}` });
 
-      // Extract current subdomain
-      const currentSubdomain = getSubdomain();
-
-      // If the school doesn't have a subdomain set, or it's 'null', redirect to status page
+      // Handle subdomain navigation
       if (!data.school.subDomain || data.school.subDomain === 'null') {
         navigate('/schoolStatus');
         return;
@@ -93,9 +94,8 @@ const SchoolLogin = () => {
         slug = data.school.subDomain;
       }
 
-      // Compare current subdomain and school's subdomain
       if (currentSubdomain && currentSubdomain !== slug) {
-        console.warn('Subdomain mismatch! Redirecting to correct school page...');
+        console.warn('Subdomain mismatch! Redirecting...');
         navigate(`/school/${slug}`);
       } else {
         navigate(`/school/${slug}`);
@@ -150,7 +150,9 @@ const SchoolLogin = () => {
             <button
               type="button"
               className="text-sm text-teal-600 hover:text-teal-700 font-medium transition-colors"
-              onClick={() => navigate('/school/forgot-password')}
+              onClick={() =>
+                navigate(currentSubdomain ? `/${currentSubdomain}/forgot-password` : '/school/forgot-password')
+              }
             >
               Forgot Password?
             </button>
@@ -167,7 +169,9 @@ const SchoolLogin = () => {
             Don’t have an account?{' '}
             <button
               type="button"
-              onClick={() => navigate('/schoolRegister')}
+              onClick={() =>
+                navigate(currentSubdomain ? `/${currentSubdomain}/register` : '/schoolRegister')
+              }
               className="text-teal-600 hover:text-teal-700 font-medium transition-colors"
             >
               Register here

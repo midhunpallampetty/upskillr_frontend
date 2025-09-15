@@ -3,15 +3,27 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-route
 import { getDynamicDomain, getSubdomain } from './utils/getSubdomain';
 import AppRouter from './routes/AppRouter';
 import MarketingPage from './features/school/MarketingPage';
-import StudentLogin from './features/student/studentLogin'; // Assuming this is the correct import
+import StudentLogin from './features/student/studentLogin';
+import StudentRegister from './features/student/studentRegister'; // Assuming correct import
 
 const SubdomainRoutes: React.FC<{ subdomain: string }> = ({ subdomain }) => {
   const location = useLocation();
 
-  // If path is /studentLogin, show StudentLogin component, else MarketingPage
-  if (location.pathname === "/studentLogin") {
-    return <StudentLogin />;
+  // List of exception paths where MarketingPage should not be shown
+  const exceptionPaths = ["/studentLogin", "/studentRegister"];
+
+  if (exceptionPaths.includes(location.pathname)) {
+    switch(location.pathname) {
+      case "/studentLogin":
+        return <StudentLogin />;
+      case "/studentRegister":
+        return <StudentRegister />;
+      default:
+        return null;
+    }
   }
+
+  // All other paths show MarketingPage
   return <MarketingPage />;
 };
 

@@ -35,55 +35,46 @@ export function ExamPage() {
 
   const { timeRemaining, formatTime, stop } = useExamTimer(EXAM_DURATION, handleTimeUp);
 
-  useEffect(() => {
-    const loadQuestions = async () => {
-      try {
-        setIsLoading(true);
-        const schoolName = Cookies.get('dbname');
-        if (!courseId || !schoolName) {
-          throw new Error('Missing courseId or schoolName');
-        }
-
-        const fetchedQuestions = await fetchQuestions(courseId, schoolName);
-        setQuestions(fetchedQuestions);
-      } catch (err) {
-        // Handle specific 500 error for no exam available
-        if (err.response && err.response.status === 500) {
-          // Show SweetAlert with dark theme
-          Swal.fire({
-            title: 'No Exam Available',
-            text: 'No exam available so you can continue next steps.',
-            icon: 'info',
-            theme: 'dark', // Dark theme
-            confirmButtonText: 'OK'
-          }).then(async () => {
-            // Redirect directly to payment URL after alert
-            try {
-              const schoolName = Cookies.get('dbname');
-              if (!schoolName) {
-                throw new Error('Missing schoolName for payment initiation');
-              }
-              const paymentUrl = await initiatePayment(schoolName, courseId);
-              if (paymentUrl) {
-                window.location.href = paymentUrl;
-              } else {
-                setError('Payment initiation failed. Please try again later.');
-              }
-            } catch (error) {
-              console.error('Payment redirect error:', error);
-              setError('Payment setup failed. Please try again later.');
-            }
-          });
-        } else {
-          setError(err instanceof Error ? err.message : 'Failed to fetch questions');
-        }
-      } finally {
-        setIsLoading(false);
+useEffect(() => {
+  const loadQuestions = async () => {
+    try {
+      setIsLoading(true);
+      const schoolName = Cookies.get('dbname');
+      if (!courseId || !schoolName) {
+        throw new Error('Missing courseId or schoolName');
       }
-    };
 
-    loadQuestions();
-  }, [courseId]);
+      const fetchedQuestions = await fetchQuestions(courseId, schoolName);
+      setQuestions(fetchedQuestions);
+    } catch (err) {
+      // If it's a 500 error indicating no exam, redirect immediately
+      if (err.response && err.response.status === 500) {
+        try {
+          const schoolName = Cookies.get('dbname');
+          if (!schoolName) {
+            throw new Error('Missing schoolName for payment initiation');
+          }
+          const paymentUrl = await initiatePayment(schoolName, courseId);
+          if (paymentUrl) {
+            window.location.href = paymentUrl;
+          } else {
+            setError('Payment initiation failed. Please try again later.');
+          }
+        } catch (error) {
+          console.error('Payment redirect error:', error);
+          setError('Payment setup failed. Please try again later.');
+        }
+      } else {
+        setError(err instanceof Error ? err.message : 'Failed to fetch questions');
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  loadQuestions();
+}, [courseId]);
+
 
   // Check for pending submissions on mount
   useEffect(() => {

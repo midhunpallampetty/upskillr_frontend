@@ -76,7 +76,7 @@ const PublicRoutes = () => (
     <Route path='/contact'element={<Contact/>}/>
     <Route path='/admin/test'element={<TestPage/>}/>
     
-    <Route path='/subdomainpage'element={<StudentLogin/>}/>
+    <Route path='/subdomainpage'element={<MarketingPage/>}/>
   </Routes>
 );
 

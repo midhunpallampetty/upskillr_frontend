@@ -1,4 +1,5 @@
-import React, { lazy } from 'react';
+// src/routing/PublicRoutes.tsx
+import React, { lazy, useEffect, useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import ResetPassword from '../features/school/ResetPassword';
 import ForgotPassword from '../features/school/ForgotPassword';
@@ -20,8 +21,8 @@ import ForumPage from '../features/shared/ForumPage';
 import About from '../features/shared/About';
 import Contact from '../features/shared/Contact';
 import MarketingPage from '../features/school/MarketingPage';
-import { HelmetProvider } from 'react-helmet-async';
 import TestPage from '../features/admin/TestPage';
+
 const LandingPage = lazy(() => import('../features/shared/Landing'));
 const AdminAuth = lazy(() => import('../features/admin/AdminAuth'));
 const SchoolRegister = lazy(() => import('../features/school/schoolRegister'));
@@ -38,46 +39,85 @@ const AddCoursePage = lazy(() => import('../features/course/AddCoursePage'));
 const VerifiedSchoolHome = lazy(() => import('../features/school/VerifiedSchoolHome'));
 const AddVideoToSectionWrapper = lazy(() => import('../features/school/components/UI/AddVideoToSectionWrapper'));
 
-const PublicRoutes = () => (
-  <Routes>
-    <Route path="/" element={<LandingPage />} />
-    <Route path="/adminLogin" element={<AdminAuth />} />
-    <Route path="/school/:schoolname/profile" element={<SchoolProfilePage />} />
-    <Route path='/student/profile'element={<StudentProfilePage/>}/>
-    <Route path="*" element={<NotFound />} />
-   <Route path="/schoolRegister" element={<SchoolRegister />} />
-    <Route path="/student/payment/:courseId" element={<CoursePurchasePage />} />
-    <Route path="/school/:schoolName/course/:courseId" element={<CourseDetailsPage />} />
-<Route path='/forum'element={<ForumPage/>}/>
-    <Route path="/schoolLogin" element={<SchoolLogin />} />
-    <Route path="/loginSelection" element={<LoginSelection />} />
-    <Route path="/signupSelection" element={<SignupSelection />} />
-    <Route path="/schoolStatus" element={<VerificationStatus />} />
-    <Route path="/studentLogin" element={<StudentLogin />} />
-    <Route path="/studentRegister" element={<StudentRegister />} />
-    <Route path="/dashboard" element={<AdminDashboard />} />
-   <Route path="/school/:schoolName/home" element={<CoursesPage />} />
-   <Route path="/studenthome" element={<StudentHomePage />} />
-    <Route path="/addCourse" element={<AddCoursePage />} />
-    <Route path="/school/:verifiedSchool" element={<VerifiedSchoolHome />} />
-    <Route path="/school/:verifiedSchool/addCourse" element={<AddCoursePage />} />
-    <Route path="/school/reset-password" element={<ResetPassword />} />
-    <Route path='/school/forgot-password'element={<ForgotPassword/>}/>
-    <Route path="/school/:verifiedSchool/section/:sectionId/add-video" element={<AddVideoToSectionWrapper />} />
-    <Route path='/student/reset-password'element={<ResetStudentPassword/>}/>
-    <Route path='/student/forgot-password'element={<ForgotStudentPassword/>}/>
-    <Route path="/student/payment-success" element={<PaymentSuccess />} />
-    <Route path='/student/payment-cancelled'element={<PaymentCancel/>}/>
-    <Route path='/student/purchased-courses'element={<PurchasedCourses/>}/>
-    <Route path='/student/course-page/:schoolName/:courseId'element={<CoursesShowPage/>}/>
-    <Route path='/school/:verifiedSchool/manage-exam'element={<ExamManager/>}/>
-    <Route path='/student/exam/take-exam' element={<ExamPage />} />
-    <Route path='/about'element={<About/>}/>
-    <Route path='/contact'element={<Contact/>}/>
-    <Route path='/admin/test'element={<TestPage/>}/>
+const PublicRoutes: React.FC = () => {
+  const [isSubdomain, setIsSubdomain] = useState(false);
+
+  useEffect(() => {
+    // Simple subdomain check
+    const hostname = window.location.hostname;
+    const parts = hostname.split('.');
     
-    <Route path='/subdomainpage'element={<MarketingPage/>}/>
-  </Routes>
-);
+    // Check if it's a subdomain of eduvia.space
+    const hasSubdomain = parts.length >= 3 && 
+                        parts[parts.length - 2] === 'eduvia' && 
+                        parts[parts.length - 1] === 'space' &&
+                        parts[0] !== 'www';
+    
+    setIsSubdomain(hasSubdomain);
+  }, []);
+
+  // Subdomain routes (schoolname.eduvia.space)
+  if (isSubdomain) {
+    return (
+      <Routes>
+        {/* Marketing page as home */}
+        <Route path="/" element={<MarketingPage />} />
+        
+        {/* School login on subdomain */}
+        <Route path="/schoolLogin" element={<SchoolLogin />} />
+        
+        {/* Student routes on subdomain */}
+        <Route path="/studentLogin" element={<StudentLogin />} />
+        <Route path="/studentRegister" element={<StudentRegister />} />
+        <Route path="/home" element={<CoursesPage />} />
+        <Route path="/studenthome" element={<StudentHomePage />} />
+        
+        {/* Course routes */}
+        <Route path="/course/:courseId" element={<CourseDetailsPage />} />
+        <Route path="/student/payment/:courseId" element={<CoursePurchasePage />} />
+        <Route path="/student/course-page/:courseId" element={<CoursesShowPage />} />
+        
+        {/* Other subdomain routes */}
+        <Route path="/forum" element={<ForumPage />} />
+        <Route path="/student/profile" element={<StudentProfilePage />} />
+        <Route path="/student/purchased-courses" element={<PurchasedCourses />} />
+        <Route path="/student/payment-success" element={<PaymentSuccess />} />
+        <Route path="/student/payment-cancelled" element={<PaymentCancel />} />
+        <Route path="/student/exam/take-exam" element={<ExamPage />} />
+        <Route path="/student/reset-password" element={<ResetStudentPassword />} />
+        <Route path="/student/forgot-password" element={<ForgotStudentPassword />} />
+        
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    );
+  }
+
+  // Main domain routes (eduvia.space)
+  return (
+    <Routes>
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/adminLogin" element={<AdminAuth />} />
+      <Route path="/school/:schoolname/profile" element={<SchoolProfilePage />} />
+      <Route path="/student/profile" element={<StudentProfilePage />} />
+      <Route path="/schoolRegister" element={<SchoolRegister />} />
+      <Route path="/loginSelection" element={<LoginSelection />} />
+      <Route path="/signupSelection" element={<SignupSelection />} />
+      <Route path="/schoolStatus" element={<VerificationStatus />} />
+      <Route path="/dashboard" element={<AdminDashboard />} />
+      <Route path="/school/:verifiedSchool" element={<VerifiedSchoolHome />} />
+      <Route path="/school/:verifiedSchool/addCourse" element={<AddCoursePage />} />
+      <Route path="/addCourse" element={<AddCoursePage />} />
+      <Route path="/school/reset-password" element={<ResetPassword />} />
+      <Route path="/school/forgot-password" element={<ForgotPassword />} />
+      <Route path="/school/:verifiedSchool/section/:sectionId/add-video" element={<AddVideoToSectionWrapper />} />
+      <Route path="/school/:verifiedSchool/manage-exam" element={<ExamManager />} />
+      <Route path="/about" element={<About />} />
+      <Route path="/contact" element={<Contact />} />
+      <Route path="/admin/test" element={<TestPage />} />
+      
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  );
+};
 
 export default PublicRoutes;

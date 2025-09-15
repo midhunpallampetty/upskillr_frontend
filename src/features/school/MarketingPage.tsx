@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { getSchoolBySubdomain } from './api/school.api'; // Adjust the import path to match your project structure (e.g., the api folder where this function exists)
 import { getCoursesBySchool } from './api/course.api'; // Assuming this is the import for the new API function; adjust path accordingly
-import { useNavigate } from 'react-router-dom';
 
 // Embedded utility function to extract subdomain
 const getSubdomain = (url: string = window.location.href): string => {
@@ -38,7 +37,6 @@ interface Course {
 }
 
 const MarketingPage: React.FC = () => {
-  
   const [courses, setCourses] = useState<Course[]>([]);
   const [schoolData, setSchoolData] = useState({
     id: '',
@@ -59,19 +57,7 @@ const MarketingPage: React.FC = () => {
 
   // New state for subdomain (computed once on mount)
   const [subdomain, setSubdomain] = useState<string>(getSubdomain());
-  const navigate = useNavigate(); // Using react-router navigation
 
-  useEffect(() => {
-    // Redirect if the pathname is /studentLogin
-    const pathname = window.location.pathname;
-    if (pathname.startsWith('/studentLogin')) {
-      // Option 1: Redirect to another URL
-      window.location.href = `https://${subdomain}.eduvia.space/studentLoginPage`; // or wherever the login page is hosted
-
-      // Option 2: If login component is in your app, you can navigate:
-      // navigate(`/${subdomain}/studentLoginPage`);
-    }
-  }, [subdomain, navigate]);
   useEffect(() => {
     if (subdomain) {
       const fetchSchoolData = async () => {

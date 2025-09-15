@@ -37,12 +37,11 @@ const StudentHomePage = lazy(() => import('../features/student/StudentHomePage')
 const AddCoursePage = lazy(() => import('../features/course/AddCoursePage'));
 const VerifiedSchoolHome = lazy(() => import('../features/school/VerifiedSchoolHome'));
 const AddVideoToSectionWrapper = lazy(() => import('../features/school/components/UI/AddVideoToSectionWrapper'));
-interface PublicRoutesProps {
-  subdomain?: string | null;
-}
-const PublicRoutes: React.FC<PublicRoutesProps> = ({ subdomain }) => (
+
+const PublicRoutes = () => (
   <Routes>
-        <Route path="/adminLogin" element={<AdminAuth />} />
+    <Route path="/" element={<LandingPage />} />
+    <Route path="/adminLogin" element={<AdminAuth />} />
     <Route path="/school/:schoolname/profile" element={<SchoolProfilePage />} />
     <Route path='/student/profile'element={<StudentProfilePage/>}/>
     <Route path="*" element={<NotFound />} />

@@ -8,6 +8,25 @@ import {
   initialLoginState,
 } from './reducers/schoolLogin.reducer';
 
+// Utility function to extract subdomain from current URL
+const getSubdomain = (): string => {
+  try {
+    const hostname = window.location.hostname; // e.g., "schoolname.eduvia.space"
+    const parts = hostname.split('.');
+    if (
+      parts.length >= 3 &&
+      parts[parts.length - 2] === 'eduvia' &&
+      parts[parts.length - 1] === 'space'
+    ) {
+      return parts.slice(0, -2).join('.');
+    }
+    return '';
+  } catch (error) {
+    console.error('Error extracting subdomain:', error);
+    return '';
+  }
+};
+
 const SchoolLogin = () => {
   const [state, dispatch] = useReducer(loginReducer, initialLoginState);
   const navigate = useNavigate();
@@ -25,9 +44,11 @@ const SchoolLogin = () => {
     e.preventDefault();
     try {
       const data = await loginSchool(state.email, state.password);
-      console.log(data,'school')
+      console.log(data, 'school');
+
       const { accessToken, refreshToken, dbname } = data;
-      const expiresIn15Minutes = new Date(new Date().getTime() + 15 * 60 * 1000); 
+      const expiresIn15Minutes = new Date(new Date().getTime() + 15 * 60 * 1000);
+
       Cookies.set('accessToken', accessToken, {
         expires: expiresIn15Minutes,
         secure: true,
@@ -55,6 +76,10 @@ const SchoolLogin = () => {
       localStorage.setItem('accessToken', JSON.stringify(accessToken));
       dispatch({ type: 'SET_MESSAGE', payload: `✅ Welcome ${data.school.name}` });
 
+      // Extract current subdomain
+      const currentSubdomain = getSubdomain();
+
+      // If the school doesn't have a subdomain set, or it's 'null', redirect to status page
       if (!data.school.subDomain || data.school.subDomain === 'null') {
         navigate('/schoolStatus');
         return;
@@ -68,7 +93,13 @@ const SchoolLogin = () => {
         slug = data.school.subDomain;
       }
 
-      navigate(`/school/${slug}`);
+      // Compare current subdomain and school's subdomain
+      if (currentSubdomain && currentSubdomain !== slug) {
+        console.warn('Subdomain mismatch! Redirecting to correct school page...');
+        navigate(`/school/${slug}`);
+      } else {
+        navigate(`/school/${slug}`);
+      }
     } catch (err) {
       dispatch({
         type: 'SET_MESSAGE',

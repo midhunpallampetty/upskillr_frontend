@@ -3,11 +3,14 @@ import { sendForgotPasswordLink } from './api/school.api';
 import { useNavigate } from 'react-router-dom';
 
 const EXPIRY_KEY = 'reset_link_expiry';
-const COOLDOWN_DURATION = 60 * 1000*5; // 1 minute
+// 24 hours cooldown
+const COOLDOWN_DURATION = 1000 * 60 * 60 * 24; // 24 hours in milliseconds
+
 const formatTime = (seconds: number) => {
-  const mins = Math.floor(seconds / 60);
+  const hours = Math.floor(seconds / 3600);
+  const mins = Math.floor((seconds % 3600) / 60);
   const secs = seconds % 60;
-  return `${mins}m ${secs < 10 ? '0' : ''}${secs}s`;
+  return `${hours}h ${mins < 10 ? '0' : ''}${mins}m ${secs < 10 ? '0' : ''}${secs}s`;
 };
 
 const ForgotPassword = () => {
@@ -87,7 +90,6 @@ const ForgotPassword = () => {
             disabled={loading || timeLeft > 0}
           >
             {loading ? 'Sending...' : timeLeft > 0 ? `Wait ${formatTime(timeLeft)}` : 'Send Reset Link'}
-
           </button>
         </form>
 

@@ -5,12 +5,13 @@ import AppRouter from './routes/AppRouter';
 import MarketingPage from './features/school/MarketingPage';
 import StudentLogin from './features/student/studentLogin';
 import StudentRegister from './features/student/studentRegister'; // Assuming correct import
+import StudentHomePage from './features/student/StudentHomePage';
 
 const SubdomainRoutes: React.FC<{ subdomain: string }> = ({ subdomain }) => {
   const location = useLocation();
 
   // List of exception paths where MarketingPage should not be shown
-  const exceptionPaths = ["/studentLogin", "/studentRegister"];
+  const exceptionPaths = ["/studentLogin", "/studentRegister","/studenthome"];
 
   if (exceptionPaths.includes(location.pathname)) {
     switch(location.pathname) {
@@ -18,6 +19,8 @@ const SubdomainRoutes: React.FC<{ subdomain: string }> = ({ subdomain }) => {
         return <StudentLogin />;
       case "/studentRegister":
         return <StudentRegister />;
+        case "/studenthome":
+          return<StudentHomePage/>
       default:
         return null;
     }

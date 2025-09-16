@@ -3,7 +3,6 @@ import { getSchoolBySubdomain } from './api/school.api'; // Adjust the import pa
 import { getCoursesBySchool } from './api/course.api'; // Assuming this is the import for the new API function; adjust path accordingly
 import Cookies from 'js-cookie';
 
-
 // Embedded utility function to extract subdomain
 const getSubdomain = (url: string = window.location.href): string => {
   try {
@@ -20,6 +19,10 @@ const getSubdomain = (url: string = window.location.href): string => {
   }
 };
 
+// Utility function to slugify school name for URL
+const slugify = (text: string): string => {
+  return text.toLowerCase().replace(/\s+/g, '-').replace(/[^\w\-]+/g, '').replace(/--+/g, '-').replace(/^-+|-+$/g, '');
+};
 
 // Define interface for course objects based on your API structure
 interface Course {
@@ -38,7 +41,6 @@ interface Course {
   updatedAt: string;
   __v: number;
 }
-
 
 const MarketingPage: React.FC = () => {
   const [courses, setCourses] = useState<Course[]>([]);
@@ -59,7 +61,6 @@ const MarketingPage: React.FC = () => {
     coursesOffered: [] // Keep empty initially; will be set from API
   });
 
-
   // New state for subdomain (computed once on mount)
   const [subdomain, setSubdomain] = useState<string>(getSubdomain());
 
@@ -73,7 +74,6 @@ const MarketingPage: React.FC = () => {
     setIsLoggedIn(!!accessToken && !!refreshToken);
   }, []);
 
-
   useEffect(() => {
     if (subdomain) {
       const fetchSchoolData = async () => {
@@ -86,7 +86,6 @@ const MarketingPage: React.FC = () => {
           console.log(response.data.school, 'response');
           
           const data = response.data.school; // Adjust based on axios response structure
-
 
           // Check if school data exists; if not, redirect
           if (!data) {
@@ -111,7 +110,6 @@ const MarketingPage: React.FC = () => {
             coursesOffered: [] // Initialize empty; will be updated below
           };
 
-
           setSchoolData(updatedData);
           console.log(updatedData, 'data'); // Log after setting state (note: state update is async, use callback if needed for immediate logging)
         } catch (error) {
@@ -127,7 +125,6 @@ const MarketingPage: React.FC = () => {
     }
   }, [subdomain]); // Depend on subdomain state
 
-
   // Separate useEffect to fetch courses after schoolData is updated
   useEffect(() => {
     if (schoolData.id && schoolData.name) {
@@ -141,11 +138,9 @@ const MarketingPage: React.FC = () => {
           const coursesResponse = await getCoursesBySchool(schoolId, dbname);
           console.log(coursesResponse, 'courses response');
 
-
           // Set the full course objects
           const fetchedCourses = (coursesResponse?.data?.courses || coursesResponse || []).filter((course: Course) => course.courseName); // Filter out any invalid courses
           console.log(fetchedCourses, 'fetched courses');
-
 
           setCourses(fetchedCourses);
         } catch (error) {
@@ -156,9 +151,7 @@ const MarketingPage: React.FC = () => {
     }
   }, [schoolData]); // Depend on schoolData to run after it's updated
 
-
   console.log(schoolData, 'school data');
-
 
   // SEO and meta tag updates
   useEffect(() => {
@@ -176,7 +169,6 @@ const MarketingPage: React.FC = () => {
       document.head.appendChild(meta);
     }
 
-
     const updateOrCreateMetaTag = (property: string, content: string) => {
       if (!content) return; // Skip if content is empty
       let metaTag = document.querySelector(`meta[property="${property}"]`);
@@ -190,7 +182,6 @@ const MarketingPage: React.FC = () => {
       }
     };
 
-
     updateOrCreateMetaTag('og:title', `${schoolData.name} - Expert Learning Platform`);
     updateOrCreateMetaTag('og:description', schoolData.description);
     updateOrCreateMetaTag('og:url', 'https://eduvia.space');
@@ -198,7 +189,6 @@ const MarketingPage: React.FC = () => {
       updateOrCreateMetaTag('og:image', schoolData.image);
     }
   }, [schoolData]);
-
 
   const handleLogout = () => {
     // Implement logout logic here, e.g., clear tokens, redirect, etc.
@@ -212,7 +202,6 @@ const MarketingPage: React.FC = () => {
     // Redirect to login page
     window.location.href = '/studentLogin'; // Adjust the login URL as needed
   };
-
 
   return (
     <div className="font-inter text-gray-800 leading-7 bg-gray-50 min-h-screen">
@@ -257,7 +246,6 @@ const MarketingPage: React.FC = () => {
           <div className="absolute top-1/2 left-1/4 w-64 h-64 bg-pink-500/10 rounded-full blur-2xl animate-pulse delay-500"></div>
         </div>
 
-
         <div className="relative z-10 container mx-auto px-6">
           {/* School Header with Logo */}
           <div className="text-center mb-12">
@@ -272,7 +260,6 @@ const MarketingPage: React.FC = () => {
                 />
               </div>
             </div>
-
 
             {/* School Name with Enhanced Typography */}
             <h1 className="text-6xl md:text-8xl font-black mb-6 tracking-tight">
@@ -323,8 +310,7 @@ const MarketingPage: React.FC = () => {
             </div>
           </div>
 
-
-          {/* Action Buttons - Removed "Explore Our Courses" */}
+          {/* Action Buttons - Added "Browse Courses" button */}
           <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16">
             <button
               className="group bg-white/10 backdrop-blur-md border-2 border-white/30 text-white px-12 py-5 text-xl font-bold rounded-2xl hover:bg-white hover:text-purple-600 transition-all duration-300 transform hover:-translate-y-1"
@@ -334,8 +320,15 @@ const MarketingPage: React.FC = () => {
                 💬 <span className="ml-2">Free Consultation</span>
               </span>
             </button>
+            <button
+              className="group bg-white/10 backdrop-blur-md border-2 border-white/30 text-white px-12 py-5 text-xl font-bold rounded-2xl hover:bg-white hover:text-purple-600 transition-all duration-300 transform hover:-translate-y-1"
+              onClick={() => window.location.href = `https://www.${subdomain}.eduvia.space/school/${slugify(subdomain)}/home`}
+            >
+              <span className="flex items-center justify-center">
+                📚 <span className="ml-2">Browse Courses</span>
+              </span>
+            </button>
           </div>
-
 
           {/* Enhanced Trust Indicators (conditionally render based on available data) - Removed hardcoded one */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-6xl mx-auto">
@@ -364,7 +357,6 @@ const MarketingPage: React.FC = () => {
         </div>
       </section>
 
-
       {/* Enhanced Courses Section with API-provided courses - Removed dummy details */}
       {courses.length > 0 && (
         <section id="courses" className="py-24 px-6">
@@ -379,7 +371,6 @@ const MarketingPage: React.FC = () => {
                 Master in-demand skills with our industry-aligned curriculum designed by experts from top companies
               </p>
             </div>
-
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
               {courses.map((course, index) => {                
@@ -400,7 +391,6 @@ const MarketingPage: React.FC = () => {
                       </div>
                     </div>
 
-
                     {/* Course Thumbnail */}
                     {course.courseThumbnail && (
                       <img 
@@ -410,16 +400,13 @@ const MarketingPage: React.FC = () => {
                       />
                     )}
 
-
                     <h3 className="text-2xl font-bold mb-4 text-gray-800 group-hover:text-purple-600 transition-colors leading-tight">
                       {course.courseName}
                     </h3>
 
-
                     <p className="text-gray-600 mb-6 leading-relaxed">
                       {desc.length > 20 ? desc.slice(0, 20) + "..." : desc}
                     </p>
-
 
                     {/* Additional Course Details */}
                     <div className="mb-6">
@@ -428,12 +415,10 @@ const MarketingPage: React.FC = () => {
                       <p className="text-gray-500 text-sm">Last Updated: {new Date(course.updatedAt).toLocaleDateString()}</p>
                     </div>
 
-
-                    {/* CTA Button - Now using the subdomain state */}
-                    {/* Alternative: Use schoolData.subDomain if you prefer the API value: `${schoolData.subDomain}` */}
+                    {/* CTA Button - Updated to use subdomain and slugified schoolName */}
                     <button
                       className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-4 text-lg font-bold rounded-2xl hover:from-purple-700 hover:to-pink-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-                      onClick={() => window.location.href = `https://www.eduvia.space/school/${subdomain}/home`}
+                      onClick={() => window.location.href = `https://www.eduvia.space/${subdomain}/school/${slugify(schoolData.name)}/home`}
                     >
                       Start Learning Today →
                     </button>
@@ -444,7 +429,6 @@ const MarketingPage: React.FC = () => {
           </div>
         </section>
       )}
-
 
       {/* Enhanced About Section - Removed dummy features */}
       <section className="py-24 px-6 bg-gradient-to-br from-slate-50 to-blue-50">
@@ -464,7 +448,6 @@ const MarketingPage: React.FC = () => {
                 </p>
               )}
             </div>
-
 
             {/* Right Column - Contact Card - Ensured logo, address, phone, email are prominently displayed */}
             <div className="bg-gradient-to-br from-purple-600 to-blue-600 rounded-3xl p-8 text-white shadow-2xl">
@@ -510,7 +493,6 @@ const MarketingPage: React.FC = () => {
                 )}
               </div>
 
-
               <button
                 className="w-full mt-8 bg-white text-purple-600 py-4 rounded-2xl font-bold hover:bg-gray-100 transition-all transform hover:-translate-y-1 shadow-lg"
                 onClick={() => window.location.href = "#contact"}
@@ -521,7 +503,6 @@ const MarketingPage: React.FC = () => {
           </div>
         </div>
       </section>
-
 
       {/* Modern Footer - Removed social links and quick links */}
       <footer id="contact" className="bg-gradient-to-br from-gray-900 via-purple-900 to-blue-900 text-white py-20 px-6">
@@ -561,7 +542,6 @@ const MarketingPage: React.FC = () => {
         </div>
       </footer>
 
-
       {/* Custom CSS for animations */}
       <style jsx>{`
         @keyframes fade-in {
@@ -575,6 +555,5 @@ const MarketingPage: React.FC = () => {
     </div>
   );
 };
-
 
 export default MarketingPage;

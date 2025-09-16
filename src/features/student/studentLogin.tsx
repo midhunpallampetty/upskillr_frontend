@@ -21,49 +21,60 @@ const StudentLogin = () => {
     setErrors((prev) => ({ ...prev, [e.target.name]: '' }));
   };
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
+const handleLogin = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-    // Run validation
-    const validationErrors = validateStudentLogin(formData);
+  // Run validation
+  const validationErrors = validateStudentLogin(formData);
 
-    // If there are validation errors, update state and stop
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
-      return;
+  if (Object.keys(validationErrors).length > 0) {
+    setErrors(validationErrors);
+    return;
+  }
+
+  setErrors({});
+
+  try {
+    const { student, accessToken, refreshToken } = await loginStudent(formData);
+
+    Cookies.set('studentAccessToken', accessToken, {
+      expires: 1,
+      secure: true,
+      sameSite: 'strict',
+    });
+
+    Cookies.set('studentRefreshToken', refreshToken, {
+      expires: 7,
+      secure: true,
+      sameSite: 'strict',
+    });
+
+    localStorage.setItem('student', JSON.stringify(student));
+
+    toast.success(`🎉 Welcome ${student.fullName}`, { position: 'top-right' });
+
+    // Domain detection and redirection
+    const hostname = window.location.hostname; // e.g., 'gamersclub.eduvia.space' or 'www.eduvia.space'
+    const parts = hostname.split('.');
+
+    if (parts.length > 2) {
+      // Subdomain case like gamersclub.eduvia.space
+      const subdomain = parts[0];
+      window.location.href = `https://${subdomain}.eduvia.space/school/${subdomain}/home`;
+    } else {
+      // Main domain case
+      window.location.href = 'https://www.eduvia.space/studenthome';
     }
-
-    // Clear previous errors
-    setErrors({});
-
-    try {
-      const { student, accessToken, refreshToken } = await loginStudent(formData);
-
-      Cookies.set('studentAccessToken', accessToken, {
-        expires: 1,
-        secure: true,
-        sameSite: 'strict',
-      });
-
-      Cookies.set('studentRefreshToken', refreshToken, {
-        expires: 7,
-        secure: true,
-        sameSite: 'strict',
-      });
-
-      localStorage.setItem('student', JSON.stringify(student));
-
-      toast.success(`🎉 Welcome ${student.fullName}`, { position: 'top-right' });
-window.location.href = 'https://www.eduvia.space/studenthome';
-    } catch (err: any) {
-      const msg = err?.msg || err.message || 'Login failed';
-      if (msg.toLowerCase().includes('school')) {
-        toast.error('❌ School not found', { position: 'top-right' });
-      } else {
-        toast.error(`❌ ${msg}`, { position: 'top-right' });
-      }
+  } catch (err: any) {
+    const msg = err?.msg || err.message || 'Login failed';
+    if (msg.toLowerCase().includes('school')) {
+      toast.error('❌ School not found', { position: 'top-right' });
+    } else {
+      toast.error(`❌ ${msg}`, { position: 'top-right' });
     }
-  };
+  }
+};
+
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-indigo-900 to-blue-700">

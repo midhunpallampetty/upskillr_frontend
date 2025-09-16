@@ -24,7 +24,7 @@ const CoursesPage: React.FC = () => {
 
   useEffect(() => {
     if (!schoolName) return;
-
+console.log(schoolName, "schoolName")
     const decodedUrl = decodeURIComponent(schoolName);
     console.log(decodedUrl, "decodedUrl")
     Cookies.set('dbname',schoolName)

@@ -84,14 +84,17 @@ useEffect(() => {
         }
 
         // If not in local or mismatched, fallback to context
-        if (!selectedCourse && course) {
-          const parsed = JSON.parse(course);
-          if (parsed._id === courseId) {
-            selectedCourse = parsed;
-            console.log(selectedCourse," Found course in context");
-            Cookies.set('selectedCourse', course);
-          }
-        }
+   if (!selectedCourse && course) {
+  const parsed = JSON.parse(course);
+  if (parsed._id === courseId) {
+    selectedCourse = parsed;
+    console.log(selectedCourse," Found course in context");
+
+    // Set cookie across all subdomains
+    Cookies.set('selectedCourse', course, { domain: '.eduvia.space', path: '/' });
+  }
+}
+
 
         setParsedCourse(selectedCourse);
         if (selectedCourse) {

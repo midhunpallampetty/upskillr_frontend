@@ -27,7 +27,7 @@ const CourseDetailsPage: React.FC = () => {
 
   // Navigate to payment page or course page
   const handleClick = (id: string) => {
-    Cookies.remove('selectedCourse'); // Force reload fresh
+    localStorage.removeItem('selectedCourse'); // Force reload fresh
     if (isPurchased) {
       window.location.href = `/student/course-page/${schoolName}/${id}`;
     } else {
@@ -75,7 +75,7 @@ useEffect(() => {
         let selectedCourse = null;
 
         // Try localStorage first
-        const local = Cookies.get('selectedCourse');
+        const local = localStorage.getItem('selectedCourse');
         if (local) {
           const parsed = JSON.parse(local);
           if (parsed._id === courseId) {
@@ -84,17 +84,15 @@ useEffect(() => {
         }
 
         // If not in local or mismatched, fallback to context
-   if (!selectedCourse && course) {
-  const parsed = JSON.parse(course);
-  if (parsed._id === courseId) {
-    selectedCourse = parsed;
-    console.log(selectedCourse," Found course in context");
+        if (!selectedCourse && course) {
+          console.log(course,'course from context');
+          const parsed = JSON.parse(course);
+          if (parsed._id === courseId) {
 
-    // Set cookie across all subdomains
-    Cookies.set('selectedCourse', course, { domain: '.eduvia.space', path: '/' });
-  }
-}
-
+            selectedCourse = parsed;
+            localStorage.setItem('selectedCourse', course);
+          }
+        }
 
         setParsedCourse(selectedCourse);
         if (selectedCourse) {

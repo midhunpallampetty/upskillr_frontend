@@ -24,7 +24,6 @@ const StudentLogin = () => {
 const handleLogin = async (e: React.FormEvent) => {
   e.preventDefault();
 
-  // Run validation
   const validationErrors = validateStudentLogin(formData);
 
   if (Object.keys(validationErrors).length > 0) {
@@ -55,11 +54,14 @@ const handleLogin = async (e: React.FormEvent) => {
 
     // Domain detection and redirection
     const hostname = window.location.hostname; // e.g., 'gamersclub.eduvia.space' or 'www.eduvia.space'
+    const domain = 'eduvia.space';
     const parts = hostname.split('.');
 
-    if (parts.length > 2) {
-      // Subdomain case like gamersclub.eduvia.space
-      const subdomain = parts[0];
+    const isMainDomain = hostname === 'eduvia.space' || hostname === 'www.eduvia.space';
+
+    if (!isMainDomain && hostname.endsWith(domain) && parts.length > 2) {
+      // Subdomain case
+      const subdomain = parts.slice(0, parts.length - 2).join('.');
       window.location.href = `https://${subdomain}.eduvia.space/school/${subdomain}/home`;
     } else {
       // Main domain case
@@ -74,6 +76,7 @@ const handleLogin = async (e: React.FormEvent) => {
     }
   }
 };
+
 
 
   return (

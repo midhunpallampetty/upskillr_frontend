@@ -67,8 +67,8 @@ const MarketingPage: React.FC = () => {
 
   useEffect(() => {
     // Check for tokens in localStorage
-    const accessToken = localStorage.getItem('schoolAccessToken');
-    const refreshToken = localStorage.getItem('schoolRefreshToken');
+    const accessToken = localStorage.getItem('studentAccessToken');
+    const refreshToken = localStorage.getItem('studentRefreshToken');
     setIsLoggedIn(!!accessToken && !!refreshToken);
   }, []);
 
@@ -202,14 +202,14 @@ const MarketingPage: React.FC = () => {
   const handleLogout = () => {
     // Implement logout logic here, e.g., clear tokens, redirect, etc.
     console.log('Logging out...');
-    localStorage.removeItem('schoolAccessToken');
-    localStorage.removeItem('schoolRefreshToken');
-    window.location.href = 'https://eduvia.space';
+    localStorage.removeItem('studentAccessToken');
+    localStorage.removeItem('studentRefreshToken');
+    window.location.href = '/studentLogin';
   };
 
   const handleLogin = () => {
     // Redirect to login page
-    window.location.href = 'https://eduvia.space/login'; // Adjust the login URL as needed
+    window.location.href = '/studentLogin'; // Adjust the login URL as needed
   };
 
 

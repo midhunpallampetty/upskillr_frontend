@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { fetchCoursesBySchool } from './api/course.api';
 import { Course } from './types/Course';
-import { ChevronLeft, ChevronRight, BookOpen, Clock } from 'lucide-react';
+import { ChevronLeft, ChevronRight, BookOpen } from 'lucide-react';
 import useStudentAuthGuard from './hooks/useStudentAuthGuard';
 import { useGlobalDispatch } from '../../context/GlobalState';
 import Cookies from 'js-cookie';
@@ -11,8 +11,10 @@ const ITEMS_PER_PAGE = 6;
 
 const CoursesPage: React.FC = () => {
   const dispatch = useGlobalDispatch();
+
   useStudentAuthGuard();
-  const { schoolName: paramSchoolName } = useParams(); // Renamed for clarity
+
+  const params = useParams();
   const navigate = useNavigate();
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
@@ -20,57 +22,59 @@ const CoursesPage: React.FC = () => {
   const [sortOption, setSortOption] = useState('date');
   const [currentPage, setCurrentPage] = useState(1);
 
-  useEffect(() => {
-    // Detect school from hostname first (for subdomains)
-    let school = '';
-    const hostname = window.location.hostname;
-    const subdomainMatch = hostname.match(/^([a-z0-9-]+)\.eduvia\.space$/i);
-    if (subdomainMatch && subdomainMatch[1] !== 'www') {
-      school = subdomainMatch[1]; // e.g., 'gamersclub'
-    } else if (paramSchoolName) {
-      // Fallback to URL param for main domain
-      school = decodeURIComponent(paramSchoolName);
+  // Function to get schoolName from params or subdomain
+  const getSchoolName = () => {
+    if (params.schoolName) {
+      return params.schoolName;
     }
 
-    if (!school) {
-      console.error('No school detected from hostname or params');
+    const host = window.location.host; // e.g., gamersclub.eduvia.space
+    const parts = host.split('.');
+    if (parts.length >= 3 && parts[1] === 'eduvia' && parts[2] === 'space') {
+      return parts[0]; // subdomain as schoolName
+    }
+
+    return null;
+  };
+
+  const schoolName = getSchoolName();
+
+  useEffect(() => {
+    if (!schoolName) {
+      console.error('School name not found from params or subdomain.');
       setLoading(false);
       return;
     }
 
-    console.log(school, 'Detected school');
+    console.log('Detected schoolName:', schoolName);
 
-    // Handle redundant path on subdomain (optional: redirect for cleaner UX)
-    if (subdomainMatch && paramSchoolName && paramSchoolName === school) {
-      navigate('/home', { replace: true }); // Redirect to avoid redundancy
-    }
-
-    localStorage.setItem('schoolname', school);
-    Cookies.set('dbname', school);
-    dispatch({ type: 'SET_SCHOOL_NAME', payload: school });
+    const decodedUrl = decodeURIComponent(schoolName);
+    localStorage.setItem('schoolname', decodedUrl);
+    Cookies.set('dbname', decodedUrl);
+    dispatch({ type: 'SET_SCHOOL_NAME', payload: decodedUrl });
 
     const getCourses = async () => {
-      try {
-        // Use relative path; backend will handle school from Host header
-        const result = await fetchCoursesBySchool('/api/courses'); // Adjust to your actual API path
+      const apiUrl = `https://${decodedUrl}.eduvia.space/api/courses`;
 
-        if (result.success && result.courses) {
-          setCourses(result.courses);
-        } else {
-          console.error('Error fetching courses:', result.error);
-        }
-      } catch (error) {
-        console.error('Fetch error:', error);
-      } finally {
-        setLoading(false);
+      console.log('Fetching courses from:', apiUrl);
+
+      const result = await fetchCoursesBySchool(apiUrl);
+
+      if (result.success && result.courses) {
+        setCourses(result.courses);
+      } else {
+        console.error('Error fetching courses:', result.error);
       }
+
+      setLoading(false);
     };
 
     getCourses();
-  }, [paramSchoolName, navigate, dispatch]);
+  }, [schoolName]);
 
   const filteredCourses = useMemo(() => {
     const term = search.toLowerCase();
+
     return courses
       .filter(
         (course) =>
@@ -103,7 +107,7 @@ const CoursesPage: React.FC = () => {
             <h2 className="text-4xl font-bold mb-4">
               Courses at{' '}
               <span className="block text-yellow-300">
-                {decodeURIComponent(paramSchoolName || '')}
+                {decodeURIComponent(schoolName || '')}
               </span>
             </h2>
             <p className="text-blue-100 text-lg mb-4">
@@ -172,7 +176,9 @@ const CoursesPage: React.FC = () => {
                     </h3>
                     <p className="text-sm text-gray-600 line-clamp-2">{course.description}</p>
                     <div className="text-sm text-gray-600 mt-3 flex justify-between">
-                      <span><BookOpen className="inline w-4 h-4 mr-1" /> {course.noOfLessons} Lessons</span>
+                      <span>
+                        <BookOpen className="inline w-4 h-4 mr-1" /> {course.noOfLessons} Lessons
+                      </span>
                       <span>₹{course.fee}</span>
                     </div>
                     <p className="text-xs text-gray-400 mt-2">
@@ -181,7 +187,7 @@ const CoursesPage: React.FC = () => {
                     <button
                       onClick={() => {
                         dispatch({ type: 'SET_COURSE', payload: JSON.stringify(course) });
-                        navigate(`/school/${paramSchoolName || school}/course/${course._id}`); // Use detected school if param missing
+                        navigate(`/school/${schoolName}/course/${course._id}`);
                       }}
                       className="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-md text-sm font-medium transition"
                     >
@@ -205,8 +211,7 @@ const CoursesPage: React.FC = () => {
                 <button
                   key={i}
                   onClick={() => setCurrentPage(i + 1)}
-                  className={`px-4 py-2 rounded ${currentPage === i + 1 ? 'bg-blue-600 text-white' : 'bg-gray-200'
-                    }`}
+                  className={`px-4 py-2 rounded ${currentPage === i + 1 ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
                 >
                   {i + 1}
                 </button>

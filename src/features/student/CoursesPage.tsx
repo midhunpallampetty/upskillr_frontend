@@ -12,9 +12,8 @@ const ITEMS_PER_PAGE = 6;
 const CoursesPage: React.FC = () => {
   const dispatch = useGlobalDispatch();
 
-  useStudentAuthGuard()
+  useStudentAuthGuard();
   const { schoolName } = useParams();
-  localStorage.setItem('schoolname',schoolName);
   const navigate = useNavigate();
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
@@ -22,15 +21,36 @@ const CoursesPage: React.FC = () => {
   const [sortOption, setSortOption] = useState('date');
   const [currentPage, setCurrentPage] = useState(1);
 
+  // Detect if we are in a subdomain context
+  const host = window.location.host; // e.g., 'gamersclub.eduvia.space' or 'www.eduvia.space'
+  const isSubdomain = host.split('.').length > 2 && host !== 'www.eduvia.space';
+
   useEffect(() => {
     if (!schoolName) return;
 
     const decodedUrl = decodeURIComponent(schoolName);
-    Cookies.set('dbname',schoolName)
-      dispatch({ type: 'SET_SCHOOL_NAME', payload: decodedUrl }); 
-    console.log(decodedUrl, "decodedUrl")
+    Cookies.set('dbname', schoolName);
+    dispatch({ type: 'SET_SCHOOL_NAME', payload: decodedUrl });
+
+    console.log('Host:', host);
+    console.log('Is Subdomain:', isSubdomain);
+    console.log('School Name:', decodedUrl);
+
     const getCourses = async () => {
-      const result = await fetchCoursesBySchool("https://" + decodedUrl + '.eduvia.space');
+      let apiUrl = '';
+
+      if (isSubdomain) {
+        // API expected at subdomain
+        apiUrl = `https://${decodedUrl}.eduvia.space/api/courses`;
+      } else {
+        console.error('Courses page should be accessed only from a subdomain.');
+        setLoading(false);
+        return;
+      }
+
+      console.log('Fetching courses from:', apiUrl);
+
+      const result = await fetchCoursesBySchool(apiUrl);
 
       if (result.success && result.courses) {
         setCourses(result.courses);
@@ -163,8 +183,6 @@ const CoursesPage: React.FC = () => {
                     >
                       View Details
                     </button>
-
-
                   </div>
                 </div>
               ))}

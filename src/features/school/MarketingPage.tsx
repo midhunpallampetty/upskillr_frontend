@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { getSchoolBySubdomain } from './api/school.api'; // Adjust the import path to match your project structure (e.g., the api folder where this function exists)
 import { getCoursesBySchool } from './api/course.api'; // Assuming this is the import for the new API function; adjust path accordingly
+import Cookies from 'js-cookie';
 
 
 // Embedded utility function to extract subdomain
@@ -67,8 +68,8 @@ const MarketingPage: React.FC = () => {
 
   useEffect(() => {
     // Check for tokens in localStorage
-    const accessToken = localStorage.getItem('studentAccessToken');
-    const refreshToken = localStorage.getItem('studentRefreshToken');
+    const accessToken = Cookies.get('studentAccessToken');
+    const refreshToken = Cookies.get('studentRefreshToken');
     setIsLoggedIn(!!accessToken && !!refreshToken);
   }, []);
 
@@ -202,8 +203,8 @@ const MarketingPage: React.FC = () => {
   const handleLogout = () => {
     // Implement logout logic here, e.g., clear tokens, redirect, etc.
     console.log('Logging out...');
-    localStorage.removeItem('studentAccessToken');
-    localStorage.removeItem('studentRefreshToken');
+    Cookies.remove('studentAccessToken');
+    Cookies.remove('studentRefreshToken');
     window.location.href = '/studentLogin';
   };
 

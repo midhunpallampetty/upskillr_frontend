@@ -11,27 +11,23 @@ import CoursesPage from './features/student/CoursesPage';
 const SubdomainRoutes: React.FC<{ subdomain: string }> = ({ subdomain }) => {
   const location = useLocation();
 
-  // List of exception paths where MarketingPage should not be shown
-  const exceptionPaths = ["/studentLogin", "/studentRegister","/studenthome","/school/:schoolName/home"];
+  // Define routes with regex patterns
+  const routePatterns: { pattern: RegExp; component: React.ReactElement }[] = [
+    { pattern: /^\/studentLogin$/, component: <StudentLogin /> },
+    { pattern: /^\/studentRegister$/, component: <StudentRegister /> },
+    { pattern: /^\/studenthome$/, component: <StudentHomePage /> },
+    { pattern: /^\/school\/[^/]+\/home$/, component: <CoursesPage /> }, // matches /school/:schoolName/home
+  ];
 
-  if (exceptionPaths.includes(location.pathname)) {
-    switch(location.pathname) {
-      case "/studentLogin":
-        return <StudentLogin />;
-      case "/studentRegister":
-        return <StudentRegister />;
-        case "/studenthome":
-          return<StudentHomePage/>
-          case "/school/:schoolName/home":
-            return <CoursesPage/>;
-      default:
-        return null;
+  for (let route of routePatterns) {
+    if (route.pattern.test(location.pathname)) {
+      return route.component;
     }
   }
 
-  // All other paths show MarketingPage
   return <MarketingPage />;
 };
+
 
 const App: React.FC = () => {
   const subdomain = getSubdomain();

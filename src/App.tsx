@@ -7,6 +7,7 @@ import StudentLogin from './features/student/studentLogin';
 import StudentRegister from './features/student/studentRegister'; // Assuming correct import
 import StudentHomePage from './features/student/StudentHomePage';
 import CoursesPage from './features/student/CoursesPage';
+import CourseDetailsPage from './features/student/CourseDetailsPage';
 
 const SubdomainRoutes: React.FC<{ subdomain: string }> = ({ subdomain }) => {
   const location = useLocation();
@@ -16,8 +17,12 @@ const SubdomainRoutes: React.FC<{ subdomain: string }> = ({ subdomain }) => {
     { pattern: /^\/studentLogin$/, component: <StudentLogin /> },
     { pattern: /^\/studentRegister$/, component: <StudentRegister /> },
     { pattern: /^\/studenthome$/, component: <StudentHomePage /> },
-    
-    { pattern: /^\/school\/[^/]+\/home$/, component: <CoursesPage /> }, // matches /school/:schoolName/home
+    { 
+  pattern: /^\/school\/[^/]+\/course\/[^/]+$/, 
+  component: <CourseDetailsPage /> 
+},
+
+{ pattern: /^\/school\/[^/]+\/home$/, component: <CoursesPage /> }, // matches /school/:schoolName/home
   ];
 
   for (let route of routePatterns) {

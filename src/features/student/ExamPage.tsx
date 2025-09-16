@@ -194,7 +194,7 @@ export function ExamPage() {
           </div>
         </div>`,
         icon: 'success',
-        confirmButtonText: 'Proceed to Certificate',
+        confirmButtonText: 'Proceed to Payment',
         confirmButtonColor: '#28a745',
         allowOutsideClick: false,
         customClass: {

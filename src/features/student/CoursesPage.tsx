@@ -22,38 +22,27 @@ const CoursesPage: React.FC = () => {
   const [sortOption, setSortOption] = useState('date');
   const [currentPage, setCurrentPage] = useState(1);
 
-useEffect(() => {
-  let school = schoolName ? decodeURIComponent(schoolName) : null;
+  useEffect(() => {
+    if (!schoolName) return;
 
-  // Detect if on subdomain and extract school from hostname
-  const hostname = window.location.hostname;
-  const subdomainMatch = hostname.match(/^([a-z0-9-]+)\.eduvia\.space$/);
-  if (subdomainMatch) {
-    school = subdomainMatch[1]; // e.g., 'gamersclub'
-  }
+    const decodedUrl = decodeURIComponent(schoolName);
+    Cookies.set('dbname',schoolName)
+      dispatch({ type: 'SET_SCHOOL_NAME', payload: decodedUrl }); 
+    console.log(decodedUrl, "decodedUrl")
+    const getCourses = async () => {
+      const result = await fetchCoursesBySchool("https://" + decodedUrl + '.eduvia.space');
 
-  if (!school) return;
+      if (result.success && result.courses) {
+        setCourses(result.courses);
+      } else {
+        console.error('Error fetching courses:', result.error);
+      }
 
-  localStorage.setItem('schoolname', school);
-  Cookies.set('dbname', school);
-  dispatch({ type: 'SET_SCHOOL_NAME', payload: school });
-  console.log(school, "school");
+      setLoading(false);
+    };
 
-  const getCourses = async () => {
-    // Use a relative URL; let backend handle subdomain logic
-    const result = await fetchCoursesBySchool('/api/courses'); // Adjust path as needed
-
-    if (result.success && result.courses) {
-      setCourses(result.courses);
-    } else {
-      console.error('Error fetching courses:', result.error);
-    }
-    setLoading(false);
-  };
-
-  getCourses();
-}, [schoolName]);
-
+    getCourses();
+  }, [schoolName]);
 
   const filteredCourses = useMemo(() => {
     const term = search.toLowerCase();

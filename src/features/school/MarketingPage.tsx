@@ -322,7 +322,7 @@ const MarketingPage: React.FC = () => {
             </button>
             <button
               className="group bg-white/10 backdrop-blur-md border-2 border-white/30 text-white px-12 py-5 text-xl font-bold rounded-2xl hover:bg-white hover:text-purple-600 transition-all duration-300 transform hover:-translate-y-1"
-              onClick={() => window.location.href = `${subdomain}.eduvia.space/school/${slugify(subdomain)}/home`}
+              onClick={() => window.location.href = `/school/${slugify(subdomain)}/home`}
             >
               <span className="flex items-center justify-center">
                 📚 <span className="ml-2">Browse Courses</span>

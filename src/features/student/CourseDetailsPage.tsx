@@ -88,7 +88,7 @@ useEffect(() => {
 
         // If not in local or mismatched, fallback to context
         if (!selectedCourse && course) {
-          console.log(course,'course from context');
+          console.log(actualCourseId,'course from context');
           const parsed = JSON.parse(course);
           if (parsed._id === actualCourseId) {
 

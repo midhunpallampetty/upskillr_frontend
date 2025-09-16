@@ -29,7 +29,11 @@ import { checkEligibility, fetchQuestions } from './api/exam.api';
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_...');
 
 const CoursePaymentPage = () => {
-  const { courseId } = useParams();
+  const { courseId: paramCourseId } = useParams();
+const pathnameParts = window.location.pathname.split('/').filter(Boolean);
+const fallbackCourseId = pathnameParts[pathnameParts.length - 1];
+const courseId = paramCourseId || fallbackCourseId;
+
   const navigate = useNavigate();
   const [course, setCourse] = useState(null);
   const [eligibility, setEligibility] = useState(null);

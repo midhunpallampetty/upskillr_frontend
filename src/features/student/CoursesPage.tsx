@@ -30,7 +30,7 @@ const CoursesPage: React.FC = () => {
       dispatch({ type: 'SET_SCHOOL_NAME', payload: decodedUrl }); 
     console.log(decodedUrl, "decodedUrl")
     const getCourses = async () => {
-      const result = await fetchCoursesBySchool("http://" + decodedUrl + '.localhost:5173');
+      const result = await fetchCoursesBySchool("http://" + decodedUrl + '.eduvia.space');
 
       if (result.success && result.courses) {
         setCourses(result.courses);

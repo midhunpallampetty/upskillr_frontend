@@ -26,6 +26,7 @@ const CoursesPage: React.FC = () => {
     if (!schoolName) return;
 
     const decodedUrl = decodeURIComponent(schoolName);
+    console.log(decodedUrl, "decodedUrl")
     Cookies.set('dbname',schoolName)
       dispatch({ type: 'SET_SCHOOL_NAME', payload: decodedUrl }); 
     console.log(decodedUrl, "decodedUrl")

@@ -27,7 +27,7 @@ const CourseDetailsPage: React.FC = () => {
 
   // Navigate to payment page or course page
   const handleClick = (id: string) => {
-    localStorage.removeItem('selectedCourse'); // Force reload fresh
+    Cookies.remove('selectedCourse'); // Force reload fresh
     if (isPurchased) {
       window.location.href = `/student/course-page/${schoolName}/${id}`;
     } else {
@@ -75,7 +75,7 @@ useEffect(() => {
         let selectedCourse = null;
 
         // Try localStorage first
-        const local = localStorage.getItem('selectedCourse');
+        const local = Cookies.get('selectedCourse');
         if (local) {
           const parsed = JSON.parse(local);
           if (parsed._id === courseId) {
@@ -89,7 +89,7 @@ useEffect(() => {
           if (parsed._id === courseId) {
             selectedCourse = parsed;
             console.log(selectedCourse," Found course in context");
-            localStorage.setItem('selectedCourse', course);
+            Cookies.set('selectedCourse', course);
           }
         }
 

@@ -84,15 +84,28 @@ useEffect(() => {
         }
 
         // If not in local or mismatched, fallback to context
-        if (!selectedCourse && course) {
-          console.log(course,'course from context');
-          const parsed = JSON.parse(course);
-          if (parsed._id === "686e9b01024da93c6b817c32") {
+      if (!selectedCourse && course) {
+    console.log(course, 'course from context');
+    const parsed = JSON.parse(course);
 
-            selectedCourse = parsed;
-            localStorage.setItem('selectedCourse', course);
-          }
+    // Fallback to get courseId from URL if it's undefined or missing
+    let currentCourseId = courseId;
+    if (!currentCourseId) {
+        const pathSegments = window.location.pathname.split('/');
+        // Assuming 'course' is always followed by courseId in the URL
+        const courseIndex = pathSegments.findIndex(segment => segment === 'course');
+        if (courseIndex !== -1 && pathSegments.length > courseIndex + 1) {
+            currentCourseId = pathSegments[courseIndex + 1];
+            console.log('Extracted courseId from URL:', currentCourseId);
         }
+    }
+
+    if (parsed._id === currentCourseId) {
+        selectedCourse = parsed;
+        localStorage.setItem('selectedCourse', course);
+    }
+}
+
 
         setParsedCourse(selectedCourse);
         if (selectedCourse) {

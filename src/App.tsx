@@ -23,12 +23,13 @@ const SubdomainRoutes: React.FC<{ subdomain: string }> = ({ subdomain }) => {
 },
     { 
   pattern: /^\/school\/[^/]+\/course\/[^/]+$/, 
-  component: <CoursePurchasePage /> 
+  component: <CourseDetailsPage /> 
+
 },
+{ pattern: /^\/student\/payment\/[^/]+$/, component: <CoursePurchasePage /> },
 
-{ pattern: /^\/student\/payment\/[^/]+$/, component: <CoursePurchasePage /> }
-
-];
+{ pattern: /^\/school\/[^/]+\/home$/, component: <CoursesPage /> }, // matches /school/:schoolName/home
+  ];
 
   for (let route of routePatterns) {
     if (route.pattern.test(location.pathname)) {

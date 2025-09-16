@@ -88,6 +88,7 @@ useEffect(() => {
           const parsed = JSON.parse(course);
           if (parsed._id === courseId) {
             selectedCourse = parsed;
+            console.log(selectedCourse," Found course in context");
             localStorage.setItem('selectedCourse', course);
           }
         }

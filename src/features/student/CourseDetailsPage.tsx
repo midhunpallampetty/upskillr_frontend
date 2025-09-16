@@ -11,9 +11,6 @@ import { checkPreviousPurchase } from './api/course.api';
 
 const CourseDetailsPage: React.FC = () => {
   const { courseId } = useParams();
-  const pathnameParts = window.location.pathname.split('/');
-const fallbackCourseId = pathnameParts[pathnameParts.length - 1];
-const actualCourseId = courseId || fallbackCourseId;
   const setCourse = useSetCourse();
   const { student, schoolName, course } = useGlobalState();
   const setStudent = useSetStudent();
@@ -88,9 +85,9 @@ useEffect(() => {
 
         // If not in local or mismatched, fallback to context
         if (!selectedCourse && course) {
-          console.log(actualCourseId,'course from context');
+          console.log(course,'course from context');
           const parsed = JSON.parse(course);
-          if (parsed._id === actualCourseId) {
+          if (parsed._id === "686e9b01024da93c6b817c32") {
 
             selectedCourse = parsed;
             localStorage.setItem('selectedCourse', course);

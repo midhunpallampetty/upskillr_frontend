@@ -352,13 +352,13 @@ const MarketingPage: React.FC = () => {
                 <div className="text-white/90 font-semibold text-sm">Job Placement Rate</div>
               </div>
             )}
-            {schoolData.foundedYear && (
+            {/* {schoolData.foundedYear && (
               <div className="text-center bg-gradient-to-br from-yellow-400 to-orange-500 p-6 rounded-3xl shadow-2xl hover:shadow-3xl transform hover:-translate-y-2 transition-all duration-300 border border-white/20">
                 <div className="text-4xl mb-3 filter drop-shadow-lg">⭐</div>
                 <div className="text-2xl md:text-3xl font-black text-white mb-2 drop-shadow-lg">Since {schoolData.foundedYear}</div>
                 <div className="text-white/90 font-semibold text-sm">Years of Excellence</div>
               </div>
-            )}
+            )} */}
           </div>
         </div>
       </section>

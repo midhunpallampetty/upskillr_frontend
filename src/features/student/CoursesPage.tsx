@@ -114,10 +114,10 @@ const CoursesPage: React.FC = () => {
               Browse all available courses and discover the right one for you.
             </p>
             <button
-              onClick={() => navigate('')}
+              onClick={() => navigate('/')}
               className="mt-4 inline-block bg-white text-blue-700 font-semibold px-5 py-2 rounded-lg hover:bg-gray-100 transition"
             >
-              ⬅ Back to Schools
+              ⬅ Back to Home
             </button>
           </div>
           <img

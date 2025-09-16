@@ -11,10 +11,8 @@ const ITEMS_PER_PAGE = 6;
 
 const CoursesPage: React.FC = () => {
   const dispatch = useGlobalDispatch();
-
-  useStudentAuthGuard()
-  const { schoolName } = useParams();
-  localStorage.setItem('schoolname',schoolName);
+  useStudentAuthGuard();
+  const { schoolName: paramSchoolName } = useParams(); // Renamed for clarity
   const navigate = useNavigate();
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
@@ -23,31 +21,56 @@ const CoursesPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
-    if (!schoolName) return;
-console.log(schoolName, "schoolName")
-    const decodedUrl = decodeURIComponent(schoolName);
-    console.log(decodedUrl, "decodedUrl")
-    Cookies.set('dbname',schoolName)
-      dispatch({ type: 'SET_SCHOOL_NAME', payload: decodedUrl }); 
-    console.log(decodedUrl, "decodedUrl")
-    const getCourses = async () => {
-      const result = await fetchCoursesBySchool("https://" + decodedUrl + '.eduvia.space');
+    // Detect school from hostname first (for subdomains)
+    let school = '';
+    const hostname = window.location.hostname;
+    const subdomainMatch = hostname.match(/^([a-z0-9-]+)\.eduvia\.space$/i);
+    if (subdomainMatch && subdomainMatch[1] !== 'www') {
+      school = subdomainMatch[1]; // e.g., 'gamersclub'
+    } else if (paramSchoolName) {
+      // Fallback to URL param for main domain
+      school = decodeURIComponent(paramSchoolName);
+    }
 
-      if (result.success && result.courses) {
-        setCourses(result.courses);
-      } else {
-        console.error('Error fetching courses:', result.error);
-      }
-
+    if (!school) {
+      console.error('No school detected from hostname or params');
       setLoading(false);
+      return;
+    }
+
+    console.log(school, 'Detected school');
+
+    // Handle redundant path on subdomain (optional: redirect for cleaner UX)
+    if (subdomainMatch && paramSchoolName && paramSchoolName === school) {
+      navigate('/home', { replace: true }); // Redirect to avoid redundancy
+    }
+
+    localStorage.setItem('schoolname', school);
+    Cookies.set('dbname', school);
+    dispatch({ type: 'SET_SCHOOL_NAME', payload: school });
+
+    const getCourses = async () => {
+      try {
+        // Use relative path; backend will handle school from Host header
+        const result = await fetchCoursesBySchool('/api/courses'); // Adjust to your actual API path
+
+        if (result.success && result.courses) {
+          setCourses(result.courses);
+        } else {
+          console.error('Error fetching courses:', result.error);
+        }
+      } catch (error) {
+        console.error('Fetch error:', error);
+      } finally {
+        setLoading(false);
+      }
     };
 
     getCourses();
-  }, [schoolName]);
+  }, [paramSchoolName, navigate, dispatch]);
 
   const filteredCourses = useMemo(() => {
     const term = search.toLowerCase();
-
     return courses
       .filter(
         (course) =>
@@ -80,7 +103,7 @@ console.log(schoolName, "schoolName")
             <h2 className="text-4xl font-bold mb-4">
               Courses at{' '}
               <span className="block text-yellow-300">
-                {decodeURIComponent(schoolName || '')}
+                {decodeURIComponent(paramSchoolName || '')}
               </span>
             </h2>
             <p className="text-blue-100 text-lg mb-4">
@@ -158,14 +181,12 @@ console.log(schoolName, "schoolName")
                     <button
                       onClick={() => {
                         dispatch({ type: 'SET_COURSE', payload: JSON.stringify(course) });
-                        navigate(`/school/${schoolName}/course/${course._id}`);
+                        navigate(`/school/${paramSchoolName || school}/course/${course._id}`); // Use detected school if param missing
                       }}
                       className="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-md text-sm font-medium transition"
                     >
                       View Details
                     </button>
-
-
                   </div>
                 </div>
               ))}

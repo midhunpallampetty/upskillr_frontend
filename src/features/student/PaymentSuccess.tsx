@@ -272,14 +272,14 @@ const PaymentSuccess = () => {
               <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl p-6 text-white">
                 <h3 className="text-xl font-bold mb-2">Ready to Start Learning?</h3>
                 <p className="mb-4 opacity-90">Your course is now available in your dashboard</p>
-                {/* <button
+                <button
                   onClick={() => navigate('/studenthome')}
                   className="bg-white text-blue-600 hover:bg-gray-100 px-6 py-3 rounded-lg font-semibold transition-colors inline-flex items-center space-x-2"
                 >
                   <BookOpen className="w-5 h-5" />
                   <span>Start Learning Now</span>
                   <ArrowRight className="w-5 h-5" />
-                </button> */}
+                </button>
               </div>
             </div>
 

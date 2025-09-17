@@ -26,44 +26,64 @@ const StudentRegister = () => {
   const [isOtpLoading, setIsOtpLoading] = useState(false);
   const navigate = useNavigate();
 
+  // Extract subdomain as schoolName from hostname
+  const getSchoolNameFromHostname = () => {
+    const hostname = window.location.hostname; // e.g., sub1.eduvia.space
+    const domain = 'eduvia.space';
+    const parts = hostname.split('.');
+    if (hostname === domain || hostname === 'www.' + domain) return ''; // No subdomain (main domain)
+    if (hostname.endsWith(domain) && parts.length > 2) {
+      return parts.slice(0, parts.length - 2).join('.');
+    }
+    return '';
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     setErrors((prev) => ({ ...prev, [e.target.name]: '' }));
   };
 
-const handleRegister = async (e: React.FormEvent) => {
-  e.preventDefault();
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-  const validationErrors = validateStudentRegister(formData);
-  if (formData.password !== formData.confirmPassword) {
-    validationErrors.confirmPassword = "Passwords do not match";
-  }
-  setErrors(validationErrors);
-  if (Object.keys(validationErrors).length > 0) return;
+    const validationErrors = validateStudentRegister(formData);
+    if (formData.password !== formData.confirmPassword) {
+      validationErrors.confirmPassword = 'Passwords do not match';
+    }
+    setErrors(validationErrors);
+    if (Object.keys(validationErrors).length > 0) return;
 
-  try {
-    setIsRegisterLoading(true);
-    await registerStudent(formData);
-    setIsOtpPhase(true);
-    toast.success("🎉 Registration successful. Please check your email for the OTP.", {
-      position: 'top-right',
-      autoClose: 3000,
-    });
-  } catch (err: any) {
-    toast.error(`❌ ${err.message}`, {
-      position: 'top-right',
-      autoClose: 3000,
-    });
-  } finally {
-    setIsRegisterLoading(false);
-  }
-};
+    try {
+      setIsRegisterLoading(true);
 
+      const schoolName = getSchoolNameFromHostname();
+
+      // Add schoolName dynamically to form data sent to backend
+      await registerStudent({ ...formData, schoolName });
+
+      setIsOtpPhase(true);
+      toast.success('🎉 Registration successful. Please check your email for the OTP.', {
+        position: 'top-right',
+        autoClose: 3000,
+      });
+    } catch (err: any) {
+      toast.error(`❌ ${err.message}`, {
+        position: 'top-right',
+        autoClose: 3000,
+      });
+    } finally {
+      setIsRegisterLoading(false);
+    }
+  };
 
   const handleOtpSubmit = async () => {
     try {
       setIsOtpLoading(true);
-      await verifyStudentOtp(formData.email, otp);
+
+      const schoolName = getSchoolNameFromHostname();
+
+      // Pass schoolName along with email and otp for verification
+      await verifyStudentOtp(formData.email, otp, schoolName);
 
       Swal.fire({
         icon: 'success',
@@ -103,9 +123,7 @@ const handleRegister = async (e: React.FormEvent) => {
                   className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-900 placeholder-gray-400"
                   disabled={isRegisterLoading}
                 />
-                {errors.fullName && (
-                  <p className="mt-1 text-sm text-red-500 animate-pulse">{errors.fullName}</p>
-                )}
+                {errors.fullName && <p className="mt-1 text-sm text-red-500 animate-pulse">{errors.fullName}</p>}
               </div>
 
               {/* Email */}
@@ -118,9 +136,7 @@ const handleRegister = async (e: React.FormEvent) => {
                   className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-900 placeholder-gray-400"
                   disabled={isRegisterLoading}
                 />
-                {errors.email && (
-                  <p className="mt-1 text-sm text-red-500 animate-pulse">{errors.email}</p>
-                )}
+                {errors.email && <p className="mt-1 text-sm text-red-500 animate-pulse">{errors.email}</p>}
               </div>
 
               {/* Password */}
@@ -142,9 +158,7 @@ const handleRegister = async (e: React.FormEvent) => {
                 >
                   {showPassword ? 'Hide' : 'Show'}
                 </button>
-                {errors.password && (
-                  <p className="mt-1 text-sm text-red-500 animate-pulse">{errors.password}</p>
-                )}
+                {errors.password && <p className="mt-1 text-sm text-red-500 animate-pulse">{errors.password}</p>}
               </div>
 
               {/* Confirm Password */}
@@ -166,9 +180,7 @@ const handleRegister = async (e: React.FormEvent) => {
                 >
                   {showConfirmPassword ? 'Hide' : 'Show'}
                 </button>
-                {errors.confirmPassword && (
-                  <p className="mt-1 text-sm text-red-500 animate-pulse">{errors.confirmPassword}</p>
-                )}
+                {errors.confirmPassword && <p className="mt-1 text-sm text-red-500 animate-pulse">{errors.confirmPassword}</p>}
               </div>
 
               {/* Submit */}
@@ -180,18 +192,8 @@ const handleRegister = async (e: React.FormEvent) => {
               >
                 {isRegisterLoading ? (
                   <>
-                    <svg
-                      className="animate-spin h-5 w-5 mr-2 text-white"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      />
+                    <svg className="animate-spin h-5 w-5 mr-2 text-white" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                       <path
                         className="opacity-75"
                         fill="currentColor"
@@ -204,7 +206,7 @@ const handleRegister = async (e: React.FormEvent) => {
                   'Register Now'
                 )}
               </button>
-                  <ToastContainer theme="colored" />
+              <ToastContainer theme="colored" />
 
               <p className="text-center text-sm text-gray-600">
                 Already have an account?{' '}
@@ -216,15 +218,11 @@ const handleRegister = async (e: React.FormEvent) => {
                 >
                   Sign in
                 </button>
-                
               </p>
             </div>
-
           </div>
-          
         ) : (
           <div className="flex-1 p-8 md:p-12 flex flex-col justify-center">
-            
             <h2 className="text-3xl font-extrabold text-gray-900 mb-4">Verify Your Email</h2>
             <p className="text-gray-600 mb-6">
               An OTP has been sent to <strong>{formData.email}</strong>
@@ -247,18 +245,8 @@ const handleRegister = async (e: React.FormEvent) => {
             >
               {isOtpLoading ? (
                 <>
-                  <svg
-                    className="animate-spin h-5 w-5 mr-2 text-white"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    />
+                  <svg className="animate-spin h-5 w-5 mr-2 text-white" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path
                       className="opacity-75"
                       fill="currentColor"
@@ -288,11 +276,8 @@ const handleRegister = async (e: React.FormEvent) => {
             alt="Student Learning"
             className="w-80 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300"
           />
-          
         </div>
-        
       </div>
-      
     </div>
   );
 };

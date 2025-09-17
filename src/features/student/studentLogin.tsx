@@ -10,7 +10,7 @@ import { Eye, EyeOff } from 'lucide-react';
 import useNavigateToStudentHome from './hooks/useNavigateToStudentHome';
 
 const StudentLogin = () => {
-  useNavigateToStudentHome()
+  useNavigateToStudentHome();
   const [formData, setFormData] = useState<StudentLoginData>({ email: '', password: '' });
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
   const [showPassword, setShowPassword] = useState(false);
@@ -21,43 +21,71 @@ const StudentLogin = () => {
     setErrors((prev) => ({ ...prev, [e.target.name]: '' }));
   };
 
-const handleLogin = async (e: React.FormEvent) => {
-  e.preventDefault();
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-  const validationErrors = validateStudentLogin(formData);
-  if (Object.keys(validationErrors).length > 0) {
-    setErrors(validationErrors);
-    return;
-  }
-
-  setErrors({});
-
-  try {
-    // Extract subdomain as schoolName
-    const hostname = window.location.hostname; // e.g. 'sub1.eduvia.space'
-    const domain = 'eduvia.space';
-    const parts = hostname.split('.');
-    let schoolName = '';
-    if (hostname.endsWith(domain) && parts.length > 2) {
-      schoolName = parts.slice(0, parts.length - 2).join('.');
+    const validationErrors = validateStudentLogin(formData);
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
     }
 
-    const payload = {
-      ...formData,
-      schoolName, // pass to backend
-    };
+    setErrors({});
 
-    const { student, accessToken, refreshToken } = await loginStudent(payload);
+    try {
+      // Extract subdomain as schoolName
+      const hostname = window.location.hostname; // e.g. 'sub1.eduvia.space'
+      const domain = 'eduvia.space';
+      const parts = hostname.split('.');
+      let schoolName = '';
+      if (hostname.endsWith(domain) && parts.length > 2) {
+        schoolName = parts.slice(0, parts.length - 2).join('.');
+      }
 
-    // ... rest of your login flow unchanged
+      const payload = {
+        ...formData,
+        schoolName, // pass to backend
+      };
 
-  } catch (err: any) {
-    // error handling unchanged
-  }
-};
+      const { student, accessToken, refreshToken } = await loginStudent(payload);
 
+      // Save tokens securely in cookies
+      Cookies.set('studentAccessToken', accessToken, {
+        expires: 1,
+        secure: true,
+        sameSite: 'strict',
+      });
 
+      Cookies.set('studentRefreshToken', refreshToken, {
+        expires: 7,
+        secure: true,
+        sameSite: 'strict',
+      });
 
+      localStorage.setItem('student', JSON.stringify(student));
+
+      toast.success(`🎉 Welcome ${student.fullName}`, { position: 'top-right' });
+
+      // Redirect based on domain/subdomain logic
+      const isMainDomain = hostname === domain || hostname === 'www.' + domain;
+
+      if (!isMainDomain && hostname.endsWith(domain) && parts.length > 2) {
+        // Subdomain case
+        const subdomain = parts.slice(0, parts.length - 2).join('.');
+        window.location.href = `https://${subdomain}.${domain}/school/${subdomain}/home`;
+      } else {
+        // Main domain case
+        window.location.href = `https://www.${domain}/studenthome`;
+      }
+    } catch (err: any) {
+      const msg = err?.msg || err.message || 'Login failed';
+      if (msg.toLowerCase().includes('school')) {
+        toast.error('❌ School not found', { position: 'top-right' });
+      } else {
+        toast.error(`❌ ${msg}`, { position: 'top-right' });
+      }
+    }
+  };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-indigo-900 to-blue-700">

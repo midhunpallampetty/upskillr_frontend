@@ -75,7 +75,14 @@ const PaymentSuccess = () => {
         if (storedCourse) {
           setCourseDetails(JSON.parse(storedCourse));
         }
-
+console.log(    schoolName,
+          courseId,
+          studentId,
+          paymentIntentId,
+          amount,
+          currency,
+          status,
+          receiptUrl,'payment details');
         await savePayment(
           schoolName,
           courseId,

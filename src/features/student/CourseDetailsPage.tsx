@@ -260,4 +260,4 @@ const CourseDetailsPage: React.FC = () => {
   );
 };
 
-export default CourseDetailsPage;
+export default CourseDetailsPage;//test

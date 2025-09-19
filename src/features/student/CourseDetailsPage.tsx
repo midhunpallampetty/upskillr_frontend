@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom'; // Removed useParams since we're extracting manually
 import CourseSkeleton from './components/UI/CourseSkeleton';
 import { useGlobalState, useSetStudent } from '../../context/GlobalState';
 import StudentNavbar from './components/Layout/StudentNavbar';
@@ -9,7 +9,14 @@ import { useSetCourse } from '../../context/GlobalState';
 import { checkPreviousPurchase } from './api/course.api';
 
 const CourseDetailsPage: React.FC = () => {
-  const { courseId } = useParams();
+  // Extract courseId directly from URL pathname
+  const pathname = window.location.pathname;
+  const pathSegments = pathname.split('/').filter(segment => segment); // Filter out empty segments
+  const courseIndex = pathSegments.findIndex(segment => segment === 'course');
+  const extractedCourseId = courseIndex !== -1 && pathSegments.length > courseIndex + 1 
+    ? pathSegments[courseIndex + 1] 
+    : null;
+
   const setCourse = useSetCourse();
   const { student, schoolName, course } = useGlobalState();
   const setStudent = useSetStudent();
@@ -50,17 +57,17 @@ const CourseDetailsPage: React.FC = () => {
     }, 0);
     setVideoCount(totalVideos);
   }, [sections]);
-console.log(student?._id,courseId,"status");
+
   // Check if course is purchased
   useEffect(() => {
     const run = async () => {
-      console.log(`Checking purchase - Student ID: ${student?._id}, Course ID: ${courseId}`); // Log before check
-      if (!student?._id || !courseId) {
+      console.log(`Checking purchase - Student ID: ${student?._id}, Course ID: ${extractedCourseId}`); // Log before check
+      if (!student?._id || !extractedCourseId) {
         console.log('Purchase check skipped: Missing student or course ID');
         return setIsPurchased(false);
       }
       try {
-        const { hasPurchased } = await checkPreviousPurchase(courseId, student._id);
+        const { hasPurchased } = await checkPreviousPurchase(extractedCourseId, student._id);
         setIsPurchased(hasPurchased);
         console.log(`Purchase status: ${hasPurchased ? 'Purchased' : 'Not purchased'}`); // Log result
       } catch (err) {
@@ -70,11 +77,17 @@ console.log(student?._id,courseId,"status");
       }
     };
     run();
-  }, [courseId, student?._id]);
+  }, [extractedCourseId, student?._id]);
 
   // Load course and sections
   useEffect(() => {
     const loadCourse = async () => {
+      if (!extractedCourseId) {
+        console.error('No courseId extracted from URL');
+        setLoading(false);
+        return;
+      }
+
       try {
         setLoading(true);
 
@@ -84,7 +97,7 @@ console.log(student?._id,courseId,"status");
         const local = localStorage.getItem('selectedCourse');
         if (local) {
           const parsed = JSON.parse(local);
-          if (parsed._id === courseId) {
+          if (parsed._id === extractedCourseId) {
             selectedCourse = parsed;
           }
         }
@@ -94,18 +107,7 @@ console.log(student?._id,courseId,"status");
           console.log(course, 'course from context');
           const parsed = JSON.parse(course);
 
-          // Fallback to get courseId from URL if it's undefined or missing
-          let currentCourseId = courseId;
-          if (!currentCourseId) {
-            const pathSegments = window.location.pathname.split('/');
-            const courseIndex = pathSegments.findIndex(segment => segment === 'course');
-            if (courseIndex !== -1 && pathSegments.length > courseIndex + 1) {
-              currentCourseId = pathSegments[courseIndex + 1];
-              console.log('Extracted courseId from URL:', currentCourseId);
-            }
-          }
-
-          if (parsed._id === currentCourseId) {
+          if (parsed._id === extractedCourseId) {
             selectedCourse = parsed;
             localStorage.setItem('selectedCourse', course);
           }
@@ -133,7 +135,7 @@ console.log(student?._id,courseId,"status");
     };
 
     loadCourse();
-  }, [courseId, course, schoolName, setCourse]);
+  }, [extractedCourseId, course, schoolName, setCourse]);
 
   // Logout handler
   const handleLogout = () => {
@@ -146,7 +148,7 @@ console.log(student?._id,courseId,"status");
 
   if (loading) return <CourseSkeleton />;
 
-  if (!parsedCourse)
+  if (!parsedCourse || !extractedCourseId)
     return <div className="text-center py-10 text-red-500">Course not found</div>;
 
   return (

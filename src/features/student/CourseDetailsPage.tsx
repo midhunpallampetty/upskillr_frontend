@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom'; // Added Link import
+import { motion } from 'framer-motion'; // Added framer-motion import
+import { GraduationCap, LogOut } from 'lucide-react'; // Added lucide-react imports
 import CourseSkeleton from './components/UI/CourseSkeleton';
 import { useGlobalState, useSetStudent } from '../../context/GlobalState';
-import StudentNavbar from './components/Layout/StudentNavbar';
 import Cookies from 'js-cookie';
 import { getSectionsByCourse } from '../school/api/course.api';
 import { useParams } from 'react-router-dom';
 import { useSetCourse } from '../../context/GlobalState';
 import { checkPreviousPurchase } from './api/course.api';
+
 const getCourseId = (): string | undefined => {
   const params = useParams<{ courseId: string }>();
   let courseId = params.courseId;
@@ -27,7 +29,7 @@ const getCourseId = (): string | undefined => {
 
 const CourseDetailsPage: React.FC = () => {
   const courseId = getCourseId();
-    const setCourse = useSetCourse();
+  const setCourse = useSetCourse();
   const { student, schoolName, course } = useGlobalState();
   const setStudent = useSetStudent();
   const [parsedCourse, setParsedCourse] = useState<any>(null);
@@ -68,19 +70,19 @@ const CourseDetailsPage: React.FC = () => {
   }, [sections]);
 
   // Check if course is purchased
-useEffect(() => {
-  const run = async () => {
-    if (!student?._id || !courseId) return setIsPurchased(false);
-    try {
-      const { hasPurchased } = await checkPreviousPurchase(courseId, student._id);
-      setIsPurchased(hasPurchased);
-    } catch (err) {
-      console.error('Error checking purchase status:', err);
-      setIsPurchased(false);
-    }
-  };
-  run();
-}, [courseId, student?._id]);
+  useEffect(() => {
+    const run = async () => {
+      if (!student?._id || !courseId) return setIsPurchased(false);
+      try {
+        const { hasPurchased } = await checkPreviousPurchase(courseId, student._id);
+        setIsPurchased(hasPurchased);
+      } catch (err) {
+        console.error('Error checking purchase status:', err);
+        setIsPurchased(false);
+      }
+    };
+    run();
+  }, [courseId, student?._id]);
 
   // Load course and sections
   useEffect(() => {
@@ -100,28 +102,27 @@ useEffect(() => {
         }
 
         // If not in local or mismatched, fallback to context
-      if (!selectedCourse && course) {
-    console.log(course, 'course from context');
-    const parsed = JSON.parse(course);
+        if (!selectedCourse && course) {
+          console.log(course, 'course from context');
+          const parsed = JSON.parse(course);
 
-    // Fallback to get courseId from URL if it's undefined or missing
-    let currentCourseId = courseId;
-    if (!currentCourseId) {
-        const pathSegments = window.location.pathname.split('/');
-        // Assuming 'course' is always followed by courseId in the URL
-        const courseIndex = pathSegments.findIndex(segment => segment === 'course');
-        if (courseIndex !== -1 && pathSegments.length > courseIndex + 1) {
-            currentCourseId = pathSegments[courseIndex + 1];
-            console.log('Extracted courseId from URL:', currentCourseId);
+          // Fallback to get courseId from URL if it's undefined or missing
+          let currentCourseId = courseId;
+          if (!currentCourseId) {
+            const pathSegments = window.location.pathname.split('/');
+            // Assuming 'course' is always followed by courseId in the URL
+            const courseIndex = pathSegments.findIndex(segment => segment === 'course');
+            if (courseIndex !== -1 && pathSegments.length > courseIndex + 1) {
+              currentCourseId = pathSegments[courseIndex + 1];
+              console.log('Extracted courseId from URL:', currentCourseId);
+            }
+          }
+
+          if (parsed._id === currentCourseId) {
+            selectedCourse = parsed;
+            localStorage.setItem('selectedCourse', course);
+          }
         }
-    }
-
-    if (parsed._id === currentCourseId) {
-        selectedCourse = parsed;
-        localStorage.setItem('selectedCourse', course);
-    }
-}
-
 
         setParsedCourse(selectedCourse);
         if (selectedCourse) {
@@ -164,7 +165,34 @@ useEffect(() => {
 
   return (
     <>
-      <StudentNavbar student={student} handleLogout={handleLogout} />
+      {/* Updated Navbar like the reference */}
+      <nav className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-6 flex justify-between items-center py-4">
+          <div className="flex items-center gap-3">
+            <motion.div
+              whileHover={{ rotate: 360 }}
+              transition={{ duration: 0.5 }}
+              className="text-indigo-600"
+            >
+              <GraduationCap className="w-8 h-8" />
+            </motion.div>
+            <Link 
+              to="/student/purchased-courses"
+              className="text-xl font-semibold text-gray-800 hover:text-indigo-600 transition-colors"
+            >
+              Course Progress
+            </Link>
+          </div>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={handleLogout}
+            className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-2"
+          >
+            <LogOut size={18} /> Logout
+          </motion.button>
+        </div>
+      </nav>
 
       <div className="bg-white min-h-screen pt-6 pb-16 px-4 md:px-10">
         {/* Banner */}
@@ -173,12 +201,14 @@ useEffect(() => {
             src={imgSrc}
             alt={parsedCourse.courseName || 'Course Thumbnail'}
             className="w-full md:w-1/2 h-72 rounded-md object-cover"
-            onError={() =>
+            onError={(e) => {
+              e.target.onerror = null; // Prevent infinite loop
               setImgSrc(
                 'https://t3.ftcdn.net/jpg/08/06/10/36/360_F_806103697_E9Y1vKhtQimCEIiA75QWEn4NdZe7lQXj.jpg'
-              )
-            }
+              );
+            }}
           />
+
           <div className="p-8 md:w-1/2">
             <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-3">
               {parsedCourse.courseName}

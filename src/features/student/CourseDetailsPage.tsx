@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import CourseSkeleton from './components/UI/CourseSkeleton';
 import { useGlobalState, useSetStudent } from '../../context/GlobalState';
 import StudentNavbar from './components/Layout/StudentNavbar';
 import Cookies from 'js-cookie';
 import { getSectionsByCourse } from '../school/api/course.api';
-import { useParams } from 'react-router-dom';
 import { useSetCourse } from '../../context/GlobalState';
 import { checkPreviousPurchase } from './api/course.api';
 
@@ -27,6 +26,7 @@ const CourseDetailsPage: React.FC = () => {
 
   // Navigate to payment page or course page
   const handleClick = (id: string) => {
+    console.log(`Navigating - Course ID: ${id}, Is Purchased: ${isPurchased}`); // Log before navigation
     localStorage.removeItem('selectedCourse'); // Force reload fresh
     if (isPurchased) {
       window.location.href = `/student/course-page/${schoolName}/${id}`;
@@ -52,19 +52,25 @@ const CourseDetailsPage: React.FC = () => {
   }, [sections]);
 
   // Check if course is purchased
-useEffect(() => {
-  const run = async () => {
-    if (!student?._id || !courseId) return setIsPurchased(false);
-    try {
-      const { hasPurchased } = await checkPreviousPurchase(courseId, student._id);
-      setIsPurchased(hasPurchased);
-    } catch (err) {
-      console.error('Error checking purchase status:', err);
-      setIsPurchased(false);
-    }
-  };
-  run();
-}, [courseId, student?._id]);
+  useEffect(() => {
+    const run = async () => {
+      console.log(`Checking purchase - Student ID: ${student?._id}, Course ID: ${courseId}`); // Log before check
+      if (!student?._id || !courseId) {
+        console.log('Purchase check skipped: Missing student or course ID');
+        return setIsPurchased(false);
+      }
+      try {
+        const { hasPurchased } = await checkPreviousPurchase(courseId, student._id);
+        setIsPurchased(hasPurchased);
+        console.log(`Purchase status: ${hasPurchased ? 'Purchased' : 'Not purchased'}`); // Log result
+      } catch (err) {
+        console.error('Error checking purchase status:', err);
+        setIsPurchased(false);
+        console.log('Purchase status: Error occurred - assuming not purchased');
+      }
+    };
+    run();
+  }, [courseId, student?._id]);
 
   // Load course and sections
   useEffect(() => {
@@ -84,28 +90,26 @@ useEffect(() => {
         }
 
         // If not in local or mismatched, fallback to context
-      if (!selectedCourse && course) {
-    console.log(course, 'course from context');
-    const parsed = JSON.parse(course);
+        if (!selectedCourse && course) {
+          console.log(course, 'course from context');
+          const parsed = JSON.parse(course);
 
-    // Fallback to get courseId from URL if it's undefined or missing
-    let currentCourseId = courseId;
-    if (!currentCourseId) {
-        const pathSegments = window.location.pathname.split('/');
-        // Assuming 'course' is always followed by courseId in the URL
-        const courseIndex = pathSegments.findIndex(segment => segment === 'course');
-        if (courseIndex !== -1 && pathSegments.length > courseIndex + 1) {
-            currentCourseId = pathSegments[courseIndex + 1];
-            console.log('Extracted courseId from URL:', currentCourseId);
+          // Fallback to get courseId from URL if it's undefined or missing
+          let currentCourseId = courseId;
+          if (!currentCourseId) {
+            const pathSegments = window.location.pathname.split('/');
+            const courseIndex = pathSegments.findIndex(segment => segment === 'course');
+            if (courseIndex !== -1 && pathSegments.length > courseIndex + 1) {
+              currentCourseId = pathSegments[courseIndex + 1];
+              console.log('Extracted courseId from URL:', currentCourseId);
+            }
+          }
+
+          if (parsed._id === currentCourseId) {
+            selectedCourse = parsed;
+            localStorage.setItem('selectedCourse', course);
+          }
         }
-    }
-
-    if (parsed._id === currentCourseId) {
-        selectedCourse = parsed;
-        localStorage.setItem('selectedCourse', course);
-    }
-}
-
 
         setParsedCourse(selectedCourse);
         if (selectedCourse) {
@@ -129,13 +133,12 @@ useEffect(() => {
     };
 
     loadCourse();
-  }, [courseId, course, schoolName]);
+  }, [courseId, course, schoolName, setCourse]);
 
   // Logout handler
   const handleLogout = () => {
     Cookies.remove('studentAccessToken');
     Cookies.remove('studentRefreshToken');
-    
     localStorage.removeItem('student');
     setStudent(null);
     navigate('/studentlogin');
@@ -226,7 +229,7 @@ useEffect(() => {
             
           {/* Detailed Sections */}
           <div className="bg-white border rounded-lg p-5 shadow-md col-span-1 md:col-span-2">
-            <h2 className="text-md font-semibold text-gray-700 mb-4">Curriculam</h2>
+            <h2 className="text-md font-semibold text-gray-700 mb-4">Curriculum</h2>
             {sections.length > 0 ? (
               <ul className="space-y-4">
                 {sections.map((section, index) => (

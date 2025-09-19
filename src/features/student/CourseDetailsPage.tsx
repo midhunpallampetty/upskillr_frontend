@@ -67,6 +67,7 @@ const CourseDetailsPage: React.FC = () => {
         return setIsPurchased(false);
       }
       try {
+        console.log(extractedCourseId,'Initiating purchase status check...');
         const { hasPurchased } = await checkPreviousPurchase(extractedCourseId, student._id);
         setIsPurchased(hasPurchased);
         console.log(`Purchase status: ${hasPurchased ? 'Purchased' : 'Not purchased'}`); // Log result

@@ -142,25 +142,33 @@ const ExamComponent = ({ exam, onSubmit, onCancel }: { exam: any; onSubmit: (pas
     </motion.div>
   );
 };
+
 function useCourseParams() {
   const { courseId, schoolName } = useParams<{ courseId: string; schoolName: string }>();
 
-  // fallback: extract schoolName from subdomain if not available
+  // fallback: extract schoolName from subdomain
   const hostname = window.location.hostname; // e.g., gamersclub.eduvia.space
-  console.log(hostname,'host');
   const parts = hostname.split(".");
   let subdomainSchoolName: string | null = null;
-console.log(parts,'host');
+
   if (parts.length > 2) {
-    // take first part as subdomain (gamersclub)
-    subdomainSchoolName = parts[0];
+    subdomainSchoolName = parts[0]; // first part is subdomain
+  }
+
+  // fallback: extract courseId from pathname if not captured
+  let finalCourseId = courseId;
+  if (!finalCourseId) {
+    const pathParts = window.location.pathname.split("/");
+    // e.g. /student/course-page/gamersclub/686e9b01024da93c6b817c32
+    finalCourseId = pathParts[pathParts.length - 1] || "";
   }
 
   return {
-    courseId,
+    courseId: finalCourseId,
     schoolName: schoolName || subdomainSchoolName || "",
   };
 }
+
 const CourseShowPage = () => {
   useStudentAuthGuard();
 const { courseId, schoolName } = useCourseParams();  // Core state

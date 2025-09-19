@@ -147,6 +147,7 @@ function useCourseParams() {
 
   // fallback: extract schoolName from subdomain if not available
   const hostname = window.location.hostname; // e.g., gamersclub.eduvia.space
+  console.log(hostname,'host');
   const parts = hostname.split(".");
   let subdomainSchoolName: string | null = null;
 console.log(parts,'host');

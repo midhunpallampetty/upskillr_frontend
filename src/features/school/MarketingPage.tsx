@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { getSchoolBySubdomain } from './api/school.api'; // Adjust the import path to match your project structure (e.g., the api folder where this function exists)
 import { getCoursesBySchool } from './api/course.api'; // Assuming this is the import for the new API function; adjust path accordingly
 import Cookies from 'js-cookie';
+import SchoolMarketingNavbar from '../student/components/Layout/StudentNavbar'; // Adjust the import path to where SchoolMarketingNavbar is located
 
 // Embedded utility function to extract subdomain
 const getSubdomain = (url: string = window.location.href): string => {
@@ -42,6 +43,12 @@ interface Course {
   __v: number;
 }
 
+// Interface for Student (matching StudentNavbar)
+interface Student {
+  fullName?: string;
+  image: string;
+}
+
 const MarketingPage: React.FC = () => {
   const [courses, setCourses] = useState<Course[]>([]);
   const [schoolData, setSchoolData] = useState({
@@ -67,12 +74,37 @@ const MarketingPage: React.FC = () => {
   // State to check if user is logged in
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
+  // State for student data (to display in navbar if logged in)
+  const [student, setStudent] = useState<Student | null>(null);
+
   useEffect(() => {
     // Check for tokens in localStorage
     const accessToken = Cookies.get('studentAccessToken');
     const refreshToken = Cookies.get('studentRefreshToken');
     setIsLoggedIn(!!accessToken && !!refreshToken);
   }, []);
+
+  // Fetch student data if logged in
+  useEffect(() => {
+    if (isLoggedIn) {
+      const fetchStudent = async () => {
+        try {
+          const token = Cookies.get('studentAccessToken');
+          if (token) {
+            const response = localStorage.getItem('student')// Assume this API returns { data: { student: { fullName, image } } }
+            
+            setStudent(JSON.parse(response));
+          }
+        } catch (error) {
+          console.error('Error fetching student data:', error);
+          setStudent(null); // Fallback
+        }
+      };
+      fetchStudent();
+    } else {
+      setStudent(null);
+    }
+  }, [isLoggedIn]);
 
   useEffect(() => {
     if (subdomain) {
@@ -195,6 +227,8 @@ const MarketingPage: React.FC = () => {
     console.log('Logging out...');
     Cookies.remove('studentAccessToken');
     Cookies.remove('studentRefreshToken');
+    setIsLoggedIn(false);
+    setStudent(null);
     window.location.href = '/studentLogin';
   };
 
@@ -205,26 +239,15 @@ const MarketingPage: React.FC = () => {
 
   return (
     <div className="font-inter text-gray-800 leading-7 bg-gray-50 min-h-screen">
-      
-      {/* Navbar */}
-      <nav className="bg-white shadow-md py-4 px-6 fixed top-0 left-0 right-0 z-20">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <div className="flex items-center">
-            <img 
-              src={schoolData.image || 'https://images7.alphacoders.com/463/463447.jpg'} 
-              alt={`${schoolData.name} Logo`} 
-              className="w-10 h-10 rounded-full mr-3"
-            />
-            <h1 className="text-2xl font-bold text-gray-800">{schoolData.name || 'EduVia Academy'}</h1>
-          </div>
-          <button
-            onClick={isLoggedIn ? handleLogout : handleLogin}
-            className={`${isLoggedIn ? 'bg-red-500 hover:bg-red-600' : 'bg-blue-500 hover:bg-blue-600'} text-white px-4 py-2 rounded-md transition-colors`}
-          >
-            {isLoggedIn ? 'Logout' : 'Login'}
-          </button>
-        </div>
-      </nav>
+      {/* Use the separate Navbar component */}
+      <SchoolMarketingNavbar 
+        schoolData={schoolData} 
+        subdomain={subdomain} 
+        student={student} 
+        isLoggedIn={isLoggedIn} 
+        handleLogout={handleLogout} 
+        handleLogin={handleLogin} 
+      />
 
       {/* Enhanced Hero Section with Cover Image and Logo */}
       <section
@@ -346,13 +369,6 @@ const MarketingPage: React.FC = () => {
                 <div className="text-white/90 font-semibold text-sm">Job Placement Rate</div>
               </div>
             )}
-            {/* {schoolData.foundedYear && (
-              <div className="text-center bg-gradient-to-br from-yellow-400 to-orange-500 p-6 rounded-3xl shadow-2xl hover:shadow-3xl transform hover:-translate-y-2 transition-all duration-300 border border-white/20">
-                <div className="text-4xl mb-3 filter drop-shadow-lg">⭐</div>
-                <div className="text-2xl md:text-3xl font-black text-white mb-2 drop-shadow-lg">Since {schoolData.foundedYear}</div>
-                <div className="text-white/90 font-semibold text-sm">Years of Excellence</div>
-              </div>
-            )} */}
           </div>
         </div>
       </section>

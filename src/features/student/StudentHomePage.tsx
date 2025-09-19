@@ -7,7 +7,7 @@ import {
 import { getAllSchools } from './api/student.api';
 import { School } from './types/School';
 import { Student } from './types/School';
-import StudentNavbar from './components/Layout/StudentNavbar';
+import SchoolMarketingNavbar from './components/Layout/StudentNavbar';
 import useStudentAuthGuard from './hooks/useStudentAuthGuard';
 
 const ITEMS_PER_PAGE = 6;
@@ -136,7 +136,7 @@ const StudentHomePage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Navbar */}
-      <StudentNavbar student={student} handleLogout={handleLogout} />
+      <SchoolMarketingNavbar student={student} handleLogout={handleLogout} />
 
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-blue-600 via-purple-600 to-blue-800 text-white py-16 px-6 md:px-12">

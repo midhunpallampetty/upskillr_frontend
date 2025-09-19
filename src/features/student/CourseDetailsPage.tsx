@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // Removed useParams since we're extracting manually
+import { useNavigate } from 'react-router-dom';
 import CourseSkeleton from './components/UI/CourseSkeleton';
 import { useGlobalState, useSetStudent } from '../../context/GlobalState';
 import StudentNavbar from './components/Layout/StudentNavbar';
@@ -57,7 +57,11 @@ const CourseDetailsPage: React.FC = () => {
     }, 0);
     setVideoCount(totalVideos);
   }, [sections]);
-        console.log(extractedCourseId,student?._id,'Initiating purchase status check...');
+
+  // Log initiation (runs only on mount or when IDs change)
+  useEffect(() => {
+    console.log(extractedCourseId, student?._id, 'Initiating purchase status check...');
+  }, [extractedCourseId, student?._id]);
 
   // Check if course is purchased
   useEffect(() => {
@@ -80,7 +84,7 @@ const CourseDetailsPage: React.FC = () => {
     run();
   }, [extractedCourseId, student?._id]);
 
-  // Load course and sections
+  // Load course and sections (refined to prevent loops)
   useEffect(() => {
     const loadCourse = async () => {
       if (!extractedCourseId) {
@@ -107,26 +111,33 @@ const CourseDetailsPage: React.FC = () => {
         if (!selectedCourse && course) {
           console.log(course, 'course from context');
           const parsed = JSON.parse(course);
-
           if (parsed._id === extractedCourseId) {
             selectedCourse = parsed;
-            localStorage.setItem('selectedCourse', course);
+            // Only set localStorage if different
+            if (local !== course) {
+              localStorage.setItem('selectedCourse', course);
+            }
           }
         }
 
-        setParsedCourse(selectedCourse);
+        // Only update parsedCourse if we have a valid one
         if (selectedCourse) {
-          setCourse(JSON.stringify(selectedCourse));
-        }
-        if (selectedCourse?.courseThumbnail) {
-          setImgSrc(selectedCourse.courseThumbnail);
-        }
+          setParsedCourse(selectedCourse);
+          // Only update global course if different
+          const stringified = JSON.stringify(selectedCourse);
+          if (stringified !== course) {
+            setCourse(stringified);
+          }
+          if (selectedCourse.courseThumbnail) {
+            setImgSrc(selectedCourse.courseThumbnail);
+          }
 
-        if (selectedCourse?.school && selectedCourse?._id) {
-          const sectionList = await getSectionsByCourse(schoolName, selectedCourse._id);
-          setSections(sectionList);
-        } else {
-          setSections([]);
+          if (selectedCourse.school && selectedCourse._id) {
+            const sectionList = await getSectionsByCourse(schoolName, selectedCourse._id);
+            setSections(sectionList);
+          } else {
+            setSections([]);
+          }
         }
       } catch (err) {
         console.error('Error loading course or sections:', err);
@@ -136,7 +147,7 @@ const CourseDetailsPage: React.FC = () => {
     };
 
     loadCourse();
-  }, [extractedCourseId, course, schoolName, setCourse]);
+  }, [extractedCourseId, schoolName, setCourse]); // Removed 'course' from dependencies to break loop
 
   // Logout handler
   const handleLogout = () => {
@@ -202,7 +213,7 @@ const CourseDetailsPage: React.FC = () => {
                 onClick={() => handleClick(parsedCourse._id)}
                 className="mt-4 bg-indigo-600 text-white px-6 py-2 rounded hover:bg-indigo-700 transition"
               >
-                Buy Now forv ₹{parsedCourse.fee}
+                Buy Now for ₹{parsedCourse.fee}
               </button>
             )}
           </div>

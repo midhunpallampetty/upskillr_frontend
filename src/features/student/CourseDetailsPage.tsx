@@ -8,10 +8,26 @@ import { getSectionsByCourse } from '../school/api/course.api';
 import { useParams } from 'react-router-dom';
 import { useSetCourse } from '../../context/GlobalState';
 import { checkPreviousPurchase } from './api/course.api';
+const getCourseId = (): string | undefined => {
+  const params = useParams<{ courseId: string }>();
+  let courseId = params.courseId;
+
+  // Fallback: Manually parse from pathname if useParams fails
+  if (!courseId) {
+    const pathname = window.location.pathname;
+    const parts = pathname.split('/').filter(Boolean); // Split and remove empty parts
+    const courseIndex = parts.indexOf('course');
+    if (courseIndex !== -1 && courseIndex + 1 < parts.length) {
+      courseId = parts[courseIndex + 1];
+    }
+  }
+
+  return courseId;
+};
 
 const CourseDetailsPage: React.FC = () => {
-  const { courseId } = useParams();
-  const setCourse = useSetCourse();
+  const courseId = getCourseId();
+    const setCourse = useSetCourse();
   const { student, schoolName, course } = useGlobalState();
   const setStudent = useSetStudent();
   const [parsedCourse, setParsedCourse] = useState<any>(null);

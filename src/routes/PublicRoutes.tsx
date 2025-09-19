@@ -29,7 +29,7 @@ const SchoolLogin = lazy(() => import('../features/school/schoolLogin'));
 const LoginSelection = lazy(() => import('../features/shared/LoginSelection'));
 const SignupSelection = lazy(() => import('../features/shared/SignupSelection'));
 const VerificationStatus = lazy(() => import('../features/shared/VerificationStatus'));
-const StudentLogin = lazy(() => import('../features/student/studentLogin'));
+const StudentLogin = lazy(() => import('../features/student/studentLogin'));//tst
 const StudentRegister = lazy(() => import('../features/student/studentRegister'));
 const AdminDashboard = lazy(() => import('../features/admin/components/Layout/Dashboard'));
 const CoursesPage = lazy(() => import('../features/student/CoursesPage'));

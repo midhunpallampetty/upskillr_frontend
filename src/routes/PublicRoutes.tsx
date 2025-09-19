@@ -53,7 +53,7 @@ const PublicRoutes = () => (
     <Route path="/loginSelection" element={<LoginSelection />} />
     <Route path="/signupSelection" element={<SignupSelection />} />
     <Route path="/schoolStatus" element={<VerificationStatus />} />
-    <Route path="/studentLogin" element={<StudentLogin />} />
+    {/* <Route path="/studentLogin" element={<StudentLogin />} /> */}
     <Route path="/studentRegister" element={<StudentRegister />} />
     <Route path="/dashboard" element={<AdminDashboard />} />
    <Route path="/school/:schoolName/home" element={<CoursesPage />} />

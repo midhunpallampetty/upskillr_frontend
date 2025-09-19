@@ -163,6 +163,7 @@ function useCourseParams() {
 const CourseShowPage = () => {
   useStudentAuthGuard();
 const { courseId, schoolName } = useCourseParams();  // Core state
+console.log(courseId,schoolName,'params');
   const [course, setCourse] = useState<any | null>(null);
   console.log(course, 'course');
   const [loading, setLoading] = useState<boolean>(false);

@@ -142,11 +142,27 @@ const ExamComponent = ({ exam, onSubmit, onCancel }: { exam: any; onSubmit: (pas
     </motion.div>
   );
 };
+function useCourseParams() {
+  const { courseId, schoolName } = useParams<{ courseId: string; schoolName: string }>();
 
+  // fallback: extract schoolName from subdomain if not available
+  const hostname = window.location.hostname; // e.g., gamersclub.eduvia.space
+  const parts = hostname.split(".");
+  let subdomainSchoolName: string | null = null;
+
+  if (parts.length > 2) {
+    // take first part as subdomain (gamersclub)
+    subdomainSchoolName = parts[0];
+  }
+
+  return {
+    courseId,
+    schoolName: schoolName || subdomainSchoolName || "",
+  };
+}
 const CourseShowPage = () => {
   useStudentAuthGuard();
-  const { courseId, schoolName } = useParams<{ courseId: string; schoolName: string }>();
-  // Core state
+const { courseId, schoolName } = useCourseParams();  // Core state
   const [course, setCourse] = useState<any | null>(null);
   console.log(course, 'course');
   const [loading, setLoading] = useState<boolean>(false);

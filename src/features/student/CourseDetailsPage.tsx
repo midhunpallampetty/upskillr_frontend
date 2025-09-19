@@ -57,7 +57,7 @@ const CourseDetailsPage: React.FC = () => {
     }, 0);
     setVideoCount(totalVideos);
   }, [sections]);
-        console.log(extractedCourseId,'Initiating purchase status check...');
+        console.log(extractedCourseId,student?._id,'Initiating purchase status check...');
 
   // Check if course is purchased
   useEffect(() => {

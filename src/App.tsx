@@ -12,6 +12,7 @@ import CoursePurchasePage from './features/student/CoursePurchasePage';
 import { ExamPage } from './features/student/ExamPage';
 import PaymentSuccess from './features/student/PaymentSuccess';
 import PurchasedCourses from './features/student/PurchasedCourses';
+import CourseShowPage from './features/student/CourseShowPage';
 const SubdomainRoutes: React.FC<{ subdomain: string }> = ({ subdomain }) => {
   const location = useLocation();
 
@@ -34,7 +35,12 @@ const SubdomainRoutes: React.FC<{ subdomain: string }> = ({ subdomain }) => {
 { pattern: /^\/student\/payment-success$/, component: <PaymentSuccess /> },
 
 { pattern: /^\/school\/[^/]+\/home$/, component: <CoursesPage /> }, // matches /school/:schoolName/home
-{ pattern: /^\/student\/purchased-courses$/, component: <PurchasedCourses /> }
+{ pattern: /^\/student\/purchased-courses$/, component: <PurchasedCourses /> },
+{
+  pattern: /^\/student\/course-page\/([^/]+)\/([^/]+)$/,
+  component: <CourseShowPage />
+}
+
 
 ];
 

@@ -202,7 +202,7 @@ const CourseDetailsPage: React.FC = () => {
                 onClick={() => handleClick(parsedCourse._id)}
                 className="mt-4 bg-indigo-600 text-white px-6 py-2 rounded hover:bg-indigo-700 transition"
               >
-                Buy Now for ₹{parsedCourse.fee}
+                Buy Now forv ₹{parsedCourse.fee}
               </button>
             )}
           </div>

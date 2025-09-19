@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { School, Video, DollarSign, BookOpen } from 'lucide-react';
-import StudentNavbar from './components/Layout/StudentNavbar';
+import SchoolMarketingNavbar from './components/Layout/StudentNavbar';
 import Cookies from 'js-cookie';
 import Footer from './components/Layout/Footer';
 import useStudentAuthGuard from './hooks/useStudentAuthGuard';
@@ -62,7 +62,7 @@ const PurchasedCourses = () => {
       <div className="min-h-screen bg-gradient-to-br from-gray-100 to-white">
         {/* Navbar */}
         <div className="shadow bg-white sticky top-0 z-50">
-          <StudentNavbar student={student} handleLogout={handleLogout} />
+     
         </div>
 
         {/* Heading */}

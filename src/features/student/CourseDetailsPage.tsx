@@ -1,18 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CourseSkeleton from './components/UI/CourseSkeleton';
-import { useGlobalState, useSetStudent } from '../../context/GlobalState';
+import { useGlobalState, useSetStudent, useSetCourse } from '../../context/GlobalState';
 import StudentNavbar from './components/Layout/StudentNavbar';
 import Cookies from 'js-cookie';
 import { getSectionsByCourse } from '../school/api/course.api';
-import { useParams } from 'react-router-dom';
-import { useSetCourse } from '../../context/GlobalState';
 import { checkPreviousPurchase } from './api/course.api';
 
 const CourseDetailsPage: React.FC = () => {
-  const { courseId } = useParams();
   const setCourse = useSetCourse();
-  const { student, schoolName, course } = useGlobalState();
+  const { student, course } = useGlobalState();
   const setStudent = useSetStudent();
   const [parsedCourse, setParsedCourse] = useState<any>(null);
   const [sections, setSections] = useState<any[]>([]);
@@ -24,6 +21,23 @@ const CourseDetailsPage: React.FC = () => {
   const [imgSrc, setImgSrc] = useState<string>(
     'https://t3.ftcdn.net/jpg/08/06/10/36/360_F_806103697_E9Y1vKhtQimCEIiA75QWEn4NdZe7lQXj.jpg'
   );
+
+  // ✅ Extract schoolName & courseId from URL
+  const getCourseInfoFromUrl = () => {
+    const segments = window.location.pathname.split('/');
+    const schoolIndex = segments.findIndex((seg) => seg === 'school');
+    const courseIndex = segments.findIndex((seg) => seg === 'course');
+
+    const schoolName =
+      schoolIndex !== -1 && segments[schoolIndex + 1] ? segments[schoolIndex + 1] : null;
+
+    const courseId =
+      courseIndex !== -1 && segments[courseIndex + 1] ? segments[courseIndex + 1] : null;
+
+    return { schoolName, courseId };
+  };
+
+  const { schoolName, courseId } = getCourseInfoFromUrl();
 
   // Navigate to payment page or course page
   const handleClick = (id: string) => {
@@ -52,26 +66,25 @@ const CourseDetailsPage: React.FC = () => {
   }, [sections]);
 
   // Check if course is purchased
-useEffect(() => {
-  const run = async () => {
-    if (!student?._id || !courseId) return setIsPurchased(false);
-    try {
-      const { hasPurchased } = await checkPreviousPurchase(courseId, student._id);
-      setIsPurchased(hasPurchased);
-    } catch (err) {
-      console.error('Error checking purchase status:', err);
-      setIsPurchased(false);
-    }
-  };
-  run();
-}, [courseId, student?._id]);
+  useEffect(() => {
+    const run = async () => {
+      if (!student?._id || !courseId) return setIsPurchased(false);
+      try {
+        const { hasPurchased } = await checkPreviousPurchase(courseId, student._id);
+        setIsPurchased(hasPurchased);
+      } catch (err) {
+        console.error('Error checking purchase status:', err);
+        setIsPurchased(false);
+      }
+    };
+    run();
+  }, [courseId, student?._id]);
 
   // Load course and sections
   useEffect(() => {
     const loadCourse = async () => {
       try {
         setLoading(true);
-
         let selectedCourse = null;
 
         // Try localStorage first
@@ -83,29 +96,14 @@ useEffect(() => {
           }
         }
 
-        // If not in local or mismatched, fallback to context
-      if (!selectedCourse && course) {
-    console.log(course, 'course from context');
-    const parsed = JSON.parse(course);
-
-    // Fallback to get courseId from URL if it's undefined or missing
-    let currentCourseId = courseId;
-    if (!currentCourseId) {
-        const pathSegments = window.location.pathname.split('/');
-        // Assuming 'course' is always followed by courseId in the URL
-        const courseIndex = pathSegments.findIndex(segment => segment === 'course');
-        if (courseIndex !== -1 && pathSegments.length > courseIndex + 1) {
-            currentCourseId = pathSegments[courseIndex + 1];
-            console.log('Extracted courseId from URL:', currentCourseId);
+        // Fallback to context
+        if (!selectedCourse && course) {
+          const parsed = JSON.parse(course);
+          if (parsed._id === courseId) {
+            selectedCourse = parsed;
+            localStorage.setItem('selectedCourse', course);
+          }
         }
-    }
-
-    if (parsed._id === currentCourseId) {
-        selectedCourse = parsed;
-        localStorage.setItem('selectedCourse', course);
-    }
-}
-
 
         setParsedCourse(selectedCourse);
         if (selectedCourse) {
@@ -115,7 +113,7 @@ useEffect(() => {
           setImgSrc(selectedCourse.courseThumbnail);
         }
 
-        if (selectedCourse?.school && selectedCourse?._id) {
+        if (selectedCourse?.school && selectedCourse?._id && schoolName) {
           const sectionList = await getSectionsByCourse(schoolName, selectedCourse._id);
           setSections(sectionList);
         } else {
@@ -128,14 +126,13 @@ useEffect(() => {
       }
     };
 
-    loadCourse();
-  }, [courseId, course, schoolName]);
+    if (courseId && schoolName) loadCourse();
+  }, [courseId, course, schoolName, setCourse]);
 
   // Logout handler
   const handleLogout = () => {
     Cookies.remove('studentAccessToken');
     Cookies.remove('studentRefreshToken');
-    
     localStorage.removeItem('student');
     setStudent(null);
     navigate('/studentlogin');
@@ -226,7 +223,7 @@ useEffect(() => {
             
           {/* Detailed Sections */}
           <div className="bg-white border rounded-lg p-5 shadow-md col-span-1 md:col-span-2">
-            <h2 className="text-md font-semibold text-gray-700 mb-4">Curriculam</h2>
+            <h2 className="text-md font-semibold text-gray-700 mb-4">Curriculum</h2>
             {sections.length > 0 ? (
               <ul className="space-y-4">
                 {sections.map((section, index) => (

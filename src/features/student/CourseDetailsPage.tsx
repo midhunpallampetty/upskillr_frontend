@@ -9,9 +9,7 @@ import { useSetCourse } from '../../context/GlobalState';
 import { checkPreviousPurchase } from './api/course.api';
 
 const CourseDetailsPage: React.FC = () => {
-  // Use useParams for cleaner, reactive course ID extraction
-  const { courseId: extractedCourseId } = useParams<{ courseId: string }>();
-
+  const { courseId } = useParams();
   const setCourse = useSetCourse();
   const { student, schoolName, course } = useGlobalState();
   const setStudent = useSetStudent();
@@ -26,18 +24,18 @@ const CourseDetailsPage: React.FC = () => {
     'https://t3.ftcdn.net/jpg/08/06/10/36/360_F_806103697_E9Y1vKhtQimCEIiA75QWEn4NdZe7lQXj.jpg'
   );
 
-  // Use navigate for SPA-friendly navigation (avoids full reload)
+  // Navigate to payment page or course page
   const handleClick = (id: string) => {
-    console.log(`Navigating - Course ID: ${id}, Is Purchased: ${isPurchased}`);
+    console.log(`Navigating - Course ID: ${id}, Is Purchased: ${isPurchased}`); // Log before navigation
     localStorage.removeItem('selectedCourse'); // Force reload fresh
     if (isPurchased) {
-      navigate(`/student/course-page/${schoolName}/${id}`);
+      window.location.href = `/student/course-page/${schoolName}/${id}`;
     } else {
-      navigate(`/student/payment/${id}`);
+      window.location.href = `/student/payment/${id}`;
     }
   };
 
-  // Load student from localStorage (runs once)
+  // Load student from localStorage into global state
   useEffect(() => {
     const stored = localStorage.getItem('student');
     if (stored) {
@@ -45,7 +43,7 @@ const CourseDetailsPage: React.FC = () => {
     }
   }, [setStudent]);
 
-  // Count videos (runs only when sections change)
+  // Count videos across sections
   useEffect(() => {
     const totalVideos = sections.reduce((count, section) => {
       return count + (section.videos?.length || 0);
@@ -53,19 +51,18 @@ const CourseDetailsPage: React.FC = () => {
     setVideoCount(totalVideos);
   }, [sections]);
 
-  // Check purchase status (depends on stable IDs)
+  // Check if course is purchased
   useEffect(() => {
     const run = async () => {
-      console.log(`Checking purchase - Student ID: ${student?._id}, Course ID: ${extractedCourseId}`);
-      if (!student?._id || !extractedCourseId) {
+      console.log(`Checking purchase - Student ID: ${student?._id}, Course ID: ${courseId}`); // Log before check
+      if (!student?._id || !courseId) {
         console.log('Purchase check skipped: Missing student or course ID');
-        setIsPurchased(false);
-        return;
+        return setIsPurchased(false);
       }
       try {
-        const { hasPurchased } = await checkPreviousPurchase(extractedCourseId, student._id);
+        const { hasPurchased } = await checkPreviousPurchase(courseId, student._id);
         setIsPurchased(hasPurchased);
-        console.log(`Purchase status: ${hasPurchased ? 'Purchased' : 'Not purchased'}`);
+        console.log(`Purchase status: ${hasPurchased ? 'Purchased' : 'Not purchased'}`); // Log result
       } catch (err) {
         console.error('Error checking purchase status:', err);
         setIsPurchased(false);
@@ -73,17 +70,11 @@ const CourseDetailsPage: React.FC = () => {
       }
     };
     run();
-  }, [extractedCourseId, student?._id]);
+  }, [courseId, student?._id]);
 
-  // Load course and sections (stabilized dependencies, no artificial timeout)
+  // Load course and sections
   useEffect(() => {
     const loadCourse = async () => {
-      if (!extractedCourseId) {
-        console.error('No courseId extracted from URL');
-        setLoading(false);
-        return;
-      }
-
       try {
         setLoading(true);
 
@@ -93,49 +84,56 @@ const CourseDetailsPage: React.FC = () => {
         const local = localStorage.getItem('selectedCourse');
         if (local) {
           const parsed = JSON.parse(local);
-          if (parsed._id === extractedCourseId) {
+          if (parsed._id === courseId) {
             selectedCourse = parsed;
           }
         }
 
-        // Fallback to context if needed
+        // If not in local or mismatched, fallback to context
         if (!selectedCourse && course) {
+          console.log(course, 'course from context');
           const parsed = JSON.parse(course);
-          if (parsed._id === extractedCourseId) {
-            selectedCourse = parsed;
-            if (local !== course) {
-              localStorage.setItem('selectedCourse', course);
+
+          // Fallback to get courseId from URL if it's undefined or missing
+          let currentCourseId = courseId;
+          if (!currentCourseId) {
+            const pathSegments = window.location.pathname.split('/');
+            const courseIndex = pathSegments.findIndex(segment => segment === 'course');
+            if (courseIndex !== -1 && pathSegments.length > courseIndex + 1) {
+              currentCourseId = pathSegments[courseIndex + 1];
+              console.log('Extracted courseId from URL:', currentCourseId);
             }
           }
+
+          if (parsed._id === currentCourseId) {
+            selectedCourse = parsed;
+            localStorage.setItem('selectedCourse', course);
+          }
         }
 
-        // Only update if we have a valid course
+        setParsedCourse(selectedCourse);
         if (selectedCourse) {
-          setParsedCourse(selectedCourse);
-          const stringified = JSON.stringify(selectedCourse);
-          if (stringified !== course) {
-            setCourse(stringified);
-          }
-          if (selectedCourse.courseThumbnail) {
-            setImgSrc(selectedCourse.courseThumbnail);
-          }
+          setCourse(JSON.stringify(selectedCourse));
+        }
+        if (selectedCourse?.courseThumbnail) {
+          setImgSrc(selectedCourse.courseThumbnail);
+        }
 
-          if (selectedCourse.school && selectedCourse._id) {
-            const sectionList = await getSectionsByCourse(schoolName, selectedCourse._id);
-            setSections(sectionList);
-          } else {
-            setSections([]);
-          }
+        if (selectedCourse?.school && selectedCourse?._id) {
+          const sectionList = await getSectionsByCourse(schoolName, selectedCourse._id);
+          setSections(sectionList);
+        } else {
+          setSections([]);
         }
       } catch (err) {
         console.error('Error loading course or sections:', err);
       } finally {
-        setLoading(false); // Set immediately when done (no delay)
+        setTimeout(() => setLoading(false), 1000);
       }
     };
 
     loadCourse();
-  }, [extractedCourseId, schoolName, setCourse, course]); // Added 'course' back safely with checks inside to prevent loops
+  }, [courseId, course, schoolName, setCourse]);
 
   // Logout handler
   const handleLogout = () => {
@@ -148,7 +146,7 @@ const CourseDetailsPage: React.FC = () => {
 
   if (loading) return <CourseSkeleton />;
 
-  if (!parsedCourse || !extractedCourseId)
+  if (!parsedCourse)
     return <div className="text-center py-10 text-red-500">Course not found</div>;
 
   return (

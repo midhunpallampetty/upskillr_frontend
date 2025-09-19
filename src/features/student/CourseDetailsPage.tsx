@@ -50,7 +50,7 @@ const CourseDetailsPage: React.FC = () => {
     }, 0);
     setVideoCount(totalVideos);
   }, [sections]);
-console.log(student._id,courseId,"status");
+console.log(student,courseId,"status");
   // Check if course is purchased
   useEffect(() => {
     const run = async () => {

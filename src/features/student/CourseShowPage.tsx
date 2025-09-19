@@ -149,7 +149,7 @@ function useCourseParams() {
   const hostname = window.location.hostname; // e.g., gamersclub.eduvia.space
   const parts = hostname.split(".");
   let subdomainSchoolName: string | null = null;
-
+console.log(parts,'host');
   if (parts.length > 2) {
     // take first part as subdomain (gamersclub)
     subdomainSchoolName = parts[0];

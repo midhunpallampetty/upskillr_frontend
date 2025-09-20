@@ -2,12 +2,12 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import axios from 'axios';
 import io from 'socket.io-client';
 import { MagnifyingGlassIcon, FunnelIcon, UserCircleIcon, ChatBubbleLeftIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
-import {QuestionForm} from './components/UI/QuestionForm';
-import {ToastContainer} from './components/UI/ToastContainer';
-import {QuestionListItem} from './components/UI/QuestionListItem';
-import {Message} from './components/UI/Message';  
-import {ReplyRenderer} from './components/UI/ReplyRender';
-import {ResponseForm} from './components/UI/QuestionResponse';
+import { QuestionForm } from './components/UI/QuestionForm';
+import { ToastContainer } from './components/UI/ToastContainer';
+import { QuestionListItem } from './components/UI/QuestionListItem';
+import { Message } from './components/UI/Message';
+import { ReplyRenderer } from './components/UI/ReplyRender';
+import { ResponseForm } from './components/UI/QuestionResponse';
 import { User, Question, Answer, Reply, Toast, API } from './types/ImportsAndTypes';
 
 
@@ -55,7 +55,7 @@ export default function ForumChatUI() {
   const filteredQuestions = useMemo(() => {
     return questions.filter(q => {
       const matchesSearch = q.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                           (q.author?.fullName?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false);
+        (q.author?.fullName?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false);
       const matchesCategory = selectedCategory === 'all' || q.category === selectedCategory;
       return !q.isDeleted && matchesSearch && matchesCategory;
     });
@@ -100,7 +100,7 @@ export default function ForumChatUI() {
           setQuestions(prevQuestions => {
             // Avoid duplicate if already added (e.g., via onSubmit fetch)
             if (prevQuestions.some(q => q._id === fullQuestion._id)) {
-              return prevQuestions.map(q => 
+              return prevQuestions.map(q =>
                 q._id === fullQuestion._id ? fullQuestion : q
               );
             }
@@ -282,7 +282,7 @@ export default function ForumChatUI() {
 
   const selectQuestion = useCallback((qid: string, force: boolean = false) => {
     if (!force && selected?._id === qid) return;
-    
+
     setLoading(true);
     axios.get(`${API}/forum/questions/${qid}`)
       .then(res => {
@@ -297,7 +297,7 @@ export default function ForumChatUI() {
         // Ensure author exists; set defaults if missing
         const questionData = {
           ...res.data,
-          author: res.data.author ,
+          author: res.data.author,
         };
         setSelected(questionData);
       })
@@ -311,7 +311,7 @@ export default function ForumChatUI() {
 
   const deleteQuestion = useCallback((questionId: string) => {
     if (!confirm('Are you sure you want to delete this question?')) return;
-    
+
     axios.delete(`${API}/forum/questions/${questionId}`)
       .then(() => {
         if (socketRef.current) {
@@ -327,7 +327,7 @@ export default function ForumChatUI() {
 
   const deleteAnswer = useCallback((answerId: string, questionId: string) => {
     if (!confirm('Are you sure you want to delete this answer?')) return;
-    
+
     axios.delete(`${API}/forum/answers/${answerId}`)
       .then(() => {
         if (socketRef.current) {
@@ -346,7 +346,7 @@ export default function ForumChatUI() {
 
   const deleteReply = useCallback((replyId: string, questionId: string, answerId?: string) => {
     if (!confirm('Are you sure you want to delete this reply?')) return;
-    
+
     axios.delete(`${API}/forum/replies/${replyId}`)
       .then(() => {
         if (socketRef.current) {
@@ -398,7 +398,7 @@ export default function ForumChatUI() {
                     setQuestions(prevQuestions => {
                       // Avoid duplicate if socket already added it
                       if (prevQuestions.some(q => q._id === fullQuestion._id)) {
-                        return prevQuestions.map(q => 
+                        return prevQuestions.map(q =>
                           q._id === fullQuestion._id ? fullQuestion : q
                         );
                       }
@@ -449,8 +449,8 @@ export default function ForumChatUI() {
             <div className="p-6 text-center text-gray-500">
               <ChatBubbleLeftIcon className="mx-auto h-12 w-12 text-gray-300 mb-3" />
               <p className="text-sm">
-                {searchQuery || selectedCategory !== 'all' 
-                  ? 'No questions match your search.' 
+                {searchQuery || selectedCategory !== 'all'
+                  ? 'No questions match your search.'
                   : 'No questions available yet.'}
               </p>
             </div>
@@ -463,8 +463,9 @@ export default function ForumChatUI() {
                   isSelected={selected?._id === q._id}
                   onClick={() => selectQuestion(q._id)}
                   onDelete={() => deleteQuestion(q._id)}
-                  canDelete={q.author._id === user._id}
+                  canDelete={q.author?._id === user._id}  // Add ? here
                 />
+
               ))}
             </div>
           )}
@@ -475,8 +476,8 @@ export default function ForumChatUI() {
           <>
             <div className="border-b border-gray-200 bg-white px-6 py-4 shadow-sm">
               <div className="flex items-center justify-between">
-                <button 
-                  onClick={() => setSelected(null)} 
+                <button
+                  onClick={() => setSelected(null)}
                   className="md:hidden mr-4 text-gray-600 hover:text-gray-900"
                 >
                   <ArrowLeftIcon className="h-6 w-6" />
@@ -488,7 +489,7 @@ export default function ForumChatUI() {
                   <div className="mt-1 flex items-center gap-4 text-sm text-gray-500">
                     <span className="flex items-center gap-1">
                       <UserCircleIcon className="h-4 w-4" />
-                      {selected.author?.fullName })
+                      {selected.author?.fullName})
                     </span>
                     <span>•</span>
                     <span>Category: {selected.category}</span>

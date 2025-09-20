@@ -109,6 +109,7 @@ const CommentComponent = ({
         courseId,
         schoolName,
       });
+      console.log('Comment posted',userId,content,courseId,schoolName );
       setContent('');
       fetchComments();
       setVisibleCount(COMMENTS_PAGE_SIZE); // Reset to first page on new post

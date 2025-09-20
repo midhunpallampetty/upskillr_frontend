@@ -96,7 +96,7 @@ const SchoolMarketingNavbar: React.FC<{
 
   const handleProfile = () => {
     closeDropdown();
-    navigate('/student/profile');
+    navigate('/profile');
   };
 
   const handleHome = () => {

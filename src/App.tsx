@@ -41,11 +41,7 @@ const SubdomainRoutes: React.FC<{ subdomain: string }> = ({ subdomain }) => {
   pattern: /^\/student\/course-page\/([^/]+)\/([^/]+)$/,
   component: <CourseShowPage />
 },
-    { 
-  pattern: /^\/forum\/$/, 
-  component: <ForumChatUI /> 
-
-}
+       { pattern: /^\/forum$/, component: <ForumChatUI /> },
 
 
 ];

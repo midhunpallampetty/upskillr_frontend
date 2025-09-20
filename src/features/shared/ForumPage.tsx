@@ -92,33 +92,41 @@ export default function ForumChatUI() {
     });
 
 
-    socketRef.current.on('new_question', (qDoc: Question) => {
-      // Fetch full question data to ensure images/assets are included
-      axios.get(`${API}/forum/questions/${qDoc._id}`)
-        .then(res => {
-          const fullQuestion = res.data;
-          setQuestions(prevQuestions => {
-            // Avoid duplicate if already added (e.g., via onSubmit fetch)
-            if (prevQuestions.some(q => q._id === fullQuestion._id)) {
-              return prevQuestions.map(q =>
-                q._id === fullQuestion._id ? fullQuestion : q
-              );
-            }
-            return [fullQuestion, ...prevQuestions];
-          });
-          if (String(fullQuestion.author._id) !== String(user._id)) {
-            addToast(`${fullQuestion.author.fullName} asked a new question`, 'info');
-          }
-        })
-        .catch(err => {
-          console.error('Failed to fetch new question details:', err);
-          // Fallback to using socket data if fetch fails
-          setQuestions(prevQuestions => [qDoc, ...prevQuestions]);
-          if (String(qDoc.author._id) !== String(user._id)) {
-            addToast(`${qDoc.author.fullName} asked a new question`, 'info');
-          }
-        });
+ socketRef.current.on('new_question', (qDoc: Question) => {
+  // Fetch full question data to ensure images/assets are included
+  axios.get(`${API}/forum/questions/${qDoc._id}`)
+    .then(res => {
+      const fullQuestion = res.data;
+      setQuestions(prevQuestions => {
+        // Avoid duplicate if already added (e.g., via onSubmit fetch)
+        if (prevQuestions.some(q => q._id === fullQuestion._id)) {
+          return prevQuestions.map(q => 
+            q._id === fullQuestion._id ? fullQuestion : q
+          );
+        }
+        return [fullQuestion, ...prevQuestions];
+      });
+      if (String(fullQuestion.author._id) !== String(user._id)) {
+        addToast(`${fullQuestion.author.fullName} asked a new question`, 'info');
+      }
+    })
+    .catch(err => {
+      console.error('Failed to fetch new question details:', err);
+      // Fallback to using socket data if fetch fails, BUT WITH DUPLICATE CHECK
+      setQuestions(prevQuestions => {
+        if (prevQuestions.some(q => q._id === qDoc._id)) {
+          return prevQuestions.map(q => 
+            q._id === qDoc._id ? { ...q, ...qDoc } : q  // Merge to update if needed
+          );
+        }
+        return [qDoc, ...prevQuestions];
+      });
+      if (String(qDoc.author._id) !== String(user._id)) {
+        addToast(`${qDoc.author.fullName} asked a new question`, 'info');
+      }
     });
+});
+
 
 
     socketRef.current.on('new_answer', (aDoc: Answer) => {

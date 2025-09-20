@@ -14,6 +14,7 @@ import PaymentSuccess from './features/student/PaymentSuccess';
 import PurchasedCourses from './features/student/PurchasedCourses';
 import CourseShowPage from './features/student/CourseShowPage';
 import ForumChatUI from './features/shared/ForumPage';
+import StudentProfilePage from './features/student/StudentProfile';
 const SubdomainRoutes: React.FC<{ subdomain: string }> = ({ subdomain }) => {
   const location = useLocation();
 
@@ -43,7 +44,7 @@ const SubdomainRoutes: React.FC<{ subdomain: string }> = ({ subdomain }) => {
 },
        { pattern: /^\/forum$/, component: <ForumChatUI /> },
 
-
+ { pattern: /^\/profile$/, component: <StudentProfilePage /> },
 ];
 
   for (let route of routePatterns) {

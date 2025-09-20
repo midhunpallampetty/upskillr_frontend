@@ -23,7 +23,6 @@ export default function ForumChatUI() {
     role: 'Student',
   });
   const [questions, setQuestions] = useState<Question[]>([]);
-  
   const [selected, setSelected] = useState<Question | null>(null);
   const [loading, setLoading] = useState(true);
   const socketRef = useRef<any>(null);
@@ -69,20 +68,18 @@ export default function ForumChatUI() {
 
 
   // Separate use Ascent: Fetch initial questions only once
-useEffect(() => {
-  setLoading(true);
-  axios.get(`${API}/forum/questions`)
-    .then(res => {
-      console.log('Fetched questions response:', res.data);  // Log the response data to verify it's correct (e.g., an array of questions)
-      setQuestions(Array.isArray(res.data) ? res.data : []);
-    })
-    .catch(err => {
-      console.error('Failed to fetch questions:', err);
-      addToast('Failed to load questions. Please try again.', 'error');
-    })
-    .finally(() => setLoading(false));
-}, []);
-
+  useEffect(() => {
+    setLoading(true);
+    axios.get(`${API}/forum/questions`)
+      .then(res => {
+        setQuestions(Array.isArray(res.data) ? res.data : []);
+      })
+      .catch(err => {
+        console.error('Failed to fetch questions:', err);
+        addToast('Failed to load questions. Please try again.', 'error');
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
 
   // Socket setup in a separate effect with minimal dependencies

@@ -23,6 +23,7 @@ export default function ForumChatUI() {
     role: 'Student',
   });
   const [questions, setQuestions] = useState<Question[]>([]);
+  
   const [selected, setSelected] = useState<Question | null>(null);
   const [loading, setLoading] = useState(true);
   const socketRef = useRef<any>(null);

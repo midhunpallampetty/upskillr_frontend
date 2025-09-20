@@ -43,11 +43,12 @@ export const ReplyRenderer = ({
             onReply={(text, imgs) => onReplySubmit(text, imgs, reply._id, questionId, answerId)}
             onDelete={() => onDeleteReply(reply._id, questionId, answerId)}
             currentUserId={currentUserId}
-            itemId={reply.author?._id || reply._id}
+            itemId={reply.author?._id || reply._id}  // Safe optional chaining with fallback
             socket={socket}
             threadId={threadId}
             userName={userName}
           />
+          {/* Recursive call for nested replies */}
           <ReplyRenderer
             replies={reply.replies}
             onReplySubmit={onReplySubmit}

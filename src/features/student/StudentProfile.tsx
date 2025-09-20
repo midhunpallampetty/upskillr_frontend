@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import useStudentAuthGuard from './hooks/useStudentAuthGuard';
 import { getStudentById, updateStudentById } from './api/student.api';
 import { uploadToCloudinary } from '../school/api/school.api';
+
 interface UpdateStudentPayload {
   fullName: string;
   email: string;
@@ -44,33 +45,45 @@ const StudentProfilePage = () => {
     { title: 'Python for Beginners', school: 'Golden Public School', duration: '6 Weeks' },
   ];
 
+  // Function to extract schoolName from the current URL (e.g., gamersclub from gamersclub.eduvia.space)
+  const getSchoolNameFromUrl = () => {
+    const hostname = window.location.hostname;
+    const parts = hostname.split('.');
+    // Assuming the base domain is 'eduvia.space', the subdomain is the first part if present
+    return parts.length > 2 ? parts[0] : '';
+  };
+
   useEffect(() => {
     const cookieData = Cookies.get('student');
     if (cookieData) {
       const parsed = JSON.parse(cookieData);
       const id = parsed._id;
+      const schoolName = getSchoolNameFromUrl(); // Dynamically get schoolName from URL
 
       const fetchStudent = async () => {
         try {
-          const student = await getStudentById(id);
+          const fetchedStudent = await getStudentById(id, schoolName); // Adjusted order to match API definition
           setStudent({
-            _id: student._id,
-            fullName: student.fullName,
-            email: student.email,
+            _id: fetchedStudent._id,
+            fullName: fetchedStudent.fullName,
+            email: fetchedStudent.email,
             currentPassword: '',
             newPassword: '',
             confirmPassword: '',
-            image: student.image || '',
+            image: fetchedStudent.image || '',
           });
-          setImagePreview(student.image || null);
+          setImagePreview(fetchedStudent.image || null);
         } catch (error) {
           console.error('Failed to fetch student', error);
           toast.error('Failed to load profile');
         }
       };
 
-
-      fetchStudent();
+      if (schoolName) {
+        fetchStudent();
+      } else {
+        toast.error('Unable to determine school name from URL');
+      }
     }
   }, []);
 
@@ -120,9 +133,6 @@ const StudentProfilePage = () => {
     }
   };
 
-
-
-
   const toggleShowPassword = (field) => {
     setShowPasswords((prev) => ({
       ...prev,
@@ -130,67 +140,72 @@ const StudentProfilePage = () => {
     }));
   };
 
-const handleSave = async () => {
-  if (isImageUploading) {
-    toast.warning("Please wait for image to finish uploading...");
-    return;
-  }
-
-  // Only validate passwords if any password field is filled
-  if (student.currentPassword || student.newPassword || student.confirmPassword) {
-    if (!student.currentPassword) {
-      toast.error("Please enter your current password");
+  const handleSave = async () => {
+    if (isImageUploading) {
+      toast.warning("Please wait for image to finish uploading...");
       return;
     }
-    if (!validatePassword(student.newPassword)) {
-      toast.error("New password must be at least 8 characters long and contain at least one letter, one number, and one special character");
-      return;
-    }
-    if (student.newPassword !== student.confirmPassword) {
-      toast.error("New password and confirm password must match");
-      return;
-    }
-  }
 
-  try {
-    // Explicitly type payload with the interface
-    const payload: UpdateStudentPayload = {
-      fullName: student.fullName,
-      email: student.email,
-      image: student.image,
-    };
-
-    // Only include password fields if they are filled
-    if (student.currentPassword && student.newPassword) {
-      payload.currentPassword = student.currentPassword;
-      payload.newPassword = student.newPassword;
+    // Only validate passwords if any password field is filled
+    if (student.currentPassword || student.newPassword || student.confirmPassword) {
+      if (!student.currentPassword) {
+        toast.error("Please enter your current password");
+        return;
+      }
+      if (!validatePassword(student.newPassword)) {
+        toast.error("New password must be at least 8 characters long and contain at least one letter, one number, and one special character");
+        return;
+      }
+      if (student.newPassword !== student.confirmPassword) {
+        toast.error("New password and confirm password must match");
+        return;
+      }
     }
 
-    await updateStudentById(student._id, payload);
+    try {
+      // Explicitly type payload with the interface
+      const payload: UpdateStudentPayload = {
+        fullName: student.fullName,
+        email: student.email,
+        image: student.image,
+      };
 
-    toast.success('Profile updated!');
-    setEditMode(false);
+      // Only include password fields if they are filled
+      if (student.currentPassword && student.newPassword) {
+        payload.currentPassword = student.currentPassword;
+        payload.newPassword = student.newPassword;
+      }
 
-    // Update localStorage
-    localStorage.setItem('student', JSON.stringify({
-      _id: student._id,
-      fullName: student.fullName,
-      email: student.email,
-      image: student.image,
-    }));
+      const schoolName = getSchoolNameFromUrl(); // Dynamically get schoolName from URL
+      if (!schoolName) {
+        toast.error('Unable to determine school name from URL');
+        return;
+      }
 
-    // Reset password fields
-    setStudent((prev) => ({
-      ...prev,
-      currentPassword: '',
-      newPassword: '',
-      confirmPassword: '',
-    }));
-  } catch (error) {
-    toast.error('Update failed. Try again!');
-  }
-};
+      await updateStudentById(student._id, payload, schoolName);
 
+      toast.success('Profile updated!');
+      setEditMode(false);
+
+      // Update localStorage
+      localStorage.setItem('student', JSON.stringify({
+        _id: student._id,
+        fullName: student.fullName,
+        email: student.email,
+        image: student.image,
+      }));
+
+      // Reset password fields
+      setStudent((prev) => ({
+        ...prev,
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: '',
+      }));
+    } catch (error) {
+      toast.error('Update failed. Try again!');
+    }
+  };
 
   const handleLogout = () => {
     Cookies.remove('studentAccessToken');
@@ -203,7 +218,7 @@ const handleSave = async () => {
 
   return (
     <>
-      <StudentNavbar student={student} handleLogout={handleLogout} />
+      {/* <StudentNavbar student={student} handleLogout={handleLogout} /> */}
 
       <section className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white py-10 px-6 text-center">
         <h2 className="text-3xl font-bold">Welcome to Your Learning Profile</h2>
@@ -380,3 +395,4 @@ const handleSave = async () => {
 };
 
 export default StudentProfilePage;
+

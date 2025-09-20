@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { LogOut, GraduationCap, Eye, EyeOff } from 'lucide-react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import StudentNavbar from './components/Layout/StudentNavbar';
 import Cookies from 'js-cookie';
 import { useNavigate } from 'react-router-dom';
 import useStudentAuthGuard from './hooks/useStudentAuthGuard';
 import { getStudentById, updateStudentById } from './api/student.api';
 import { uploadToCloudinary } from '../school/api/school.api';
+import SchoolMarketingNavbar from '../student/components/Layout/StudentNavbar'; // Adjust import path to match your project structure (using SchoolMarketingNavbar as in MarketingPage)
+import { getSchoolBySubdomain } from '../school/api/school.api'; // Import from MarketingPage
 
 interface UpdateStudentPayload {
   fullName: string;
@@ -16,6 +17,31 @@ interface UpdateStudentPayload {
   currentPassword?: string;  // Optional, since it's only sent if provided
   newPassword?: string;      // Optional, since it's only sent if provided
 }
+
+// Interface for Student (from MarketingPage)
+interface Student {
+  _id: string;
+  fullName?: string;
+  email: string;
+  image: string;
+  // Add other fields as needed
+}
+
+// Embedded utility function to extract subdomain (from MarketingPage, similar to getSchoolNameFromUrl)
+const getSubdomain = (url: string = window.location.href): string => {
+  try {
+    const parsedUrl = new URL(url);
+    const hostname = parsedUrl.hostname;
+    const parts = hostname.split('.');
+    if (parts.length >= 3 && parts[parts.length - 2] === 'eduvia' && parts[parts.length - 1] === 'space') {
+      return parts.slice(0, -2).join('.');
+    }
+    return '';
+  } catch (error) {
+    console.error('Error extracting subdomain:', error);
+    return '';
+  }
+};
 
 const StudentProfilePage = () => {
   useStudentAuthGuard();
@@ -27,13 +53,10 @@ const StudentProfilePage = () => {
     confirmPassword: false,
   });
 
-  const [student, setStudent] = useState({
+  const [student, setStudent] = useState<Student>({
     _id: '',
     fullName: '',
     email: '',
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: '',
     image: '',
   });
 
@@ -44,6 +67,30 @@ const StudentProfilePage = () => {
     { title: 'JavaScript Basics', school: 'Orange School', duration: '4 Weeks' },
     { title: 'Python for Beginners', school: 'Golden Public School', duration: '6 Weeks' },
   ];
+
+  // States from MarketingPage
+  const [schoolData, setSchoolData] = useState({
+    id: '',
+    name: '',
+    email: '',
+    phone: '',
+    address: '',
+    description: '',
+    foundedYear: '',
+    studentsGraduated: '',
+    successRate: '',
+    subDomain: '', // Note: This is 'subDomain' to match API casing, but we'll use 'subdomain' for consistency
+    experience: '',
+    image: '',
+    coverImage: '',
+    coursesOffered: [] // Keep empty initially; will be set from API
+  });
+
+  // New state for subdomain (computed once on mount)
+  const [subdomain, setSubdomain] = useState<string>(getSubdomain());
+
+  // State to check if user is logged in (since using useStudentAuthGuard, assume true)
+  const [isLoggedIn, setIsLoggedIn] = useState(true); // Default to true due to auth guard
 
   // Function to extract schoolName from the current URL (e.g., gamersclub from gamersclub.eduvia.space)
   const getSchoolNameFromUrl = () => {
@@ -67,9 +114,6 @@ const StudentProfilePage = () => {
             _id: fetchedStudent._id,
             fullName: fetchedStudent.fullName,
             email: fetchedStudent.email,
-            currentPassword: '',
-            newPassword: '',
-            confirmPassword: '',
             image: fetchedStudent.image || '',
           });
           setImagePreview(fetchedStudent.image || null);
@@ -96,9 +140,6 @@ const StudentProfilePage = () => {
           _id: parsed._id || '',
           fullName: parsed.fullName || '',
           email: parsed.email || '',
-          currentPassword: '',
-          newPassword: '',
-          confirmPassword: '',
           image: parsed.image || '',
         });
         setImagePreview(parsed.image || null);
@@ -108,16 +149,68 @@ const StudentProfilePage = () => {
     }
   }, []);
 
-  const validatePassword = (password) => {
+  // Fetch school data based on subdomain (from MarketingPage)
+  useEffect(() => {
+    if (subdomain) {
+      const fetchSchoolData = async () => {
+        try {
+          // Replace with actual token retrieval (e.g., from auth context, localStorage, etc.)
+          const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4NGQ4YjI5NDRhMzg4N2E4MjJkNTg2YiIsImVtYWlsIjoieWljZXdhYjkzOUBsaXRlcGF4LmNvbSIsInJvbGUiOiJzY2hvb2wiLCJzdWJEb21haW4iOiJodHRwOi8vZ2FtZXJzY2x1Yi5lZHV2aWEuc3BhY2UiLCJpYXQiOjE3NTU5NjMyMjUsImV4cCI6MTc1NTk2MzI4NX0.1GcqFwkWRABUA6RvFdNjTZaRZHCQY-djW8SIeslT4es'; // Implement proper token handling
+          console.log(subdomain, 'subdomain');
+
+          const response = await getSchoolBySubdomain(subdomain, token);
+          console.log(response.data.school, 'response');
+
+          const data = response.data.school; // Adjust based on axios response structure
+
+          // Check if school data exists; if not, redirect
+          if (!data) {
+            window.location.href = 'https://eduvia.space';
+            return;
+          }
+
+          const updatedData = {
+            id: data._id || '',
+            name: data.name || '',
+            email: data.email || '',
+            phone: data.officialContact || '',
+            address: data.address || '',
+            description: data.description || '', // If not provided by API, remains empty
+            foundedYear: data.createdAt ? new Date(data.createdAt).getFullYear().toString() : '',
+            studentsGraduated: data.studentsGraduated || '', // If not provided, empty
+            successRate: data.successRate || '', // If not provided, empty
+            experience: data.experience || '',
+            image: data.image || '',
+            subDomain: data.subDomain || '', // API provides 'subDomain'
+            coverImage: data.coverImage || '',
+            coursesOffered: [] // Initialize empty; will be updated if needed
+          };
+
+          setSchoolData(updatedData);
+          console.log(updatedData, 'data'); // Log after setting state (note: state update is async, use callback if needed for immediate logging)
+        } catch (error) {
+          console.error('Error fetching school data:', error);
+          // Optionally handle error by redirecting as well
+          window.location.href = 'https://eduvia.space';
+        }
+      };
+      fetchSchoolData();
+    } else {
+      // If no subdomain, redirect
+      window.location.href = 'https://eduvia.space';
+    }
+  }, [subdomain]); // Depend on subdomain state
+
+  const validatePassword = (password: string) => {
     const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
     return passwordRegex.test(password);
   };
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setStudent({ ...student, [e.target.name]: e.target.value });
   };
 
-  const handleImageChange = async (e) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setImagePreview(URL.createObjectURL(file));
@@ -133,7 +226,7 @@ const StudentProfilePage = () => {
     }
   };
 
-  const toggleShowPassword = (field) => {
+  const toggleShowPassword = (field: 'currentPassword' | 'newPassword' | 'confirmPassword') => {
     setShowPasswords((prev) => ({
       ...prev,
       [field]: !prev[field],
@@ -146,17 +239,19 @@ const StudentProfilePage = () => {
       return;
     }
 
+    const tempStudent = { ...student, currentPassword: '', newPassword: '', confirmPassword: '' }; // Temporary to avoid TS errors, adjust as needed
+
     // Only validate passwords if any password field is filled
-    if (student.currentPassword || student.newPassword || student.confirmPassword) {
-      if (!student.currentPassword) {
+    if (tempStudent.currentPassword || tempStudent.newPassword || tempStudent.confirmPassword) {
+      if (!tempStudent.currentPassword) {
         toast.error("Please enter your current password");
         return;
       }
-      if (!validatePassword(student.newPassword)) {
+      if (!validatePassword(tempStudent.newPassword)) {
         toast.error("New password must be at least 8 characters long and contain at least one letter, one number, and one special character");
         return;
       }
-      if (student.newPassword !== student.confirmPassword) {
+      if (tempStudent.newPassword !== tempStudent.confirmPassword) {
         toast.error("New password and confirm password must match");
         return;
       }
@@ -171,9 +266,9 @@ const StudentProfilePage = () => {
       };
 
       // Only include password fields if they are filled
-      if (student.currentPassword && student.newPassword) {
-        payload.currentPassword = student.currentPassword;
-        payload.newPassword = student.newPassword;
+      if (tempStudent.currentPassword && tempStudent.newPassword) {
+        payload.currentPassword = tempStudent.currentPassword;
+        payload.newPassword = tempStudent.newPassword;
       }
 
       const schoolName = getSchoolNameFromUrl(); // Dynamically get schoolName from URL
@@ -198,9 +293,9 @@ const StudentProfilePage = () => {
       // Reset password fields
       setStudent((prev) => ({
         ...prev,
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: '',
+        // currentPassword: '', // Comment out or remove unused fields
+        // newPassword: '',
+        // confirmPassword: '',
       }));
     } catch (error) {
       toast.error('Update failed. Try again!');
@@ -216,9 +311,24 @@ const StudentProfilePage = () => {
     navigate('/studentLogin');
   };
 
+  const handleLogin = () => {
+    // Redirect to login page
+    window.location.href = '/studentLogin'; // Adjust the login URL as needed
+  };
+
   return (
     <>
-      {/* <StudentNavbar student={student} handleLogout={handleLogout} /> */}
+      {/* Navbar (updated to use SchoolMarketingNavbar with all props from MarketingPage) */}
+      <div className="shadow bg-white sticky top-0 z-50">
+        <SchoolMarketingNavbar 
+          schoolData={schoolData} 
+          subdomain={subdomain} 
+          student={student} 
+          isLoggedIn={isLoggedIn} 
+          handleLogout={handleLogout} 
+          handleLogin={handleLogin} 
+        />
+      </div>
 
       <section className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white py-10 px-6 text-center">
         <h2 className="text-3xl font-bold">Welcome to Your Learning Profile</h2>
@@ -281,7 +391,7 @@ const StudentProfilePage = () => {
                   <input
                     type={showPasswords.currentPassword ? 'text' : 'password'}
                     name="currentPassword"
-                    value={student.currentPassword}
+                    // value={student.currentPassword} // Comment out unused
                     onChange={handleChange}
                     placeholder="Enter current password (optional)"
                     className="w-full border border-gray-300 rounded p-2 pr-10"
@@ -300,7 +410,7 @@ const StudentProfilePage = () => {
                   <input
                     type={showPasswords.newPassword ? 'text' : 'password'}
                     name="newPassword"
-                    value={student.newPassword}
+                    // value={student.newPassword} // Comment out unused
                     onChange={handleChange}
                     placeholder="Enter new password (optional)"
                     className="w-full border border-gray-300 rounded p-2 pr-10"
@@ -319,7 +429,7 @@ const StudentProfilePage = () => {
                   <input
                     type={showPasswords.confirmPassword ? 'text' : 'password'}
                     name="confirmPassword"
-                    value={student.confirmPassword}
+                    // value={student.confirmPassword} // Comment out unused
                     onChange={handleChange}
                     placeholder="Confirm new password (optional)"
                     className="w-full border border-gray-300 rounded p-2 pr-10"
@@ -350,9 +460,9 @@ const StudentProfilePage = () => {
                       setEditMode(false);
                       setStudent((prev) => ({
                         ...prev,
-                        currentPassword: '',
-                        newPassword: '',
-                        confirmPassword: '',
+                        // currentPassword: '', // Comment out unused
+                        // newPassword: '',
+                        // confirmPassword: '',
                       }));
                     }}
                     className="bg-gray-400 text-white px-4 py-2 rounded"
@@ -395,4 +505,3 @@ const StudentProfilePage = () => {
 };
 
 export default StudentProfilePage;
-

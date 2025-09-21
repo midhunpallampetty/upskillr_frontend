@@ -96,7 +96,7 @@ console.log("Fetched school data:", schoolData);
       <SchoolHeader school={school} setSchool={setSchool} />
       <SchoolCover school={school} />
       <div className="max-w-7xl mx-auto px-6 py-8">
-// In SchoolHome.tsx (inside the return statement)
+
 <ViewRenderer
   initialView="dashboard"
   renderDashboard={(dispatchView) => (

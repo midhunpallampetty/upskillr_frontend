@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import Cookies from 'js-cookie';
 
 const subjects: string[] = [
   'Playlist',
@@ -51,6 +50,16 @@ const fadeUp = {
   visible: { opacity: 1, y: 0 },
 };
 
+const getCookie = (name: string): string | undefined => {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()?.split(';').shift();
+};
+
+const removeCookie = (name: string) => {
+  document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+};
+
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
   const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
@@ -59,8 +68,8 @@ const LandingPage: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    const refreshToken = Cookies.get('refreshToken');
-    const accessToken = Cookies.get('accessToken');
+    const refreshToken = getCookie('refreshToken');
+    const accessToken = getCookie('accessToken');
     setIsLoggedIn(!!refreshToken && !!accessToken);
   }, []);
 
@@ -82,9 +91,9 @@ const LandingPage: React.FC = () => {
   };
 
   const handleLogout = () => {
-    Cookies.remove('schoolData');
-    Cookies.remove('refreshToken');
-  Cookies.remove('accessToken');
+    removeCookie('schoolData');
+    removeCookie('refreshToken');
+    removeCookie('accessToken');
     setIsLoggedIn(false);
     navigate('/');
   };
@@ -470,3 +479,5 @@ const LandingPage: React.FC = () => {
 };
 
 export default LandingPage;
+//removed confict
+

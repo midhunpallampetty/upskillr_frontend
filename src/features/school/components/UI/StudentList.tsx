@@ -8,7 +8,6 @@ type Student = {
   createdAt?: string;
 };
 
-// Define type for schoolData (replace `any` with your actual school type)
 type School = {
   _id: string;
   name: string;
@@ -18,7 +17,7 @@ type School = {
 
 interface StudentListProps {
   dbname: string;
-  schoolData: School; // 🔹 new prop
+  schoolData: School;
 }
 
 const StudentList: React.FC<StudentListProps> = ({ dbname, schoolData }) => {
@@ -29,9 +28,9 @@ const StudentList: React.FC<StudentListProps> = ({ dbname, schoolData }) => {
   useEffect(() => {
     const fetchStudents = async () => {
       try {
-        console.log("Fetching students for DB:", schoolData );
-        // 🔹 Pass dbname and/or schoolData to API if needed
-        const data = await getAllStudents( schoolData._id);
+        console.log("Fetching students for DB:", schoolData);
+        // Pass both schoolId and schoolName to the API
+        const data = await getAllStudents(schoolData._id, schoolData.name);
         console.log("Fetched students:", data);
         setStudents(data.students);
       } catch (err) {

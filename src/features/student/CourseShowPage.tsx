@@ -451,8 +451,7 @@ const CourseShowPage = () => {
     const percentage = (score / total) * 100;
     if (percentage < 50) {
       addToast('info', `Exam score: ${score}/${total}. Need 50% to pass. Try again!`);
-      setCurrentExamSection(null);
-      return;
+      return;  // Allow retry without closing
     }
     // Check if section has an exam (local validation before API call)
     const section = course?.sections.find(s => s._id === sectionId);
@@ -466,6 +465,17 @@ const CourseShowPage = () => {
       // Update local state only after success
       setPassedSections(prev => new Set([...prev, sectionId]));
       addToast('success', `Exam passed! Score: ${score}/${total} 🎉`);
+      // Immediate local check for course completion to show certificate if applicable
+      const newPassedSections = new Set([...passedSections, sectionId]);
+      const isSectionCompletedLocal = (sec: any) => {
+        const videosCompleted = sec.videos.every((video: any) => completedVideos.has(video._id));
+        const examPassed = !sec.exam || newPassedSections.has(sec._id);
+        return videosCompleted && examPassed;
+      };
+      const allSectionsCompleted = course.sections.every((sec: any) => isSectionCompletedLocal(sec));
+      if (allSectionsCompleted && (!course.finalExam || finalExamPassed)) {
+        setShowCourseCompletion(true);
+      }
       // Auto-mark videos as completed
       if (section.videos.length > 0) {
         for (const video of section.videos) {

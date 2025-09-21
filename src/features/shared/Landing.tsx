@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import Cookies from 'js-cookie';
 
 const subjects: string[] = [
   'Playlist',
@@ -58,10 +59,10 @@ const LandingPage: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    const schoolData = localStorage.getItem('schoolData');
-    const refreshToken = localStorage.getItem('refreshToken');
-    const accessToken = localStorage.getItem('accessToken');
-    setIsLoggedIn(!!schoolData && !!refreshToken && !!accessToken);
+
+    const refreshToken = Cookies.get('refreshToken');
+    const accessToken = Cookies.get('accessToken');
+    setIsLoggedIn(!!refreshToken && !!accessToken);
   }, []);
 
   const handleSubjectClick = (subject: string) => {
@@ -82,9 +83,11 @@ const LandingPage: React.FC = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('schoolData');
-    localStorage.removeItem('refreshToken');
-    localStorage.removeItem('accessToken');
+
+    Cookies.remove('schoolData');
+    Cookies.remove('refreshToken');
+  Cookies.remove('accessToken');
+
     setIsLoggedIn(false);
     navigate('/');
   };
@@ -113,10 +116,7 @@ const LandingPage: React.FC = () => {
             <>
               <motion.button
                 whileHover={{ scale: 1.08, backgroundColor: "#6366f1", color: "#fff" }}
-                onClick={() => navigate('/schoolDashboard')} // Assuming a dashboard route; adjust as needed
-                className="px-5 py-2 text-sm bg-indigo-600 text-white rounded hover:bg-indigo-700 transition font-semibold"
-              >
-                Dashboard
+
               </motion.button>
               <motion.button
                 whileHover={{ scale: 1.08, backgroundColor: "#ef4444", color: "#fff" }}
@@ -178,7 +178,9 @@ const LandingPage: React.FC = () => {
           >
             <motion.button
               whileHover={{ scale: 1.1, backgroundColor: "#f472b6" }}
-              onClick={() => navigate(isLoggedIn ? '/schoolDashboard' : '/schoolRegister')}
+
+              onClick={() => navigate(isLoggedIn ? '/browse-courses' : '/schoolRegister')}
+
               className="bg-pink-600 hover:bg-pink-700 text-white font-bold px-6 py-3 rounded-lg shadow-lg transition"
             >
               Get Started

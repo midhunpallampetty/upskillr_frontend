@@ -29,9 +29,9 @@ const StudentList: React.FC<StudentListProps> = ({ dbname, schoolData }) => {
     const fetchStudents = async () => {
       try {
         console.log("Fetching students for DB:", schoolData);
-        // Pass both schoolId and schoolName to the API
-        console.group(schoolData.name,'name')
-        const data = await getAllStudents(schoolData._id, schoolData.name);
+        console.group(schoolData.name, 'name');  // Keeping your debug statement
+        // Use schoolData.subDomain as schoolName for the API call
+        const data = await getAllStudents(schoolData._id, schoolData.subDomain || schoolData.name);  // Fallback to name if subDomain is undefined
         console.log("Fetched students:", data);
         setStudents(data.students);
       } catch (err) {

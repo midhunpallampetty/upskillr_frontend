@@ -1,7 +1,7 @@
 import React, { useReducer, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Cookies from 'js-cookie';
-import { loginSchool } from '../../api/school';
+import { loginSchool } from '../school/api/school.api';
 import useNavigateToSchool from './hooks/useNavigateIntoSchool';
 import {
   loginReducer,

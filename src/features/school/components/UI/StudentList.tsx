@@ -20,6 +20,17 @@ interface StudentListProps {
   schoolData: School;
 }
 
+const extractSubdomain = (url: string): string => {
+  try {
+    const hostname = new URL(url).hostname;
+    const parts = hostname.split('.');
+    return parts.length > 2 ? parts[0] : '';
+  } catch (error) {
+    console.error('Invalid URL for subdomain extraction:', error);
+    return '';  // Fallback to empty string on error
+  }
+};
+
 const StudentList: React.FC<StudentListProps> = ({ dbname, schoolData }) => {
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -30,8 +41,11 @@ const StudentList: React.FC<StudentListProps> = ({ dbname, schoolData }) => {
       try {
         console.log("Fetching students for DB:", schoolData);
         console.group(schoolData.name, 'name');  // Keeping your debug statement
-        // Use schoolData.subDomain as schoolName for the API call
-        const data = await getAllStudents(schoolData._id, schoolData.subDomain || schoolData.name);  // Fallback to name if subDomain is undefined
+        
+        // Extract schoolName from schoolData.subDomain (assuming it's a full URL like 'https://gamersclub.eduvia.space')
+        const schoolName = extractSubdomain(schoolData.subDomain || '') || schoolData.name;  // Fallback to schoolData.name if extraction fails or subDomain is missing
+        
+        const data = await getAllStudents(schoolData._id, schoolName);
         console.log("Fetched students:", data);
         setStudents(data.students);
       } catch (err) {

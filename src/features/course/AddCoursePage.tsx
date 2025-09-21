@@ -12,8 +12,8 @@ import {
   initialCourseFormState,
 } from './reducers/courseForm.reducer';
 import useSchoolAuthGuard from '../school/hooks/useSchoolAuthGuard';
-import { 
-  BookOpen, 
+import {
+  BookOpen,
   ArrowLeft,
   CheckCircle,
   AlertCircle,
@@ -35,13 +35,13 @@ const NumberInput = lazy(() => import('./components/NumberInput'));
 const Checkbox = lazy(() => import('./components/Checkbox'));
 const LoadingButton = lazy(() => import('../shared/components/UI/Loader'));
 
-// const CLOUD_NAME = import.meta.env.VITE_CLOUD_NAME;
-// const UPLOAD_PRESET = import.meta.env.VITE_UPLOAD_PRESET;
+const CLOUD_NAME = import.meta.env.VITE_CLOUD_NAME;
+ const UPLOAD_PRESET = import.meta.env.VITE_UPLOAD_PRESET;
 
 // Enhanced Error Message Component
 const ErrorMessage: React.FC<{ error: string; className?: string }> = ({ error, className = '' }) => {
   if (!error) return null;
-  
+
   return (
     <div className={`flex items-start space-x-2 mt-2 ${className}`}>
       <AlertCircle className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
@@ -77,7 +77,7 @@ const InteractiveThumbnailUploader: React.FC<{
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragOver(false);
-    
+
     const droppedFile = e.dataTransfer.files[0];
     if (droppedFile) {
       handleFileSelect(droppedFile);
@@ -89,7 +89,7 @@ const InteractiveThumbnailUploader: React.FC<{
     const maxSize = 2 * 1024 * 1024; // 2MB
 
     setFile(selectedFile);
-    
+
     // Create preview URL regardless of type for potential display
     const url = URL.createObjectURL(selectedFile);
     setPreviewURL(url);
@@ -145,13 +145,12 @@ const InteractiveThumbnailUploader: React.FC<{
 
       {!previewURL ? (
         <div
-          className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-all duration-300 cursor-pointer group ${
-            isDragOver
+          className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-all duration-300 cursor-pointer group ${isDragOver
               ? 'border-blue-400 bg-blue-50 scale-105'
               : error
-              ? 'border-red-300 bg-red-50/30'
-              : 'border-gray-300 hover:border-blue-400 hover:bg-gray-50'
-          }`}
+                ? 'border-red-300 bg-red-50/30'
+                : 'border-gray-300 hover:border-blue-400 hover:bg-gray-50'
+            }`}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
@@ -169,14 +168,13 @@ const InteractiveThumbnailUploader: React.FC<{
             }}
             className="hidden"
           />
-          
+
           <div className={`space-y-4 transition-all duration-300 ${isHovering ? 'transform -translate-y-1' : ''}`}>
-            <div className={`mx-auto w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center transition-all duration-300 ${
-              isHovering ? 'scale-110 shadow-lg' : ''
-            }`}>
+            <div className={`mx-auto w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center transition-all duration-300 ${isHovering ? 'scale-110 shadow-lg' : ''
+              }`}>
               <Upload className="w-8 h-8 text-white" />
             </div>
-            
+
             <div>
               <p className="text-lg font-semibold text-gray-700 mb-2">
                 {isDragOver ? 'Drop your image here!' : 'Upload Course Thumbnail'}
@@ -184,7 +182,7 @@ const InteractiveThumbnailUploader: React.FC<{
               <p className="text-sm text-gray-500 mb-4">
                 Drag & drop or click to browse
               </p>
-              
+
               <div className="flex flex-wrap justify-center gap-2 text-xs text-gray-400">
                 <span className="bg-gray-100 px-2 py-1 rounded">JPG</span>
                 <span className="bg-gray-100 px-2 py-1 rounded">PNG</span>
@@ -212,7 +210,7 @@ const InteractiveThumbnailUploader: React.FC<{
                   <p className="text-xs">Please delete and upload a valid image</p>
                 </div>
               )}
-              
+
               {/* Overlay */}
               <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center">
                 <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex space-x-2">
@@ -233,7 +231,7 @@ const InteractiveThumbnailUploader: React.FC<{
                 </div>
               </div>
             </div>
-            
+
             {/* Progress Bar */}
             {uploadProgress < 100 && (
               <div className="mt-3">
@@ -249,7 +247,7 @@ const InteractiveThumbnailUploader: React.FC<{
                 </div>
               </div>
             )}
-            
+
             {/* Success State */}
             {uploadProgress === 100 && (
               <div className="mt-3 flex items-center space-x-2 text-green-600">
@@ -258,7 +256,7 @@ const InteractiveThumbnailUploader: React.FC<{
               </div>
             )}
           </div>
-          
+
           {/* File Info */}
           <div className="bg-gray-50 rounded-lg p-3">
             <div className="flex items-center justify-between">
@@ -271,7 +269,7 @@ const InteractiveThumbnailUploader: React.FC<{
               </span>
             </div>
           </div>
-          
+
           {/* Replace Button */}
           <button
             type="button"
@@ -280,7 +278,7 @@ const InteractiveThumbnailUploader: React.FC<{
           >
             Replace Image
           </button>
-          
+
           <input
             type="file"
             id="thumbnail-input"
@@ -293,7 +291,7 @@ const InteractiveThumbnailUploader: React.FC<{
           />
         </div>
       )}
-      
+
       {/* Error Message */}
       <ErrorMessage error={error || ''} />
     </div>
@@ -512,21 +510,21 @@ const AddCoursePage: React.FC = () => {
   const completionPercentage = () => {
     let completed = 0;
     let total = 4;
-    
+
     if (courseName.trim()) completed++;
     if (fee !== '' && Number(fee) >= 0) completed++;
     if (courseThumbnail) completed++;
     if (sections.filter(s => s.title.trim() !== '').length > 0) completed++;
-    
+
     return (completed / total) * 100;
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30">
       <Navbar />
-      
-      <ToastContainer 
-        position="top-right" 
+
+      <ToastContainer
+        position="top-right"
         autoClose={3000}
         hideProgressBar={false}
         newestOnTop={false}
@@ -538,7 +536,7 @@ const AddCoursePage: React.FC = () => {
         className="mt-16"
         toastClassName="backdrop-blur-sm"
       />
-      
+
       <div className="max-w-5xl mx-auto px-4 py-8">
         {/* Enhanced Back Button */}
         <button
@@ -566,7 +564,7 @@ const AddCoursePage: React.FC = () => {
             </div>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-            <div 
+            <div
               className="h-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-full transition-all duration-700 ease-out relative overflow-hidden"
               style={{ width: `${completionPercentage()}%` }}
             >
@@ -587,7 +585,7 @@ const AddCoursePage: React.FC = () => {
             Design and publish your course to share knowledge with students around the world.
             Fill in the details below to get started on your teaching journey.
           </p>
-          
+
           {/* Enhanced Feature Pills */}
           <div className="flex flex-wrap justify-center gap-4 mt-8">
             {[
@@ -595,7 +593,7 @@ const AddCoursePage: React.FC = () => {
               { icon: Star, text: 'Professional Tools', color: 'from-purple-500 to-pink-500' },
               { icon: Zap, text: 'Quick Setup', color: 'from-green-500 to-teal-500' }
             ].map((item, index) => (
-              <div 
+              <div
                 key={index}
                 className={`group inline-flex items-center space-x-3 bg-gradient-to-r ${item.color} text-white px-6 py-3 rounded-full text-sm font-medium shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1`}
               >
@@ -616,7 +614,7 @@ const AddCoursePage: React.FC = () => {
           </div>
 
           <div className="p-8">
-            <Suspense 
+            <Suspense
               fallback={
                 <div className="flex items-center justify-center py-16">
                   <div className="relative">
@@ -648,7 +646,7 @@ const AddCoursePage: React.FC = () => {
                       </div>
                       <ErrorMessage error={errors.courseName} />
                     </div>
-                    
+
                     {/* Enhanced Course Fee Input */}
                     <div className="relative group">
                       <div className={`relative ${errors.fee ? 'mb-1' : ''}`}>
@@ -722,9 +720,9 @@ const AddCoursePage: React.FC = () => {
                 {/* Enhanced Submit Button */}
                 <div className="border-t border-gray-200 pt-10">
                   <div className="flex justify-center">
-                    <LoadingButton 
-                      isLoading={isLoading} 
-                      text="Create Course" 
+                    <LoadingButton
+                      isLoading={isLoading}
+                      text="Create Course"
                       type="submit"
                       className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:from-blue-700 hover:via-purple-700 hover:to-pink-700 text-white font-bold py-4 px-12 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 text-lg"
                       variant="primary"

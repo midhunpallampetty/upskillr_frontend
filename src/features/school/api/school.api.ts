@@ -117,3 +117,39 @@ export const setSchoolBlockStatus = async (schoolId: string, isBlocked: boolean)
   // Convert boolean to string to avoid Axios ignoring 'false'
   await schoolAxios.put(`/schools/${schoolId}/block-status`, { isBlocked });
 };
+
+
+
+
+
+
+export const registerSchool = async (formData: any) => {
+  const response = await schoolAxios.post(`/register`, formData);
+  return response.data;
+};
+// src/api/school.ts
+
+
+export const loginSchool = async (email: string, password: string) => {
+  const res = await schoolAxios.post(
+    `/login`,
+    { email, password },
+    {
+      withCredentials: true, // ✅ include cookies in request and allow browser to accept Set-Cookie
+    }
+  );
+  return res.data;
+};
+
+
+export const uploadToCloudinaryData = async (file: File, cloudName: string, uploadPreset: string) => {
+  const data = new FormData();
+  data.append('file', file);
+  data.append('upload_preset', uploadPreset);
+
+  const response = await cloudAxios.post(
+    `/${cloudName}/image/upload`,
+    data
+  );
+  return response.data.secure_url;
+};

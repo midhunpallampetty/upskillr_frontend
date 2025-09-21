@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import Cookies from 'js-cookie';
 
 const subjects: string[] = [
   'Playlist',
@@ -51,6 +50,16 @@ const fadeUp = {
   visible: { opacity: 1, y: 0 },
 };
 
+const getCookie = (name: string): string | undefined => {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()?.split(';').shift();
+};
+
+const removeCookie = (name: string) => {
+  document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+};
+
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
   const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
@@ -59,9 +68,8 @@ const LandingPage: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-
-    const refreshToken = Cookies.get('refreshToken');
-    const accessToken = Cookies.get('accessToken');
+    const refreshToken = getCookie('refreshToken');
+    const accessToken = getCookie('accessToken');
     setIsLoggedIn(!!refreshToken && !!accessToken);
   }, []);
 
@@ -83,11 +91,9 @@ const LandingPage: React.FC = () => {
   };
 
   const handleLogout = () => {
-
-    Cookies.remove('schoolData');
-    Cookies.remove('refreshToken');
-  Cookies.remove('accessToken');
-
+    removeCookie('schoolData');
+    removeCookie('refreshToken');
+    removeCookie('accessToken');
     setIsLoggedIn(false);
     navigate('/');
   };
@@ -116,7 +122,10 @@ const LandingPage: React.FC = () => {
             <>
               <motion.button
                 whileHover={{ scale: 1.08, backgroundColor: "#6366f1", color: "#fff" }}
-
+                onClick={() => navigate('/browse-courses')}
+                className="px-5 py-2 text-sm bg-indigo-600 text-white rounded hover:bg-indigo-700 transition font-semibold"
+              >
+                Browse Courses
               </motion.button>
               <motion.button
                 whileHover={{ scale: 1.08, backgroundColor: "#ef4444", color: "#fff" }}
@@ -178,9 +187,7 @@ const LandingPage: React.FC = () => {
           >
             <motion.button
               whileHover={{ scale: 1.1, backgroundColor: "#f472b6" }}
-
               onClick={() => navigate(isLoggedIn ? '/browse-courses' : '/schoolRegister')}
-
               className="bg-pink-600 hover:bg-pink-700 text-white font-bold px-6 py-3 rounded-lg shadow-lg transition"
             >
               Get Started

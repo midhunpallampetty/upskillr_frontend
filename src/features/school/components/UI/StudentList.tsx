@@ -30,6 +30,7 @@ const StudentList: React.FC<StudentListProps> = ({ dbname, schoolData }) => {
       try {
         console.log("Fetching students for DB:", schoolData);
         // Pass both schoolId and schoolName to the API
+        console.group(schoolData.name,'name')
         const data = await getAllStudents(schoolData._id, schoolData.name);
         console.log("Fetched students:", data);
         setStudents(data.students);

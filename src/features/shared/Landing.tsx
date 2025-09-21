@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
@@ -55,6 +55,14 @@ const LandingPage: React.FC = () => {
   const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
   const [contactForm, setContactForm] = useState({ name: '', email: '', message: '' });
   const [formSent, setFormSent] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const schoolData = localStorage.getItem('schoolData');
+    const refreshToken = localStorage.getItem('refreshToken');
+    const accessToken = localStorage.getItem('accessToken');
+    setIsLoggedIn(!!schoolData && !!refreshToken && !!accessToken);
+  }, []);
 
   const handleSubjectClick = (subject: string) => {
     setSelectedSubject(subject);
@@ -71,6 +79,14 @@ const LandingPage: React.FC = () => {
     setFormSent(true);
     setTimeout(() => setFormSent(false), 2000);
     setContactForm({ name: '', email: '', message: '' });
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('schoolData');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('accessToken');
+    setIsLoggedIn(false);
+    navigate('/');
   };
 
   return (
@@ -93,20 +109,41 @@ const LandingPage: React.FC = () => {
           <a href="/contact" className="text-gray-700 hover:text-green-500 transition font-medium">Contact</a>
         </nav>
         <div className="flex space-x-3">
-          <motion.button
-            whileHover={{ scale: 1.08, backgroundColor: "#f472b6", color: "#fff" }}
-            onClick={() => navigate('/signupSelection')}
-            className="px-5 py-2 text-sm border rounded text-indigo-600 border-indigo-600 hover:bg-indigo-50 transition font-semibold"
-          >
-            Sign up
-          </motion.button>
-          <motion.button
-            whileHover={{ scale: 1.08, backgroundColor: "#6366f1", color: "#fff" }}
-            onClick={() => navigate('/loginSelection')}
-            className="px-5 py-2 text-sm bg-indigo-600 text-white rounded hover:bg-indigo-700 transition font-semibold"
-          >
-            Login
-          </motion.button>
+          {isLoggedIn ? (
+            <>
+              <motion.button
+                whileHover={{ scale: 1.08, backgroundColor: "#6366f1", color: "#fff" }}
+                onClick={() => navigate('/schoolDashboard')} // Assuming a dashboard route; adjust as needed
+                className="px-5 py-2 text-sm bg-indigo-600 text-white rounded hover:bg-indigo-700 transition font-semibold"
+              >
+                Dashboard
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.08, backgroundColor: "#ef4444", color: "#fff" }}
+                onClick={handleLogout}
+                className="px-5 py-2 text-sm border rounded text-red-600 border-red-600 hover:bg-red-50 transition font-semibold"
+              >
+                Logout
+              </motion.button>
+            </>
+          ) : (
+            <>
+              <motion.button
+                whileHover={{ scale: 1.08, backgroundColor: "#f472b6", color: "#fff" }}
+                onClick={() => navigate('/schoolRegister')}
+                className="px-5 py-2 text-sm border rounded text-indigo-600 border-indigo-600 hover:bg-indigo-50 transition font-semibold"
+              >
+                Sign up
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.08, backgroundColor: "#6366f1", color: "#fff" }}
+                onClick={() => navigate('/schoolLogin')}
+                className="px-5 py-2 text-sm bg-indigo-600 text-white rounded hover:bg-indigo-700 transition font-semibold"
+              >
+                Login
+              </motion.button>
+            </>
+          )}
         </div>
       </motion.header>
 
@@ -141,12 +178,11 @@ const LandingPage: React.FC = () => {
           >
             <motion.button
               whileHover={{ scale: 1.1, backgroundColor: "#f472b6" }}
-              onClick={() => navigate('/signupSelection')}
+              onClick={() => navigate(isLoggedIn ? '/schoolDashboard' : '/schoolRegister')}
               className="bg-pink-600 hover:bg-pink-700 text-white font-bold px-6 py-3 rounded-lg shadow-lg transition"
             >
               Get Started
             </motion.button>
-
           </motion.div>
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
@@ -386,7 +422,6 @@ const LandingPage: React.FC = () => {
               <p className="text-gray-200">Content © 2024 Upskillr</p>
             </div>
             <div className="md:col-span-2">
-
               <div className="flex space-x-4">
                 {/* LinkedIn */}
                 <a
@@ -426,7 +461,6 @@ const LandingPage: React.FC = () => {
                   </svg>
                 </a>
               </div>
-
             </div>
           </div>
         </div>

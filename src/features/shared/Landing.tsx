@@ -59,6 +59,7 @@ const LandingPage: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
+
     const refreshToken = Cookies.get('refreshToken');
     const accessToken = Cookies.get('accessToken');
     setIsLoggedIn(!!refreshToken && !!accessToken);
@@ -82,9 +83,11 @@ const LandingPage: React.FC = () => {
   };
 
   const handleLogout = () => {
+
     Cookies.remove('schoolData');
     Cookies.remove('refreshToken');
   Cookies.remove('accessToken');
+
     setIsLoggedIn(false);
     navigate('/');
   };
@@ -113,10 +116,7 @@ const LandingPage: React.FC = () => {
             <>
               <motion.button
                 whileHover={{ scale: 1.08, backgroundColor: "#6366f1", color: "#fff" }}
-                onClick={() => navigate('/browse-courses')}
-                className="px-5 py-2 text-sm bg-indigo-600 text-white rounded hover:bg-indigo-700 transition font-semibold"
-              >
-                Browse Courses
+
               </motion.button>
               <motion.button
                 whileHover={{ scale: 1.08, backgroundColor: "#ef4444", color: "#fff" }}
@@ -178,7 +178,9 @@ const LandingPage: React.FC = () => {
           >
             <motion.button
               whileHover={{ scale: 1.1, backgroundColor: "#f472b6" }}
+
               onClick={() => navigate(isLoggedIn ? '/browse-courses' : '/schoolRegister')}
+
               className="bg-pink-600 hover:bg-pink-700 text-white font-bold px-6 py-3 rounded-lg shadow-lg transition"
             >
               Get Started

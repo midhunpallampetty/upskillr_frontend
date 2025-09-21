@@ -1,6 +1,6 @@
 import React, { useState, lazy, Suspense } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { registerSchool, uploadToCloudinary } from '../../api/school';
+import { registerSchool, uploadToCloudinaryData } from '../school/api/school.api';
 import type { SchoolFormData } from './types/SchoolForm';
 import { useFormReducer } from './reducers/useFormReducer';
 import { useRegisterReducer } from './reducers/useRegisterReducer';
@@ -170,12 +170,12 @@ const SchoolRegister = () => {
     try {
       let imageUrl = '';
       if (imageFile) {
-        imageUrl = await uploadToCloudinary(imageFile, CLOUD_NAME, UPLOAD_PRESET);
+        imageUrl = await uploadToCloudinaryData(imageFile, CLOUD_NAME, UPLOAD_PRESET);
       }
 
       let coverImageUrl = '';
       if (coverImageFile) {
-        coverImageUrl = await uploadToCloudinary(coverImageFile, CLOUD_NAME, UPLOAD_PRESET);
+        coverImageUrl = await uploadToCloudinaryData(coverImageFile, CLOUD_NAME, UPLOAD_PRESET);
       }
 
       await registerSchool({

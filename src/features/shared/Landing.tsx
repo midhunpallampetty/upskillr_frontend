@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import Cookies from 'js-cookie';
 
 const subjects: string[] = [
   'Playlist',
@@ -55,13 +56,12 @@ const LandingPage: React.FC = () => {
   const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
   const [contactForm, setContactForm] = useState({ name: '', email: '', message: '' });
   const [formSent, setFormSent] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(true);
 
   useEffect(() => {
-    const schoolData = localStorage.getItem('schoolData');
-    const refreshToken = localStorage.getItem('refreshToken');
-    const accessToken = localStorage.getItem('accessToken');
-    setIsLoggedIn(!!schoolData && !!refreshToken && !!accessToken);
+    const refreshToken = Cookies.get('refreshToken');
+    const accessToken = Cookies.get('accessToken');
+    setIsLoggedIn(!!refreshToken && !!accessToken);
   }, []);
 
   const handleSubjectClick = (subject: string) => {
@@ -82,9 +82,9 @@ const LandingPage: React.FC = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('schoolData');
-    localStorage.removeItem('refreshToken');
-    localStorage.removeItem('accessToken');
+    Cookies.remove('schoolData');
+    Cookies.remove('refreshToken');
+    Cookies.remove('accessToken');
     setIsLoggedIn(false);
     navigate('/');
   };
@@ -110,22 +110,13 @@ const LandingPage: React.FC = () => {
         </nav>
         <div className="flex space-x-3">
           {isLoggedIn ? (
-            <>
-              <motion.button
-                whileHover={{ scale: 1.08, backgroundColor: "#6366f1", color: "#fff" }}
-                onClick={() => navigate('/schoolDashboard')} // Assuming a dashboard route; adjust as needed
-                className="px-5 py-2 text-sm bg-indigo-600 text-white rounded hover:bg-indigo-700 transition font-semibold"
-              >
-                Dashboard
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.08, backgroundColor: "#ef4444", color: "#fff" }}
-                onClick={handleLogout}
-                className="px-5 py-2 text-sm border rounded text-red-600 border-red-600 hover:bg-red-50 transition font-semibold"
-              >
-                Logout
-              </motion.button>
-            </>
+            <motion.button
+              whileHover={{ scale: 1.08, backgroundColor: "#ef4444", color: "#fff" }}
+              onClick={handleLogout}
+              className="px-5 py-2 text-sm border rounded text-red-600 border-red-600 hover:bg-red-50 transition font-semibold"
+            >
+              Sign Out
+            </motion.button>
           ) : (
             <>
               <motion.button
@@ -133,14 +124,14 @@ const LandingPage: React.FC = () => {
                 onClick={() => navigate('/schoolRegister')}
                 className="px-5 py-2 text-sm border rounded text-indigo-600 border-indigo-600 hover:bg-indigo-50 transition font-semibold"
               >
-                Sign up
+                Sign Up
               </motion.button>
               <motion.button
                 whileHover={{ scale: 1.08, backgroundColor: "#6366f1", color: "#fff" }}
                 onClick={() => navigate('/schoolLogin')}
                 className="px-5 py-2 text-sm bg-indigo-600 text-white rounded hover:bg-indigo-700 transition font-semibold"
               >
-                Login
+                Sign In
               </motion.button>
             </>
           )}
@@ -178,7 +169,7 @@ const LandingPage: React.FC = () => {
           >
             <motion.button
               whileHover={{ scale: 1.1, backgroundColor: "#f472b6" }}
-              onClick={() => navigate(isLoggedIn ? '/schoolDashboard' : '/schoolRegister')}
+              onClick={() => navigate(isLoggedIn ? '/browse-courses' : '/schoolRegister')}
               className="bg-pink-600 hover:bg-pink-700 text-white font-bold px-6 py-3 rounded-lg shadow-lg transition"
             >
               Get Started

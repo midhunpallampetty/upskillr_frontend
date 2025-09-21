@@ -28,7 +28,7 @@ import LoadingSkeleton from './components/UI/LoadingSkelton';
 import ToastNotification from './components/UI/ToastNotification';
 import CourseHeader from './components/UI/CourseHeader';
 import CommentComponent from './components/Layout/Comment';
-import FinalExamComponent from './components/UI/FinalExam';  // NEW: Import
+import FinalExamComponent from './components/UI/FinalExam';  // NEW: Import (ensure this file exists with the template below)
 import useStudentAuthGuard from './hooks/useStudentAuthGuard';
 import { 
   addCertificate, 
@@ -171,8 +171,8 @@ function useCourseParams() {
 
 const CourseShowPage = () => {
   useStudentAuthGuard();
-const { courseId, schoolName } = useCourseParams();  // Core state
-console.log(courseId,schoolName,'params');
+  const { courseId, schoolName } = useCourseParams();  // Core state
+  console.log(courseId, schoolName, 'params');
   const [course, setCourse] = useState<any | null>(null);
   console.log(course, 'course');
   const [loading, setLoading] = useState<boolean>(false);
@@ -216,9 +216,7 @@ console.log(courseId,schoolName,'params');
     return student ? JSON.parse(student).id || JSON.parse(student)._id : null;
   };
 
-  // NEW: Function to check if a section's exam is completed via API
-  // (Assumes the API returns { isCompleted: boolean } for the section's exam status;
-  // Adjust if your API response is different)
+  // Function to check if a section's exam is completed via API
   const checkSectionExamCompletion = async (sectionId: string) => {
     const studentId = getStudentId();
     if (!studentId || !schoolName || !courseId) return false;
@@ -226,9 +224,9 @@ console.log(courseId,schoolName,'params');
       const data = await checkSectionExamCompletionApi(schoolName, courseId, studentId, sectionId);
       return data.isCompleted || false;  // Assume API returns { isCompleted: boolean } for the section
     } catch (apiError) {
-      console.error('Error checking section exam completion:', apiError);
-      addToast('error', 'Failed to verify section completion. Using local check.');
-      return false;
+      console.error('API error:', apiError);
+      addToast('error', 'Failed to check exam status. Assuming incomplete.');
+      return false; // Fallback to prevent blocking
     }
   };
 
@@ -326,10 +324,11 @@ console.log(courseId,schoolName,'params');
     }
   }, [currentVideoUrl, videoPositions, course]);
 
-  // NEW: Effect to automatically show final exam if all sections are completed but final not passed
+  // Effect to automatically show final exam if all sections are completed but final not passed
   useEffect(() => {
     if (course && course.finalExam && !finalExamPassed) {
       const allSectionsCompleted = course.sections.every(section => isSectionCompleted(section));
+      console.log('Final exam check:', { allSectionsCompleted, finalExamPassed }); // Debug
       if (allSectionsCompleted) {
         setShowFinalExam(true);
         addToast('info', 'All sections completed! Time to take the final exam.');
@@ -343,13 +342,14 @@ console.log(courseId,schoolName,'params');
     }
   }, [course, finalExamPassed, completedVideos, passedSections]);
 
-  // NEW: Effect to automatically set currentExamSection for the active (expanded) section if videos are completed and exam not passed
+  // Effect to automatically set currentExamSection for the active (expanded) section if videos are completed and exam not passed
   useEffect(() => {
     if (expandedSection && course) {
       const section = course.sections.find(s => s._id === expandedSection);
       if (section) {
         const allVideosCompleted = section.videos.every(v => completedVideos.has(v._id));
-        const examNotPassed = section.exam && !passedSections.has(section._id);
+        const examNotPassed = section.exam && !passedSections.has(section._id); // Ensure exam exists
+        console.log('Section check:', { allVideosCompleted, examNotPassed }); // Debug
         if (allVideosCompleted && examNotPassed) {
           setCurrentExamSection(expandedSection);
           // Scroll to exam after a short delay to ensure it's rendered
@@ -361,7 +361,7 @@ console.log(courseId,schoolName,'params');
         }
       }
     }
-  }, [expandedSection, completedVideos, passedSections, course]);
+  }, [expandedSection, completedVideos, passedSections, course]); // Added course dependency
 
   const toggleSection = (id: string) => {
     const sectionIndex = course?.sections.findIndex(s => s._id === id);
@@ -496,7 +496,7 @@ console.log(courseId,schoolName,'params');
     setCurrentExamSection(null);
   };
 
-  // NEW: Handler for final exam submit (now with backend save)
+  // Handler for final exam submit (now with backend save and error handling)
   const handleFinalExamSubmit = async (passed: boolean, score: number, total: number) => {
     const studentId = getStudentId();
     if (!studentId || !schoolName || !courseId) return;
@@ -515,8 +515,8 @@ console.log(courseId,schoolName,'params');
       // Trigger completion celebration
       setShowCourseCompletion(true);
     } catch (error) {
-      console.error('Error saving final exam progress:', error);
-      addToast('error', 'Failed to save final exam progress. Please try again.');
+      console.error('Final exam save error:', error);
+      addToast('error', 'Failed to save final exam. Please retry.');
     }
   };
 
@@ -586,8 +586,8 @@ console.log(courseId,schoolName,'params');
   };
 
   const isSectionCompleted = (section: any): boolean => {
-    const videosCompleted = section.videos.length > 0 && section.videos.every(video => completedVideos.has(video._id));
-    const examPassed = !section.exam || passedSections.has(section._id);
+    const videosCompleted = section.videos.every(video => completedVideos.has(video._id)); // Handles empty arrays
+    const examPassed = !section.exam || passedSections.has(section._id); // Explicitly true if no exam
     // UPDATED: Section is completed only if videos are done AND exam is passed (if present)
     return videosCompleted && examPassed;
   };

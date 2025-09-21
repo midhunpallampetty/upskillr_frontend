@@ -15,6 +15,7 @@ import ActionCardsSection from './components/Layout/ActionCardsSection';
 import CoursesSection from './components/Layout/CoursesSection';
 import StudentManagementSection from './components/Layout/StudentManagementSection';
 import LoadingSchoolDashboard from './components/UI/LoadingSchoolDashboard';
+import ViewRenderer from './components/UI/ViewRenderer';
 const SchoolHome: React.FC = () => {
   const { isDarkMode } = useGlobalState();
   const navigate = useNavigate();
@@ -95,16 +96,20 @@ console.log("Fetched school data:", schoolData);
       <SchoolHeader school={school} setSchool={setSchool} />
       <SchoolCover school={school} />
       <div className="max-w-7xl mx-auto px-6 py-8">
-        {activeView === 'dashboard' ? (
-          <>
-            <WelcomeSection schoolName={school.name} />
-            <QuickStats isDarkMode={isDarkMode} />
-            <ActionCardsSection dispatchView={dispatchView} />
-            <CoursesSection schoolId={school._id} />
-          </>
-        ) : activeView === 'students' ? (
-<StudentManagementSection schoolData={school} dispatchView={dispatchView} />
-        ) : null}
+      <ViewRenderer
+    initialView="dashboard"
+    renderDashboard={() => (
+      <>
+        <WelcomeSection schoolName={school.name} />
+        <QuickStats isDarkMode={isDarkMode} />
+        <ActionCardsSection dispatchView={dispatchView} />
+        <CoursesSection schoolId={school._id} />
+      </>
+    )}
+    renderStudents={(schoolData) => (
+      <StudentManagementSection schoolData={schoolData} dispatchView={dispatchView} />
+    )}
+  />
       </div>
     </div>
   );

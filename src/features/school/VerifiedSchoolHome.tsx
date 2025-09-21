@@ -96,20 +96,22 @@ console.log("Fetched school data:", schoolData);
       <SchoolHeader school={school} setSchool={setSchool} />
       <SchoolCover school={school} />
       <div className="max-w-7xl mx-auto px-6 py-8">
-      <ViewRenderer
-    initialView="dashboard"
-    renderDashboard={() => (
-      <>
-        <WelcomeSection schoolName={school.name} />
-        <QuickStats isDarkMode={isDarkMode} />
-        <ActionCardsSection dispatchView={dispatchView} />
-        <CoursesSection schoolId={school._id} />
-      </>
-    )}
-    renderStudents={(schoolData) => (
-      <StudentManagementSection schoolData={schoolData} dispatchView={dispatchView} />
-    )}
-  />
+// In SchoolHome.tsx (inside the return statement)
+<ViewRenderer
+  initialView="dashboard"
+  renderDashboard={(dispatchView) => (
+    <>
+      <WelcomeSection schoolName={school.name} />
+      <QuickStats isDarkMode={isDarkMode} />
+      <ActionCardsSection dispatchView={dispatchView} />  // Ensure this passes dispatchView
+      <CoursesSection schoolId={school._id} />
+    </>
+  )}
+  renderStudents={(dispatchView) => (
+    <StudentManagementSection schoolData={school} dispatchView={dispatchView} />
+  )}
+/>
+
       </div>
     </div>
   );

@@ -7,10 +7,9 @@ import { validateStudentLogin } from './validations/loginValidation';
 import { loginStudent } from './api/student.api';
 import { StudentLoginData } from './types/StudentData';
 import { Eye, EyeOff } from 'lucide-react';
-import useNavigateToStudentHome from './hooks/useNavigateToStudentHome';
+import withAuth from '../../hoc/withAuth'; // Adjust the import path as needed
 
 const StudentLogin = () => {
-  useNavigateToStudentHome();
   const [formData, setFormData] = useState<StudentLoginData>({ email: '', password: '' });
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
   const [showPassword, setShowPassword] = useState(false);
@@ -164,4 +163,4 @@ const StudentLogin = () => {
   );
 };
 
-export default StudentLogin;
+export default withAuth(StudentLogin);

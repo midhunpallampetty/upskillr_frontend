@@ -22,6 +22,7 @@ import Contact from '../features/shared/Contact';
 import MarketingPage from '../features/school/MarketingPage';
 import { HelmetProvider } from 'react-helmet-async';
 import TestPage from '../features/admin/TestPage';
+import withAdminAuth from '../hoc/withAdminAuth';
 const LandingPage = lazy(() => import('../features/shared/Landing'));
 const AdminAuth = lazy(() => import('../features/admin/AdminAuth'));
 const SchoolRegister = lazy(() => import('../features/school/schoolRegister'));
@@ -37,7 +38,7 @@ const StudentHomePage = lazy(() => import('../features/student/StudentHomePage')
 const AddCoursePage = lazy(() => import('../features/course/AddCoursePage'));
 const VerifiedSchoolHome = lazy(() => import('../features/school/VerifiedSchoolHome'));
 const AddVideoToSectionWrapper = lazy(() => import('../features/school/components/UI/AddVideoToSectionWrapper'));
-
+const ProtectedDashboard = withAdminAuth(AdminDashboard);
 const PublicRoutes = () => (
   <Routes>
     <Route path="/" element={<LandingPage />} />
@@ -55,7 +56,7 @@ const PublicRoutes = () => (
     <Route path="/schoolStatus" element={<VerificationStatus />} />
     {/* <Route path="/studentLogin" element={<StudentLogin />} /> */}
     <Route path="/studentRegister" element={<StudentRegister />} />
-    <Route path="/dashboard" element={<AdminDashboard />} />
+    <Route path="/dashboard" element={<ProtectedDashboard />} />
    <Route path="/school/:schoolName/home" element={<CoursesPage />} />
    <Route path="/studenthome" element={<StudentHomePage />} />
     <Route path="/addCourse" element={<AddCoursePage />} />

@@ -43,15 +43,15 @@ const PublicRoutes = () => (
     <Route path="/" element={<LandingPage />} />
     <Route path="/adminLogin" element={<AdminAuth />} />
     <Route path="/school/:schoolname/profile" element={<SchoolProfilePage />} />
-    <Route path='/student/profile'element={<StudentProfilePage/>}/>
+    {/* <Route path='/student/profile'element={<StudentProfilePage/>}/> */}
     <Route path="*" element={<NotFound />} />
    <Route path="/schoolRegister" element={<SchoolRegister />} />
-    <Route path="/student/payment/:courseId" element={<CoursePurchasePage />} />
-    <Route path="/school/:schoolName/course/:courseId" element={<CourseDetailsPage />} />
+    {/* <Route path="/student/payment/:courseId" element={<CoursePurchasePage />} /> */}
+    {/* <Route path="/school/:schoolName/course/:courseId" element={<CourseDetailsPage />} /> */}
 <Route path='/forum'element={<ForumPage/>}/>
     <Route path="/schoolLogin" element={<SchoolLogin />} />
-    <Route path="/loginSelection" element={<LoginSelection />} />
-    <Route path="/signupSelection" element={<SignupSelection />} />
+    {/* <Route path="/loginSelection" element={<LoginSelection />} /> */}
+    {/* <Route path="/signupSelection" element={<SignupSelection />} /> */}
     <Route path="/schoolStatus" element={<VerificationStatus />} />
     {/* <Route path="/studentLogin" element={<StudentLogin />} /> */}
     <Route path="/studentRegister" element={<StudentRegister />} />
@@ -64,14 +64,14 @@ const PublicRoutes = () => (
     <Route path="/school/reset-password" element={<ResetPassword />} />
     <Route path='/school/forgot-password'element={<ForgotPassword/>}/>
     <Route path="/school/:verifiedSchool/section/:sectionId/add-video" element={<AddVideoToSectionWrapper />} />
-    <Route path='/student/reset-password'element={<ResetStudentPassword/>}/>
-    <Route path='/student/forgot-password'element={<ForgotStudentPassword/>}/>
-    <Route path="/student/payment-success" element={<PaymentSuccess />} />
+    {/* <Route path='/student/reset-password'element={<ResetStudentPassword/>}/>
+    <Route path='/student/forgot-password'element={<ForgotStudentPassword/>}/> */}
+    {/* <Route path="/student/payment-success" element={<PaymentSuccess />} />
     <Route path='/student/payment-cancelled'element={<PaymentCancel/>}/>
-    <Route path='/student/purchased-courses'element={<PurchasedCourses/>}/>
-    <Route path='/student/course-page/:schoolName/:courseId'element={<CoursesShowPage/>}/>
-    <Route path='/school/:verifiedSchool/manage-exam'element={<ExamManager/>}/>
-    <Route path='/student/exam/take-exam' element={<ExamPage />} />
+    <Route path='/student/purchased-courses'element={<PurchasedCourses/>}/> */}
+    {/* <Route path='/student/course-page/:schoolName/:courseId'element={<CoursesShowPage/>}/> */}
+    {/* <Route path='/school/:verifiedSchool/manage-exam'element={<ExamManager/>}/>
+    <Route path='/student/exam/take-exam' element={<ExamPage />} /> */}
     <Route path='/about'element={<About/>}/>
     <Route path='/contact'element={<Contact/>}/>
     <Route path='/admin/test'element={<TestPage/>}/>

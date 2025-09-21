@@ -169,7 +169,7 @@ const LandingPage: React.FC = () => {
           >
             <motion.button
               whileHover={{ scale: 1.1, backgroundColor: "#f472b6" }}
-              onClick={() => navigate(isLoggedIn ? '/browse-courses' : '/schoolRegister')}
+              onClick={() => navigate(isLoggedIn ? '/schoolLogin' : '/schoolRegister')}
               className="bg-pink-600 hover:bg-pink-700 text-white font-bold px-6 py-3 rounded-lg shadow-lg transition"
             >
               Get Started

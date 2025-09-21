@@ -56,7 +56,7 @@ const LandingPage: React.FC = () => {
   const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
   const [contactForm, setContactForm] = useState({ name: '', email: '', message: '' });
   const [formSent, setFormSent] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
     const refreshToken = Cookies.get('refreshToken');

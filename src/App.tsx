@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { getSchoolByDomain } from './features/school/api/school.api'; // adjust the import path
+import { getSchoolByDomain } from './features/school/api/school.api'; // adjust the path
 
+// Pages
 import MarketingPage from './features/school/MarketingPage';
 import StudentLogin from './features/student/studentLogin';
 import StudentRegister from './features/student/studentRegister';
@@ -16,28 +17,33 @@ import CourseShowPage from './features/student/CourseShowPage';
 import ForumChatUI from './features/shared/ForumPage';
 import StudentProfilePage from './features/student/StudentProfile';
 
+// Blocked page
 const BlockedPage: React.FC = () => (
   <div className="flex h-screen items-center justify-center text-center">
     <h1 className="text-3xl font-bold text-red-600">🚫 This school is blocked</h1>
   </div>
 );
 
-const SubdomainRoutes: React.FC<{ subdomain: string }> = ({ subdomain }) => {
+interface SubdomainRoutesProps {
+  subdomain: string;
+}
+
+const SubdomainRoutes: React.FC<SubdomainRoutesProps> = ({ subdomain }) => {
   const location = useLocation();
   const [isBlocked, setIsBlocked] = useState<boolean | null>(null);
 
   useEffect(() => {
-    const fetchSchool = async () => {
+    const fetchSchoolStatus = async () => {
       try {
         const data = await getSchoolByDomain(subdomain);
-        console.log("Fetched school data: in rooot", data);
+        console.log("Fetched school data:", data);
         setIsBlocked(data?.school?.isBlocked ?? false);
       } catch (err) {
         console.error("Error fetching school by subdomain:", err);
         setIsBlocked(false);
       }
     };
-    fetchSchool();
+    fetchSchoolStatus();
   }, [subdomain]);
 
   if (isBlocked === null) {
@@ -48,6 +54,7 @@ const SubdomainRoutes: React.FC<{ subdomain: string }> = ({ subdomain }) => {
     return <BlockedPage />;
   }
 
+  // Define route patterns
   const routePatterns: { pattern: RegExp; component: React.ReactElement }[] = [
     { pattern: /^\/studentLogin$/, component: <StudentLogin /> },
     { pattern: /^\/studentRegister$/, component: <StudentRegister /> },
@@ -63,12 +70,14 @@ const SubdomainRoutes: React.FC<{ subdomain: string }> = ({ subdomain }) => {
     { pattern: /^\/profile$/, component: <StudentProfilePage /> },
   ];
 
+  // Match current path with patterns
   for (let route of routePatterns) {
     if (route.pattern.test(location.pathname)) {
       return route.component;
     }
   }
 
+  // Default to marketing page
   return <MarketingPage />;
 };
 

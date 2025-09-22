@@ -20,7 +20,7 @@ const SchoolBlocker: React.FC<SchoolBlockerProps> = ({ children }) => {
 
         console.log("School data:", data);
 
-        if (data?.isBlocked) {
+        if (data?.school.isBlocked) {
           console.log("School is BLOCKED"); // ✅ log blocked
           setIsBlocked(true);
           setErrorMsg("This school is blocked.");

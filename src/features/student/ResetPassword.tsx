@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
-import {resetStudentPassword} from "./api/student.api";
+import { resetStudentPassword } from "./api/student.api";
+
 const ResetStudentPassword: React.FC = () => {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -14,6 +15,9 @@ const ResetStudentPassword: React.FC = () => {
 
   const email = searchParams.get('email');
   const token = searchParams.get('token');
+
+  // ✅ Extract schoolName from subdomain
+  const schoolName = window.location.hostname.split('.')[0];
 
   const validatePassword = (password: string) => {
     const passwordRegex =
@@ -44,16 +48,23 @@ const ResetStudentPassword: React.FC = () => {
     }
 
     try {
-         await resetStudentPassword(email as string, token as string, newPassword);
+      // 👇 Now passing schoolName as 4th argument
+      await resetStudentPassword(
+        email as string,
+        token as string,
+        newPassword,
+        schoolName
+      );
 
-Swal.fire({
-  icon: 'success',
-  title: 'Password Reset',
-  text: 'Password reset successfully. You can now login.',
-  confirmButtonColor: '#3085d6',
-});    
-localStorage.removeItem("resetLinkTimestamp");
-navigate('/studentlogin');
+      Swal.fire({
+        icon: 'success',
+        title: 'Password Reset',
+        text: 'Password reset successfully. You can now login.',
+        confirmButtonColor: '#3085d6',
+      });
+      
+      localStorage.removeItem("resetLinkTimestamp");
+      navigate('/studentlogin');
     } catch (err: any) {
       setMessage(err.response?.data?.message || 'Something went wrong!');
     }
@@ -65,7 +76,7 @@ navigate('/studentlogin');
         {/* Form Section */}
         <div className="w-full md:w-1/2 p-8">
           <h2 className="text-2xl font-bold mb-4">Reset Your Password</h2>
-          <p className="text-sm text-gray-600 mb-4">Set your new password below.</p>
+          <p className="text-sm text-gray-600 mb-4">Set your new password below for <b>{schoolName}</b>.</p>
 
           {message && <p className="text-red-500 text-sm mb-3">{message}</p>}
 

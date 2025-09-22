@@ -33,7 +33,7 @@ const SubdomainRoutes = ({ subdomain }) => {
     const fetchSchoolStatus = async () => {
       try {
         const hostname = window.location.hostname;
-        const schoolData = await getSchoolByDomain(hostname);
+        const schoolData = await getSchoolByDomain(`https://${hostname}`);
         // If isBlocked exists and is true, set blocked; otherwise, not blocked
         setIsBlocked(schoolData?.isBlocked === true);
       } catch (error) {

@@ -32,7 +32,8 @@ const SubdomainRoutes = ({ subdomain }) => {
   useEffect(() => {
     const fetchSchoolStatus = async () => {
       try {
-        const schoolData = await getSchoolByDomain(subdomain);
+        const hostname = window.location.hostname;
+        const schoolData = await getSchoolByDomain(hostname);
         // If isBlocked exists and is true, set blocked; otherwise, not blocked
         setIsBlocked(schoolData?.isBlocked === true);
       } catch (error) {

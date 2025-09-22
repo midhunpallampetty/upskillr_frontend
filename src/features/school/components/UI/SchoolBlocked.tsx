@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { getSchoolByDomain } from "../../api/school.api";
+import { Console } from "console";
 
 interface SchoolBlockerProps {
   children: React.ReactNode;
@@ -18,7 +19,7 @@ const SchoolBlocker: React.FC<SchoolBlockerProps> = ({ children }) => {
         // Only the origin (protocol + hostname + port if any)
         const origin = window.location.origin; // e.g., "https://gamersclub.eduvia.space"
         const data = await getSchoolByDomain(origin);
-
+console.log("School data: in component", data);
         if (data?.isBlocked) {
           setIsBlocked(true);
           setErrorMsg("This school is blocked.");

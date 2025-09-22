@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from "react";
 import { getSchoolByDomain } from "../../api/school.api";
-import { Console } from "console";
 
 interface SchoolBlockerProps {
   children: React.ReactNode;
@@ -12,18 +11,21 @@ const SchoolBlocker: React.FC<SchoolBlockerProps> = ({ children }) => {
   const [isBlocked, setIsBlocked] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string>("");
-console.log("SchoolBlocker rendered",isBlocked, loading);
+
   useEffect(() => {
     const checkSchool = async () => {
       try {
-        // Only the origin (protocol + hostname + port if any)
         const origin = window.location.origin; // e.g., "https://gamersclub.eduvia.space"
         const data = await getSchoolByDomain(origin);
-console.log("School data: in component", data);
+
+        console.log("School data:", data);
+
         if (data?.isBlocked) {
+          console.log("School is BLOCKED"); // ✅ log blocked
           setIsBlocked(true);
           setErrorMsg("This school is blocked.");
         } else {
+          console.log("School is NOT blocked"); // ✅ log not blocked
           setIsBlocked(false);
         }
       } catch (err) {
@@ -37,17 +39,13 @@ console.log("School data: in component", data);
     checkSchool();
   }, []);
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (isBlocked) {
+  if (loading) return <div>Loading...</div>;
+  if (isBlocked)
     return (
       <div className="text-red-600 text-center mt-20">
         {errorMsg}
       </div>
     );
-  }
 
   return <>{children}</>;
 };

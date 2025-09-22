@@ -74,6 +74,7 @@ const ForgotStudentPassword = () => {
       localStorage.setItem('resetLinkTimestamp', Date.now().toString());
       setTimeLeft(COOLDOWN_PERIOD);
     } catch (err: any) {
+      console.log(err,'error happend')
       setError(err.response?.data?.message || 'Something went wrong.');
     } finally {
       setIsLoading(false);

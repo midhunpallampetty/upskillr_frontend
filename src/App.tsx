@@ -1,7 +1,7 @@
-import React, { Suspense, useEffect, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-import { getDynamicDomain, getSubdomain } from './utils/getSubdomain';
-import AppRouter from './routes/AppRouter';
+import React, { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
+import { getSchoolByDomain } from './features/school/api/school.api'; // adjust the import path
+
 import MarketingPage from './features/school/MarketingPage';
 import StudentLogin from './features/student/studentLogin';
 import StudentRegister from './features/student/studentRegister';
@@ -16,10 +16,9 @@ import CourseShowPage from './features/student/CourseShowPage';
 import ForumChatUI from './features/shared/ForumPage';
 import StudentProfilePage from './features/student/StudentProfile';
 
-// A simple blocked page
 const BlockedPage: React.FC = () => (
   <div className="flex h-screen items-center justify-center text-center">
-    <h1 className="text-3xl font-bold text-red-600">This school is blocked</h1>
+    <h1 className="text-3xl font-bold text-red-600">🚫 This school is blocked</h1>
   </div>
 );
 
@@ -30,8 +29,8 @@ const SubdomainRoutes: React.FC<{ subdomain: string }> = ({ subdomain }) => {
   useEffect(() => {
     const fetchSchool = async () => {
       try {
-        const res = await fetch(`/api/school/by-subdomain/${subdomain}`);
-        const data = await res.json();
+        const data = await getSchoolByDomain(subdomain);
+        console.log("Fetched school data: in rooot", data);
         setIsBlocked(data?.school?.isBlocked ?? false);
       } catch (err) {
         console.error("Error fetching school by subdomain:", err);
@@ -49,7 +48,6 @@ const SubdomainRoutes: React.FC<{ subdomain: string }> = ({ subdomain }) => {
     return <BlockedPage />;
   }
 
-  // Define routes with regex patterns
   const routePatterns: { pattern: RegExp; component: React.ReactElement }[] = [
     { pattern: /^\/studentLogin$/, component: <StudentLogin /> },
     { pattern: /^\/studentRegister$/, component: <StudentRegister /> },
@@ -74,24 +72,4 @@ const SubdomainRoutes: React.FC<{ subdomain: string }> = ({ subdomain }) => {
   return <MarketingPage />;
 };
 
-const App: React.FC = () => {
-  const subdomain = getSubdomain();
-  const dynamicSubdomain = getDynamicDomain();
-  const isSubdomain = dynamicSubdomain && dynamicSubdomain !== "www";
-
-  return (
-    <Router>
-      <Suspense fallback={<div className="text-center mt-10">Loading...</div>}>
-        <Routes>
-          {isSubdomain ? (
-            <Route path="/*" element={<SubdomainRoutes subdomain={subdomain} />} />
-          ) : (
-            <Route path="/*" element={<AppRouter subdomain={subdomain} />} />
-          )}
-        </Routes>
-      </Suspense>
-    </Router>
-  );
-};
-
-export default App;
+export default SubdomainRoutes;

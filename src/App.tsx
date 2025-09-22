@@ -15,6 +15,7 @@ import PurchasedCourses from './features/student/PurchasedCourses';
 import CourseShowPage from './features/student/CourseShowPage';
 import ForumChatUI from './features/shared/ForumPage';
 import StudentProfilePage from './features/student/StudentProfile';
+import SchoolBlocker from './features/school/components/UI/SchoolBlocked';
 const SubdomainRoutes: React.FC<{ subdomain: string }> = ({ subdomain }) => {
   const location = useLocation();
 
@@ -64,7 +65,9 @@ const App: React.FC = () => {
 
   return (
     <Router>
+      
       <Suspense fallback={<div className="text-center mt-10">Loading...</div>}>
+      <SchoolBlocker>
         <Routes>
           {isSubdomain ? (
             <Route path="/*" element={<SubdomainRoutes subdomain={subdomain} />} />
@@ -72,6 +75,7 @@ const App: React.FC = () => {
             <Route path="/*" element={<AppRouter subdomain={subdomain} />} />
           )}
         </Routes>
+        </SchoolBlocker>
       </Suspense>
     </Router>
   );

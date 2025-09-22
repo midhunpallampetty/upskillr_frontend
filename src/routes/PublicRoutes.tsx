@@ -49,16 +49,16 @@ const PublicRoutes = () => (
    <Route path="/schoolRegister" element={<SchoolRegister />} />
     {/* <Route path="/student/payment/:courseId" element={<CoursePurchasePage />} /> */}
     {/* <Route path="/school/:schoolName/course/:courseId" element={<CourseDetailsPage />} /> */}
-<Route path='/forum'element={<ForumPage/>}/>
+{/* <Route path='/forum'element={<ForumPage/>}/> */}
     <Route path="/schoolLogin" element={<SchoolLogin />} />
     {/* <Route path="/loginSelection" element={<LoginSelection />} /> */}
     {/* <Route path="/signupSelection" element={<SignupSelection />} /> */}
     <Route path="/schoolStatus" element={<VerificationStatus />} />
     {/* <Route path="/studentLogin" element={<StudentLogin />} /> */}
-    <Route path="/studentRegister" element={<StudentRegister />} />
+    {/* <Route path="/studentRegister" element={<StudentRegister />} /> */}
     <Route path="/dashboard" element={<ProtectedDashboard />} />
    <Route path="/school/:schoolName/home" element={<CoursesPage />} />
-   <Route path="/studenthome" element={<StudentHomePage />} />
+   {/* <Route path="/studenthome" element={<StudentHomePage />} /> */}
     <Route path="/addCourse" element={<AddCoursePage />} />
     <Route path="/school/:verifiedSchool" element={<VerifiedSchoolHome />} />
     <Route path="/school/:verifiedSchool/addCourse" element={<AddCoursePage />} />

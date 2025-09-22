@@ -16,6 +16,8 @@ import CourseShowPage from './features/student/CourseShowPage';
 import ForumChatUI from './features/shared/ForumPage';
 import StudentProfilePage from './features/student/StudentProfile';
 import SchoolBlocker from './features/school/components/UI/SchoolBlocked';
+import ResetStudentPassword from './features/student/ResetPassword';
+import ForgotStudentPassword from './features/student/ForgotPassword';
 const SubdomainRoutes: React.FC<{ subdomain: string }> = ({ subdomain }) => {
   const location = useLocation();
 
@@ -46,6 +48,8 @@ const SubdomainRoutes: React.FC<{ subdomain: string }> = ({ subdomain }) => {
        { pattern: /^\/forum$/, component: <ForumChatUI /> },
 
  { pattern: /^\/profile$/, component: <StudentProfilePage /> },
+   { pattern: /^\/student\/reset-password$/, component: <ResetStudentPassword /> },
+  { pattern: /^\/student\/forgot-password$/, component: <ForgotStudentPassword /> },
 ];
 
   for (let route of routePatterns) {

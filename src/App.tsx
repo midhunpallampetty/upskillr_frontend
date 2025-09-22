@@ -35,6 +35,7 @@ const SubdomainRoutes = ({ subdomain }) => {
         const hostname = window.location.hostname;
         const schoolData = await getSchoolByDomain(`https://${hostname}`);
         // If isBlocked exists and is true, set blocked; otherwise, not blocked
+        console.log('schoolData:', schoolData);
         setIsBlocked(schoolData?.isBlocked === true);
       } catch (error) {
         console.error('Error fetching school data:', error);

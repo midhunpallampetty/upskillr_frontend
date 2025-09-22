@@ -12,7 +12,7 @@ const SchoolBlocker: React.FC<SchoolBlockerProps> = ({ children }) => {
   const [isBlocked, setIsBlocked] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string>("");
-
+console.log("SchoolBlocker rendered",isBlocked, loading);
   useEffect(() => {
     const checkSchool = async () => {
       try {

@@ -43,7 +43,7 @@ const SchoolBlocker: React.FC<SchoolBlockerProps> = ({ children }) => {
 
   if (isBlocked) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      <div className="flex items-center justify-center min-h-screen bg-gray-100 font-extrabold">
         <div className="max-w-md w-full bg-white p-8 rounded-lg shadow-lg text-center">
           <h1 className="text-2xl font-bold text-red-600 mb-4">School Blocked</h1>
           <p className="text-gray-700 mb-4">
@@ -55,12 +55,7 @@ const SchoolBlocker: React.FC<SchoolBlockerProps> = ({ children }) => {
           <p className="text-gray-700 mb-6">
             Please contact support for further clarity and to request unblocking.
           </p>
-          <a
-            href="mailto:support@eduvia.space" // Update with your actual support email
-            className="inline-block bg-red-600 text-white font-semibold py-2 px-4 rounded hover:bg-red-700 transition"
-          >
-            Contact Support
-          </a>
+          
         </div>
       </div>
     );

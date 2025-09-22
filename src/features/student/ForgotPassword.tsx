@@ -73,10 +73,15 @@ const ForgotStudentPassword = () => {
       setMessage(msg);
       localStorage.setItem('resetLinkTimestamp', Date.now().toString());
       setTimeLeft(COOLDOWN_PERIOD);
-    } catch (err: any) {
-      console.log(err.response.status,'error happend')
-      setError(err.response?.data?.message || 'Something went wrong.');
-    } finally {
+   } catch (err: any) {
+  if (err.response?.status === 404) {
+    setError("No student found with this email address.");
+  } else {
+    setError(err.response?.data?.message || "Something went wrong.");
+  }
+  console.log(err.response?.status, "error happened");
+}
+finally {
       setIsLoading(false);
     }
   };

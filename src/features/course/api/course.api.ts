@@ -14,10 +14,12 @@ export const addCourseToSchool = async (
       `/school/${dbname}/add-course`,
       payload
     );
+
     return { success: true, data };
   } catch (err: any) {
-    const errorMsg =
-      err.response?.data?.message || err.message || 'Unknown error occurred';
-    return { success: false, error: errorMsg };
+    return {
+      success: false,
+      error: err.response?.data?.message || err.message || 'Unknown error occurred',
+    };
   }
 };

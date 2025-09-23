@@ -10,7 +10,6 @@ import { ReplyRenderer } from './components/UI/ReplyRender';
 import { ResponseForm } from './components/UI/QuestionResponse';
 import { User, Question, Answer, Reply, Toast, API } from './types/ImportsAndTypes';
 
-
 export default function ForumChatUI() {
   const studentData = JSON.parse(localStorage.getItem('student') || '{}');
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
@@ -29,136 +28,144 @@ export default function ForumChatUI() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const selectedRef = useRef<Question | null>(null); // Ref to track current selected without triggering rerenders
 
-
   const addToast = useCallback((message: string, type: Toast['type'] = 'info') => {
     const id = Date.now().toString();
     const newToast: Toast = { id, message, type };
     setToasts(prev => [...prev, newToast]);
-
 
     setTimeout(() => {
       setToasts(prev => prev.filter(toast => toast.id !== id));
     }, 5000);
   }, []);
 
-
   const removeToast = useCallback((id: string) => {
     setToasts(prev => prev.filter(toast => toast.id !== id));
   }, []);
 
-
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, []);
-
 
   const filteredQuestions = useMemo(() => {
     return questions.filter(q => {
       const matchesSearch = q.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (q.author?.fullName?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false);
       const matchesCategory = selectedCategory === 'all' || q.category === selectedCategory;
-      return !q.isDeleted && matchesSearch && matchesCategory;
+      return !q.isDeleted && matchesSearch && matchesCategory && q.author != null; // Added null check for author
     });
   }, [questions, searchQuery, selectedCategory]);
-
 
   useEffect(() => {
     scrollToBottom();
   }, [selected?.answers, selected?.replies, scrollToBottom]);
 
-
-  // Separate use Ascent: Fetch initial questions only once
+  // Fetch initial questions only once
   useEffect(() => {
     setLoading(true);
     axios.get(`${API}/forum/questions`)
       .then(res => {
-        setQuestions(Array.isArray(res.data) ? res.data : []);
+        const fetchedQuestions = Array.isArray(res.data) ? res.data : [];
+        // Ensure author defaults
+        const safeQuestions = fetchedQuestions.map(q => ({
+          ...q,
+          author: q.author ?? { fullName: 'Anonymous', _id: '', role: '' },
+        }));
+        setQuestions(safeQuestions);
       })
       .catch(err => {
         console.error('Failed to fetch questions:', err);
         addToast('Failed to load questions. Please try again.', 'error');
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [addToast]);
 
-
-  // Socket setup in a separate effect with minimal dependencies
+  // Socket setup
   useEffect(() => {
     socketRef.current = io(import.meta.env.VITE_SOCKET_URL);
-
 
     socketRef.current.on('connect', () => {
       addToast('Connected to real-time updates', 'success');
     });
 
-
- socketRef.current.on('new_question', (qDoc: Question) => {
-  // Fetch full question data to ensure images/assets are included
-  axios.get(`${API}/forum/questions/${qDoc._id}`)
-    .then(res => {
-      const fullQuestion = res.data;
-      setQuestions(prevQuestions => {
-        // Avoid duplicate if already added (e.g., via onSubmit fetch)
-        if (prevQuestions.some(q => q._id === fullQuestion._id)) {
-          return prevQuestions.map(q => 
-            q._id === fullQuestion._id ? fullQuestion : q
-          );
-        }
-        return [fullQuestion, ...prevQuestions];
-      });
-      if (String(fullQuestion.author._id) !== String(user._id)) {
-        addToast(`${fullQuestion.author.fullName} asked a new question`, 'info');
-      }
-    })
-    .catch(err => {
-      console.error('Failed to fetch new question details:', err);
-      // Fallback to using socket data if fetch fails, BUT WITH DUPLICATE CHECK
-      setQuestions(prevQuestions => {
-        if (prevQuestions.some(q => q._id === qDoc._id)) {
-          return prevQuestions.map(q => 
-            q._id === qDoc._id ? { ...q, ...qDoc } : q  // Merge to update if needed
-          );
-        }
-        return [qDoc, ...prevQuestions];
-      });
-      if (String(qDoc.author._id) !== String(user._id)) {
-        addToast(`${qDoc.author.fullName} asked a new question`, 'info');
-      }
+    socketRef.current.on('new_question', (qDoc: Question) => {
+      // Fetch full question data
+      axios.get(`${API}/forum/questions/${qDoc._id}`)
+        .then(res => {
+          let fullQuestion = res.data;
+          fullQuestion = {
+            ...fullQuestion,
+            author: fullQuestion.author ?? { fullName: 'Anonymous', _id: '', role: '' }, // Default if null
+          };
+          setQuestions(prevQuestions => {
+            if (prevQuestions.some(q => q._id === fullQuestion._id)) {
+              return prevQuestions.map(q => 
+                q._id === fullQuestion._id ? fullQuestion : q
+              );
+            }
+            return [fullQuestion, ...prevQuestions];
+          });
+          if (String(fullQuestion.author._id) !== String(user._id)) {
+            addToast(`${fullQuestion.author.fullName} asked a new question`, 'info');
+          }
+        })
+        .catch(err => {
+          console.error('Failed to fetch new question details:', err);
+          // Fallback with defaults
+          const safeQDoc = {
+            ...qDoc,
+            author: qDoc.author ?? { fullName: 'Anonymous', _id: '', role: '' },
+          };
+          setQuestions(prevQuestions => {
+            if (prevQuestions.some(q => q._id === safeQDoc._id)) {
+              return prevQuestions.map(q => 
+                q._id === safeQDoc._id ? { ...q, ...safeQDoc } : q
+              );
+            }
+            return [safeQDoc, ...prevQuestions];
+          });
+          if (String(safeQDoc.author._id) !== String(user._id)) {
+            addToast(`${safeQDoc.author.fullName} asked a new question`, 'info');
+          }
+        });
     });
-});
-
-
 
     socketRef.current.on('new_answer', (aDoc: Answer) => {
-      if (selectedRef.current && selectedRef.current._id === aDoc.forum_question_id) {
+      const safeADoc = {
+        ...aDoc,
+        author: aDoc.author ?? { fullName: 'Anonymous', _id: '', role: '' },
+      };
+      if (selectedRef.current && selectedRef.current._id === safeADoc.forum_question_id) {
         selectQuestion(selectedRef.current._id, true);
-        if (String(aDoc.author?._id) !== String(user._id)) {
-          addToast(`${aDoc.author?.fullName || 'Someone'} responded to the question`, 'success');
+        if (String(safeADoc.author._id) !== String(user._id)) {
+          addToast(`${safeADoc.author.fullName} responded to the question`, 'success');
         }
       } else {
         setQuestions(prevQuestions =>
-          prevQuestions.map(q => q._id === aDoc.forum_question_id
-            ? { ...q, answers: [...(q.answers || []), aDoc] }
+          prevQuestions.map(q => q._id === safeADoc.forum_question_id
+            ? { ...q, answers: [...(q.answers || []), safeADoc] }
             : q
           )
         );
       }
     });
 
-
     socketRef.current.on('new_reply', (rDoc: Reply) => {
-      if (selectedRef.current && selectedRef.current._id === rDoc.forum_question_id) {
+      const safeRDoc = {
+        ...rDoc,
+        author: rDoc.author ?? { fullName: 'Anonymous', _id: '', role: '' },
+      };
+      if (selectedRef.current && selectedRef.current._id === safeRDoc.forum_question_id) {
         selectQuestion(selectedRef.current._id, true);
-        if (String(rDoc.author?._id) !== String(user._id)) {
-          addToast(`${rDoc.author?.fullName || 'Someone'} replied to a message`, 'info');
+        if (String(safeRDoc.author._id) !== String(user._id)) {
+          addToast(`${safeRDoc.author.fullName} replied to a message`, 'info');
         }
       } else {
         // Minimal update for non-selected questions
         const updateNestedReplies = (replies: Reply[], newReply: Reply): Reply[] => {
           if (!newReply.parent_reply_id) {
-            return [...replies, { ...newReply, replies: [] }];
+            return [...replies.filter(r => r != null), { ...newReply, replies: [] }]; // Filter null
           }
-          return replies.map(r => {
+          return replies.filter(r => r != null).map(r => {
             if (r._id === newReply.parent_reply_id) {
               return { ...r, replies: [...(r.replies || []), { ...newReply, replies: [] }] };
             }
@@ -169,17 +176,16 @@ export default function ForumChatUI() {
           });
         };
 
-
         setQuestions(prevQuestions =>
           prevQuestions.map(q => {
-            if (rDoc.forum_question_id === q._id && !rDoc.forum_answer_id) {
-              return { ...q, replies: updateNestedReplies(q.replies || [], rDoc) };
+            if (safeRDoc.forum_question_id === q._id && !safeRDoc.forum_answer_id) {
+              return { ...q, replies: updateNestedReplies(q.replies || [], safeRDoc) };
             }
             return {
               ...q,
               answers: q.answers?.map(a =>
-                a._id === rDoc.forum_answer_id
-                  ? { ...a, replies: updateNestedReplies(a.replies || [], rDoc) }
+                a._id === safeRDoc.forum_answer_id
+                  ? { ...a, replies: updateNestedReplies(a.replies || [], safeRDoc) }
                   : a
               ) || []
             };
@@ -187,7 +193,6 @@ export default function ForumChatUI() {
         );
       }
     });
-
 
     socketRef.current.on('typing', ({ threadId, userName }: { threadId: string; userName: string }) => {
       if (selectedRef.current && selectedRef.current._id === threadId && userName !== user.fullName) {
@@ -197,13 +202,11 @@ export default function ForumChatUI() {
       }
     });
 
-
     socketRef.current.on('stop_typing', ({ threadId, userName }: { threadId: string; userName: string }) => {
       if (selectedRef.current && selectedRef.current._id === threadId) {
         setTypingUsers(prevUsers => prevUsers.filter(name => name !== userName));
       }
     });
-
 
     socketRef.current.on('question_deleted', ({ id }: { id: string }) => {
       setQuestions(prevQuestions => prevQuestions.filter(q => q._id !== id));
@@ -212,7 +215,6 @@ export default function ForumChatUI() {
       }
       addToast('Question deleted', 'info');
     });
-
 
     socketRef.current.on('answer_deleted', ({ id, questionId }: { id: string; questionId: string }) => {
       if (selectedRef.current && selectedRef.current._id === questionId) {
@@ -227,18 +229,16 @@ export default function ForumChatUI() {
       }
     });
 
-
     socketRef.current.on('reply_deleted', ({ id, questionId, answerId }: { id: string; questionId: string; answerId?: string }) => {
       if (selectedRef.current && selectedRef.current._id === questionId) {
         selectQuestion(questionId, true);
       } else {
         const removeNestedReply = (replies: Reply[]): Reply[] => {
           return replies.reduce((acc, r) => {
-            if (r._id === id) return acc;
+            if (r?._id === id) return acc; // Null-safe
             return [...acc, { ...r, replies: removeNestedReply(r.replies || []) }];
           }, [] as Reply[]);
         };
-
 
         setQuestions(prevQuestions =>
           prevQuestions.map(q => {
@@ -258,26 +258,22 @@ export default function ForumChatUI() {
       }
     });
 
-
     socketRef.current.on('connect_error', (err: any) => {
       console.error('Socket connection error:', err);
       addToast('Failed to connect to real-time updates. Please refresh.', 'error');
     });
-
 
     return () => {
       if (socketRef.current) {
         socketRef.current.disconnect();
       }
     };
-  }, [user.fullName, user._id, addToast]); // Removed 'selected' from dependencies to prevent reconnection on select change
-
+  }, [user.fullName, user._id, addToast]);
 
   // Update ref when selected changes
   useEffect(() => {
     selectedRef.current = selected;
   }, [selected]);
-
 
   // Join thread when selected changes
   useEffect(() => {
@@ -286,7 +282,6 @@ export default function ForumChatUI() {
       socketRef.current.emit('join_thread', selected._id);
     }
   }, [selected]);
-
 
   const selectQuestion = useCallback((qid: string, force: boolean = false) => {
     if (!force && selected?._id === qid) return;
@@ -297,17 +292,30 @@ export default function ForumChatUI() {
         if (!res.data || !res.data._id) {
           throw new Error('Invalid question data');
         }
-        console.log('Fetched question data:', res.data);
+        console.log('Fetched question data:', res.data); // Debug
         console.log('Answers with replies:', res.data.answers?.map(ans => ({
           answerId: ans._id,
           replyCount: ans.replies?.length || 0
-        }))); // Debug: Check if replies are nested under answers
-        // Ensure author exists; set defaults if missing
-        const questionData = {
+        }))); // Debug
+
+        // Ensure author defaults for question, answers, and replies
+        const safeData = {
           ...res.data,
-          author: res.data.author,
+          author: res.data.author ?? { fullName: 'Anonymous', _id: '', role: '' },
+          answers: res.data.answers?.map(ans => ({
+            ...ans,
+            author: ans.author ?? { fullName: 'Anonymous', _id: '', role: '' },
+            replies: ans.replies?.filter(r => r != null && r.author != null).map(r => ({
+              ...r,
+              author: r.author ?? { fullName: 'Anonymous', _id: '', role: '' },
+            })) || [],
+          })) || [],
+          replies: res.data.replies?.filter(r => r != null && r.author != null).map(r => ({
+            ...r,
+            author: r.author ?? { fullName: 'Anonymous', _id: '', role: '' },
+          })) || [],
         };
-        setSelected(questionData);
+        setSelected(safeData);
       })
       .catch(err => {
         console.error('Failed to fetch question:', err);
@@ -315,7 +323,6 @@ export default function ForumChatUI() {
       })
       .finally(() => setLoading(false));
   }, [selected, addToast]);
-
 
   const deleteQuestion = useCallback((questionId: string) => {
     if (!confirm('Are you sure you want to delete this question?')) return;
@@ -331,7 +338,6 @@ export default function ForumChatUI() {
         addToast('Failed to delete question. Please try again.', 'error');
       });
   }, [addToast]);
-
 
   const deleteAnswer = useCallback((answerId: string, questionId: string) => {
     if (!confirm('Are you sure you want to delete this answer?')) return;
@@ -351,7 +357,6 @@ export default function ForumChatUI() {
       });
   }, [selected, selectQuestion, addToast]);
 
-
   const deleteReply = useCallback((replyId: string, questionId: string, answerId?: string) => {
     if (!confirm('Are you sure you want to delete this reply?')) return;
 
@@ -370,7 +375,6 @@ export default function ForumChatUI() {
       });
   }, [selected, selectQuestion, addToast]);
 
-
   const categories = useMemo(() => [
     { value: 'all', label: 'All Categories' },
     { value: 'general', label: '🔍 General' },
@@ -379,7 +383,6 @@ export default function ForumChatUI() {
     { value: 'history', label: '📚 History' },
     { value: 'other', label: '🎯 Other' }
   ], []);
-
 
   return (
     <div className="flex md:flex-row flex-col h-screen bg-gray-50">
@@ -395,16 +398,18 @@ export default function ForumChatUI() {
               imageUrls: imgs
             })
               .then(res => {
-                const newQuestionId = res.data._id; // Assuming the POST returns the created question with at least its ID
+                const newQuestionId = res.data._id;
                 addToast('Question posted successfully!', 'success');
 
-
-                // Immediately fetch the full question to get complete data (including images)
+                // Fetch full question
                 return axios.get(`${API}/forum/questions/${newQuestionId}`)
                   .then(fetchRes => {
-                    const fullQuestion = fetchRes.data;
+                    let fullQuestion = fetchRes.data;
+                    fullQuestion = {
+                      ...fullQuestion,
+                      author: fullQuestion.author ?? { fullName: 'Anonymous', _id: '', role: '' },
+                    };
                     setQuestions(prevQuestions => {
-                      // Avoid duplicate if socket already added it
                       if (prevQuestions.some(q => q._id === fullQuestion._id)) {
                         return prevQuestions.map(q =>
                           q._id === fullQuestion._id ? fullQuestion : q
@@ -420,7 +425,6 @@ export default function ForumChatUI() {
               })
           }
         />
-
 
         <div className="border-b border-gray-200 p-4 space-y-3">
           <div className="relative">
@@ -471,9 +475,8 @@ export default function ForumChatUI() {
                   isSelected={selected?._id === q._id}
                   onClick={() => selectQuestion(q._id)}
                   onDelete={() => deleteQuestion(q._id)}
-                  canDelete={q.author?._id === user._id}  // Add ? here
+                  canDelete={q.author?._id === user._id}
                 />
-
               ))}
             </div>
           )}
@@ -497,7 +500,7 @@ export default function ForumChatUI() {
                   <div className="mt-1 flex items-center gap-4 text-sm text-gray-500">
                     <span className="flex items-center gap-1">
                       <UserCircleIcon className="h-4 w-4" />
-                      {selected.author?.fullName})
+                      {selected.author?.fullName ?? 'Anonymous'}
                     </span>
                     <span>•</span>
                     <span>Category: {selected.category}</span>
@@ -510,10 +513,10 @@ export default function ForumChatUI() {
             <div className="flex-1 overflow-y-auto bg-gray-50 p-6">
               <div className="max-w-4xl mx-auto space-y-6">
                 <Message
-                  author={selected.author?.fullName || 'Anonymous'}
+                  author={selected.author?.fullName ?? 'Anonymous'}
                   text={selected.question}
                   assets={selected.assets}
-                  role={selected.author?.role}
+                  role={selected.author?.role ?? ''}
                   createdAt={selected.createdAt}
                   isQuestion={true}
                   socket={socketRef.current}
@@ -521,10 +524,10 @@ export default function ForumChatUI() {
                   userName={user.fullName}
                   onDelete={() => deleteQuestion(selected._id)}
                   currentUserId={user._id}
-                  itemId={selected.author?._id}
+                  itemId={selected.author?._id ?? ''}
                 />
                 <ReplyRenderer
-                  replies={selected.replies}
+                  replies={selected.replies?.filter(r => r != null) ?? []} // Null filter
                   onReplySubmit={(text, imgs, parentReplyId, forum_question_id, forum_answer_id) =>
                     axios.post(`${API}/forum/replies`, {
                       forum_question_id: forum_question_id || selected._id,
@@ -548,23 +551,23 @@ export default function ForumChatUI() {
                   currentUserId={user._id}
                   questionId={selected._id}
                 />
-                {(selected.answers || []).map(ans => (
+                {(selected.answers || []).filter(ans => ans != null).map(ans => ( // Null filter
                   <div key={ans._id}>
                     <Message
-                      author={ans.author?.fullName || 'Anonymous'}
+                      author={ans.author?.fullName ?? 'Anonymous'}
                       text={ans.text}
                       assets={ans.assets}
-                      role={ans.author?.role}
+                      role={ans.author?.role ?? ''}
                       createdAt={ans.createdAt}
                       onDelete={() => deleteAnswer(ans._id, selected._id)}
                       currentUserId={user._id}
-                      itemId={ans.author?._id}
+                      itemId={ans.author?._id ?? ''}
                       socket={socketRef.current}
                       threadId={selected._id}
                       userName={user.fullName}
                     />
                     <ReplyRenderer
-                      replies={ans.replies}
+                      replies={ans.replies?.filter(r => r != null) ?? []} // Null filter
                       onReplySubmit={(text, imgs, parentReplyId, forum_question_id, forum_answer_id) =>
                         axios.post(`${API}/forum/replies`, {
                           forum_question_id: forum_question_id || selected._id,

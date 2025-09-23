@@ -1,57 +1,49 @@
-// api/questions.js
-import axios from 'axios';
+// api/questions.ts
 import examAxios from '../../../utils/axios/exam';
+import { apiRequest } from '../../../utils/apiRequest';
 
-
-export const fetchQuestions = async (schoolName) => {
-  try {
-    const response = await examAxios.get(`/question/get-all`, {
-      params: { schoolName },
-    });
-    return response.data;
-  } catch (error) {
-    const message = error.response?.data?.message || 'Error fetching questions';
-    throw new Error(message);
-  }
+// Fetch all questions
+export const fetchQuestions = async (schoolName: string) => {
+  return await apiRequest(examAxios, 'get', '/question/get-all', null, {
+    params: { schoolName },
+  });
 };
 
-export const createQuestion = async (schoolName, question, options, answer, examId) => {
-  try {
-    const response = await examAxios.post(`/question`, {
-      schoolName,
-      question,
-      options,
-      answer,
-      examId,
-    });
-    return response.data;
-  } catch (error) {
-    const message = error.response?.data?.message || 'Failed to create question';
-    throw new Error(message);
-  }
+// Create a new question
+export const createQuestion = async (
+  schoolName: string,
+  question: string,
+  options: string[],
+  answer: string,
+  examId: string
+) => {
+  return await apiRequest(examAxios, 'post', '/question', {
+    schoolName,
+    question,
+    options,
+    answer,
+    examId,
+  });
 };
 
-export const updateQuestion = async (questionId, schoolName, question, options, correctAnswer, examId) => {
-  try {
-    const response = await examAxios.put(`/question/${questionId}/${schoolName}`, {
-      question,
-      options,
-      correctAnswer,
-      examId,
-    });
-    return response.data;
-  } catch (error) {
-    const message = error.response?.data?.message || 'Failed to update question';
-    throw new Error(message);
-  }
+// Update an existing question
+export const updateQuestion = async (
+  questionId: string,
+  schoolName: string,
+  question: string,
+  options: string[],
+  correctAnswer: string,
+  examId: string
+) => {
+  return await apiRequest(examAxios, 'put', `/question/${questionId}/${schoolName}`, {
+    questionText:question,
+    options,
+    correctAnswer,
+    examId,
+  });
 };
 
-export const deleteQuestion = async (questionId, schoolName) => {
-  try {
-    const response = await examAxios.delete(`/question/${questionId}/${schoolName}`);
-    return response.data;
-  } catch (error) {
-    const message = error.response?.data?.message || 'Failed to delete question';
-    throw new Error(message);
-  }
+// Delete a question
+export const deleteQuestion = async (questionId: string, schoolName: string) => {
+  return await apiRequest(examAxios, 'delete', `/question/${questionId}/${schoolName}`);
 };

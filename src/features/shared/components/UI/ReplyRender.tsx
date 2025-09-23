@@ -35,10 +35,10 @@ export const ReplyRenderer = ({
       {replies.map(reply => (
         <div key={reply._id}>
           <Message
-            author={reply.author?.fullName || 'Anonymous'}  // Fix: Changed fallback to 'Anonymous' for consistency; shows actual name if available
+            author={reply.author?.fullName || 'Unknown'}  // Fix: Changed fallback to 'Anonymous' for consistency; shows actual name if available
             text={reply.text}
             assets={reply.assets}
-            role={'Usevr'}  // Fallback for role if missing
+            role={reply.author?.role || 'Usevr'}  // Fallback for role if missing
             createdAt={reply.createdAt}
             onReply={(text, imgs) => onReplySubmit(text, imgs, reply._id, questionId, answerId)}  // Existing reply handler
             onDelete={() => onDeleteReply(reply._id, questionId, answerId)}  // Existing delete handler using your API

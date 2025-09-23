@@ -24,7 +24,6 @@ export default function ForumChatUI() {
   });
   const [questions, setQuestions] = useState<Question[]>([]);
   const [selected, setSelected] = useState<Question | null>(null);
-  console.log(selected.author,selected.author+"","selected Data")
   const [loading, setLoading] = useState(true);
   const socketRef = useRef<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -511,7 +510,7 @@ export default function ForumChatUI() {
             <div className="flex-1 overflow-y-auto bg-gray-50 p-6">
               <div className="max-w-4xl mx-auto space-y-6">
                 <Message
-                  author="User"
+                  author={selected.author?.fullName || 'Anonymous'}
                   text={selected.question}
                   assets={selected.assets}
                   role={selected.author?.role}
@@ -549,11 +548,10 @@ export default function ForumChatUI() {
                   currentUserId={user._id}
                   questionId={selected._id}
                 />
-                //updated
                 {(selected.answers || []).map(ans => (
                   <div key={ans._id}>
                     <Message
-                      author='Questioner'
+                      author={ans.author?.fullName || 'Anonymous'}
                       text={ans.text}
                       assets={ans.assets}
                       role={ans.author?.role}

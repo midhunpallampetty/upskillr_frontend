@@ -1,39 +1,20 @@
-// api/exams.js
-import axios from 'axios';
+// api/exams.ts
 import examAxios from '../../../utils/axios/exam';
+import { apiRequest } from '../../../utils/apiRequest';
 
-
-export const fetchExams = async (schoolName) => {
-  try {
-    const response = await examAxios.get(`/exam/all-exams`, {
-      params: { schoolName },
-    });
-    return response.data;
-  } catch (error) {
-    const message = error.response?.data?.message || 'Error fetching exams';
-    throw new Error(message);
-  }
+// Fetch all exams
+export const fetchExams = async (schoolName: string) => {
+  return await apiRequest(examAxios, 'get', '/exam/all-exams', null, {
+    params: { schoolName },
+  });
 };
 
-export const createExam = async (schoolName, title) => {
-  try {
-    const response = await examAxios.post(`/exam`, {
-      schoolName,
-      title,
-    });
-    return response.data;
-  } catch (error) {
-    const message = error.response?.data?.message || 'Error creating exam';
-    throw new Error(message);
-  }
+// Create exam
+export const createExam = async (schoolName: string, title: string) => {
+  return await apiRequest(examAxios, 'post', '/exam', { schoolName, title });
 };
 
-export const deleteExam = async (examId, schoolName) => {
-  try {
-    const response = await examAxios.delete(`/exam/${examId}/${schoolName}`);
-    return response.data;
-  } catch (error) {
-    const message = error.response?.data?.message || 'Failed to delete exam';
-    throw new Error(message);
-  }
+// Delete exam
+export const deleteExam = async (examId: string, schoolName: string) => {
+  return await apiRequest(examAxios, 'delete', `/exam/${examId}/${schoolName}`);
 };

@@ -552,7 +552,7 @@ export default function ForumChatUI() {
                 {(selected.answers || []).map(ans => (
                   <div key={ans._id}>
                     <Message
-                      author='Anonymous'
+                      author='Questioner'
                       text={ans.text}
                       assets={ans.assets}
                       role={ans.author?.role}

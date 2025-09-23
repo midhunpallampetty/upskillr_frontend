@@ -129,7 +129,7 @@ console.log(    schoolName,
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Payment Processing Error</h2>
           <p className="text-red-600 mb-6">{error}</p>
           <button
-            onClick={() => navigate('/studenthome')}
+            onClick={() => navigate('/student/purchased-courses')}
             className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
           >
             Back to Home

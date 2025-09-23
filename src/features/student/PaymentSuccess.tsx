@@ -280,7 +280,7 @@ console.log(    schoolName,
                 <h3 className="text-xl font-bold mb-2">Ready to Start Learning?</h3>
                 <p className="mb-4 opacity-90">Your course is now available in your dashboard</p>
                 <button
-                  onClick={() => navigate('/studenthome')}
+                  onClick={() => navigate('/student/purchased-courses')}
                   className="bg-white text-blue-600 hover:bg-gray-100 px-6 py-3 rounded-lg font-semibold transition-colors inline-flex items-center space-x-2"
                 >
                   <BookOpen className="w-5 h-5" />

@@ -436,7 +436,7 @@ const MarketingPage: React.FC = () => {
                     {/* CTA Button - Updated to use subdomain and slugified schoolName */}
                     <button
                       className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-4 text-lg font-bold rounded-2xl hover:from-purple-700 hover:to-pink-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-                      onClick={() => window.location.href = `https://www.eduvia.space/${subdomain}/school/${slugify(schoolData.name)}/home`}
+                      onClick={() => navigate (`/school/${slugify(subdomain)}/home`)}
                     >
                       Start Learning Today →
                     </button>

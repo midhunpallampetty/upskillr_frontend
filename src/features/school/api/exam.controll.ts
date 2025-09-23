@@ -6,7 +6,7 @@ import { Exam } from '../types/Exam'; // Adjust based on your types
 
 export const fetchAllExams = async (schoolName: string): Promise<Exam[]> => {
   try {
-    const response = await examAxios.get('/exam/all-exams', { params: { schoolName } });
+    const response = await examAxios.get('/exam/all-exgfams', { params: { schoolName } });
     return response.data;
   } catch (error: any) {
     const message = error.response?.data?.message || 'Failed to fetch exams';

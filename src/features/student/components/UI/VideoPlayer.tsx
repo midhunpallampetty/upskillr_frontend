@@ -115,6 +115,34 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     }
   }, [playbackSpeed, videoRef]);
 
+  // Keyboard controls
+  React.useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === ' ' || event.key === 'Spacebar') {
+        event.preventDefault(); // Prevent page scrolling
+        togglePlay();
+      }
+      // Add more keys here if needed, e.g., 'f' for fullscreen
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isPlaying]);
+
+  // Fullscreen state synchronization
+  React.useEffect(() => {
+    const handleFullscreenChange = () => {
+      onFullscreenChange(!!document.fullscreenElement);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
+  }, [onFullscreenChange]);
+
   const togglePlay = () => {
     if (videoRef.current) {
       if (isPlaying) {
@@ -152,6 +180,15 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     if (videoRef.current) {
       const newTime = Math.max(0, Math.min(duration, currentTime + seconds));
       handleSeek(newTime);
+    }
+  };
+
+  const toggleFullscreen = () => {
+    const videoContainer = videoRef.current?.parentElement; // Target the container for fullscreen
+    if (!document.fullscreenElement) {
+      videoContainer?.requestFullscreen?.();
+    } else {
+      document.exitFullscreen();
     }
   };
 
@@ -361,7 +398,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
                 <motion.button
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
-                  onClick={() => onFullscreenChange(!isFullscreen)}
+                  onClick={toggleFullscreen}
                   className="p-2 hover:bg-white/20 rounded-full transition-colors"
                 >
                   {isFullscreen ? <Minimize className="w-5 h-5" /> : <Maximize className="w-5 h-5" />}

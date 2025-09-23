@@ -341,6 +341,7 @@ const MarketingPage: React.FC = () => {
               className="group bg-white/10 backdrop-blur-md border-2 border-white/30 text-white px-12 py-5 text-xl font-bold rounded-2xl hover:bg-white hover:text-purple-600 transition-all duration-300 transform hover:-translate-y-1"
               onClick={() => navigate('/forum')}
             >
+              //updated forum
               <span className="flex items-center justify-center">
                 💬 <span className="ml-2">Free Consultation</span>
               </span>

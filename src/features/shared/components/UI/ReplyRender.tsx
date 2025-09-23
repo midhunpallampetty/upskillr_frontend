@@ -38,7 +38,7 @@ export const ReplyRenderer = ({
             author={reply.author?.fullName || 'Anonymous'}  // Fix: Changed fallback to 'Anonymous' for consistency; shows actual name if available
             text={reply.text}
             assets={reply.assets}
-            role={reply.author?.role || 'Usevr'}  // Fallback for role if missing
+            role={'Usevr'}  // Fallback for role if missing
             createdAt={reply.createdAt}
             onReply={(text, imgs) => onReplySubmit(text, imgs, reply._id, questionId, answerId)}  // Existing reply handler
             onDelete={() => onDeleteReply(reply._id, questionId, answerId)}  // Existing delete handler using your API

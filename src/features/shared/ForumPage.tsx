@@ -500,7 +500,7 @@ export default function ForumChatUI() {
                   <div className="mt-1 flex items-center gap-4 text-sm text-gray-500">
                     <span className="flex items-center gap-1">
                       <UserCircleIcon className="h-4 w-4" />
-                      {selected.author?.fullName ?? 'Anonymous'}
+                       'User'
                     </span>
                     <span>•</span>
                     <span>Category: {selected.category}</span>
@@ -513,7 +513,7 @@ export default function ForumChatUI() {
             <div className="flex-1 overflow-y-auto bg-gray-50 p-6">
               <div className="max-w-4xl mx-auto space-y-6">
                 <Message
-                  author={selected.author?.fullName ?? 'Anonymous'}
+                  author='User'
                   text={selected.question}
                   assets={selected.assets}
                   role={selected.author?.role ?? ''}
@@ -554,7 +554,7 @@ export default function ForumChatUI() {
                 {(selected.answers || []).filter(ans => ans != null).map(ans => ( // Null filter
                   <div key={ans._id}>
                     <Message
-                      author={ans.author?.fullName ?? 'Anonymous'}
+                      author='User'
                       text={ans.text}
                       assets={ans.assets}
                       role={ans.author?.role ?? ''}

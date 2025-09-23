@@ -6,8 +6,8 @@ import { SchoolCoverProps } from '../../types/SchoolCoverProps';
 
 const SchoolCover: React.FC<SchoolCoverProps> = ({ school }) => {
   const { isDarkMode } = useGlobalState();
-  const defaultCoverImage = 'https://www.baltana.com/files/wallpapers-4/Abstract-Background-HD-Wallpaper-14095.jpg';
-  const defaultLogoImage = 'https://i.pinimg.com/736x/1d/6a/4e/1d6a4ed162b2e37d74ce5b778ec8864f.jpg';
+  const defaultCoverImage = import.meta.env.VITE_DEFAULTCOVERIMAGE;
+  const defaultLogoImage = import.meta.env.VITE_DEFAULTLOGOIMAGE;
 
   return (
     <div className="relative overflow-hidden">

@@ -1,6 +1,6 @@
-import React from 'react';
-import { Reply } from '../../types/ImportsAndTypes'; // Adjust path as needed
-import { Message } from './Message';
+// components/UI/ReplyRender.tsx (or wherever it's defined)
+import { Reply } from "../../types/ImportsAndTypes";
+import { Message } from "./Message";
 
 export const ReplyRenderer = ({
   replies,
@@ -35,20 +35,19 @@ export const ReplyRenderer = ({
       {replies.map(reply => (
         <div key={reply._id}>
           <Message
-            author={reply.author?.fullName || 'Unknown'}  // Fix: Changed fallback to 'Anonymous' for consistency; shows actual name if available
+            author={reply.author?.fullName || 'Unknown User'}  // Safe author handling
             text={reply.text}
             assets={reply.assets}
-            role={reply.author?.role || 'Usevr'}  // Fallback for role if missing
+            role={reply.author?.role || 'User'}
             createdAt={reply.createdAt}
-            onReply={(text, imgs) => onReplySubmit(text, imgs, reply._id, questionId, answerId)}  // Existing reply handler
-            onDelete={() => onDeleteReply(reply._id, questionId, answerId)}  // Existing delete handler using your API
+            onReply={(text, imgs) => onReplySubmit(text, imgs, reply._id, questionId, answerId)}
+            onDelete={() => onDeleteReply(reply._id, questionId, answerId)}
             currentUserId={currentUserId}
-            itemId={reply.author?._id || ''}  // Fix: Removed fallback to reply._id (use empty string if no author._id to avoid false delete permissions); ensures delete only shows for actual owner
+            itemId={reply.author?._id || reply._id}
             socket={socket}
             threadId={threadId}
             userName={userName}
           />
-          {/* Recursive call for nested replies */}
           <ReplyRenderer
             replies={reply.replies}
             onReplySubmit={onReplySubmit}

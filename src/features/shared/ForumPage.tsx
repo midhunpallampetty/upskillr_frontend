@@ -105,7 +105,7 @@ export default function ForumChatUI() {
             return [fullQuestion, ...prevQuestions];
           });
           if (String(fullQuestion.author._id) !== String(user._id)) {
-            addToast(`${fullQuestion.author.fullName} asked a new question`, 'info');
+            addToast(`a new question`, 'info');
           }
         })
         .catch(err => {
@@ -124,7 +124,7 @@ export default function ForumChatUI() {
             return [safeQDoc, ...prevQuestions];
           });
           if (String(safeQDoc.author._id) !== String(user._id)) {
-            addToast(`${safeQDoc.author.fullName} asked a new question`, 'info');
+            addToast(`a new question`, 'info');
           }
         });
     });
@@ -137,7 +137,7 @@ export default function ForumChatUI() {
       if (selectedRef.current && selectedRef.current._id === safeADoc.forum_question_id) {
         selectQuestion(selectedRef.current._id, true);
         if (String(safeADoc.author._id) !== String(user._id)) {
-          addToast(`${safeADoc.author.fullName} responded to the question`, 'success');
+          addToast(`response to the question`, 'success');
         }
       } else {
         setQuestions(prevQuestions =>
@@ -157,7 +157,7 @@ export default function ForumChatUI() {
       if (selectedRef.current && selectedRef.current._id === safeRDoc.forum_question_id) {
         selectQuestion(selectedRef.current._id, true);
         if (String(safeRDoc.author._id) !== String(user._id)) {
-          addToast(`${safeRDoc.author.fullName} replied to a message`, 'info');
+          addToast(`replied to a message`, 'info');
         }
       } else {
         // Minimal update for non-selected questions

@@ -103,7 +103,7 @@ console.log("Fetched school data:", schoolData);
     <>
       <WelcomeSection schoolName={school.name} />
       <QuickStats isDarkMode={isDarkMode} />
-      <ActionCardsSection dispatchView={dispatchView} />  // Ensure this passes dispatchView
+      <ActionCardsSection dispatchView={dispatchView} />  
       <CoursesSection schoolId={school._id} />
     </>
   )}

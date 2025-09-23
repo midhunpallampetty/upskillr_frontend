@@ -1,69 +1,103 @@
 // frontend/src/features/school/api/school.api.ts
 import type { School } from '../../course/types/School';
 import schoolAxios from '../../../utils/axios/school';
+import axios from 'axios';
 import cloudAxios from '../../../utils/axios/cloud';
-import { apiRequest } from '../../../utils/apiRequest';
-
-type GetSchoolsResponse = {
-  schools: School[];
-  total: number;
-  totalPages: number;
-};
 
 export const getSchools = async (
-  search = '',
-  sortBy = 'createdAt',
+  search: string = '',
+  sortBy: string = 'createdAt',
   sortOrder: 'asc' | 'desc' = 'desc',
-  page = 1,
-  limit = 6,
-  verified?: boolean,
-  fromDate?: string,
-  toDate?: string
-): Promise<GetSchoolsResponse> => {
+  page: number = 1,
+  limit: number = 6,
+  verified?: boolean, // Optional: true for verified, false for unverified, undefined for all
+  fromDate?: string, // Optional ISO string for start of range
+  toDate?: string // Optional ISO string for end of range
+): Promise<{ schools: School[]; total: number; totalPages: number }> => {
   const params: any = { search, sortBy, sortOrder, page, limit };
-  if (verified !== undefined) params.isVerified = verified ? 'true' : 'false';
-  if (fromDate) params.fromDate = fromDate;
-  if (toDate) params.toDate = toDate;
 
-  return apiRequest<GetSchoolsResponse>(schoolAxios, 'get', '/getSchools', null, { params });
+  // Conditionally add isVerified param as string ('true' or 'false')
+  if (verified !== undefined) {
+    params.isVerified = verified ? 'true' : 'false';
+  }
+
+  // Conditionally add date range params
+  if (fromDate) {
+    params.fromDate = fromDate;
+  }
+  if (toDate) {
+    params.toDate = toDate;
+  }
+
+  const res = await schoolAxios.get(`/getSchools`, { params });
+
+  // Extract and return only the needed fields to match the return type
+  return {
+    schools: res.data.schools,
+    total: res.data.total,
+    totalPages: res.data.totalPages,
+  };
 };
+
+
 
 export const approveSchool = async (schoolId: string): Promise<void> => {
-  await apiRequest<void>(schoolAxios, 'post', '/updateSchoolData', { _id: schoolId, isVerified: true });
+  await schoolAxios.post(`/updateSchoolData`, {
+    _id: schoolId,
+    isVerified: true,
+  });
 };
-
 export const getSchoolBySubdomain = async (subDomain: string, token: string) => {
   const url = `/getSchoolBySubDomain?subDomain=https://${subDomain}.eduvia.space`;
-  return apiRequest<any>(schoolAxios, 'get', url, null, {
-    headers: { Authorization: `Bearer ${token}` },
+console.log(token)
+  return schoolAxios.get(url, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
   });
 };
 
+
 export const createDatabase = async (schoolName: string, token: string) => {
-  return apiRequest<any>(
-    schoolAxios,
-    'post',
-    '/create-database',
+  return schoolAxios.post(
+    `/create-database`,
     { schoolName },
-    { headers: { Authorization: `Bearer ${token}` } }
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
   );
 };
 
+
 export const sendForgotPasswordLink = async (email: string) => {
-  return apiRequest<any>(schoolAxios, 'post', '/forgot-password', { email });
+  const response = await schoolAxios.post('/forgot-password', {
+    email,
+  });
+  return response.data;
 };
 
-export const resetSchoolPassword = async ({ token, password }: { token: string; password: string }) => {
-  return apiRequest<any>(schoolAxios, 'post', '/reset-password', { token, password });
+export const resetSchoolPassword = async ({
+  token,
+password,
+}: {
+  token: string;
+  password: string;
+}) => {
+  const response = await schoolAxios.post('/reset-password', {
+    token,
+    password,
+  });
+  return response.data;
 };
-
 export const getSchoolByDomain = async (subDomain: string) => {
-  const url = `/getSchoolBySubDomain?subDomain=${encodeURIComponent(subDomain)}`;
-  return apiRequest<any>(schoolAxios, 'get', url);
+  const response = await schoolAxios.get(`/getSchoolBySubDomain?subDomain=${encodeURIComponent(subDomain)}`);
+  return response.data;
 };
 
 export const updateSchoolData = async (payload: any) => {
-  return apiRequest<any>(schoolAxios, 'post', '/updateSchoolData', payload);
+  return await schoolAxios.post('/updateSchoolData', payload);
 };
 
 export const uploadToCloudinary = async (file: File): Promise<string> => {
@@ -71,39 +105,51 @@ export const uploadToCloudinary = async (file: File): Promise<string> => {
   formData.append('file', file);
   formData.append('upload_preset', import.meta.env.VITE_UPLOAD_PRESET);
 
-  const response = await apiRequest<any>(
-    cloudAxios,
-    'post',
+  const response = await cloudAxios.post(
     `/${import.meta.env.VITE_CLOUD_NAME}/image/upload`,
     formData
   );
 
-  return response.secure_url;
+  return response.data.secure_url;
 };
 
 export const setSchoolBlockStatus = async (schoolId: string, isBlocked: boolean): Promise<void> => {
-  await apiRequest<void>(schoolAxios, 'put', `/schools/${schoolId}/block-status`, { isBlocked });
+  // Convert boolean to string to avoid Axios ignoring 'false'
+  await schoolAxios.put(`/schools/${schoolId}/block-status`, { isBlocked });
 };
+
+
+
+
+
 
 export const registerSchool = async (formData: any) => {
-  return apiRequest<any>(schoolAxios, 'post', '/register', formData);
+  const response = await schoolAxios.post(`/register`, formData);
+  return response.data;
 };
+// src/api/school.ts
+
 
 export const loginSchool = async (email: string, password: string) => {
-  return apiRequest<any>(
-    schoolAxios,
-    'post',
-    '/login',
+  const res = await schoolAxios.post(
+    `/login`,
     { email, password },
-    { withCredentials: true }
+    {
+      withCredentials: true, // ✅ include cookies in request and allow browser to accept Set-Cookie
+    }
   );
+  return res.data;
 };
+
 
 export const uploadToCloudinaryData = async (file: File, cloudName: string, uploadPreset: string) => {
   const data = new FormData();
   data.append('file', file);
   data.append('upload_preset', uploadPreset);
 
-  const response = await apiRequest<any>(cloudAxios, 'post', `/${cloudName}/image/upload`, data);
-  return response.secure_url;
+  const response = await cloudAxios.post(
+    `/${cloudName}/image/upload`,
+    data
+  );
+  return response.data.secure_url;
 };

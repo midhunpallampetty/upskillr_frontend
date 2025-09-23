@@ -16,14 +16,15 @@ export const apiRequest = async <T>(
   method: HttpMethod,
   url: string,
   data?: any,
+  dataOrParams?: any,
   config?: AxiosRequestConfig
 ): Promise<T> => {
   const response = await axiosInstance.request<T>({
     method,
     url,
     ...(method === 'get' || method === 'delete' || method === 'head' || method === 'options' || method === 'trace'
-      ? {}
-      : { data }),
+      ? {params: dataOrParams }
+      : { data:dataOrParams }),
     ...config,
   });
 

@@ -24,7 +24,7 @@ export default function ForumChatUI() {
   });
   const [questions, setQuestions] = useState<Question[]>([]);
   const [selected, setSelected] = useState<Question | null>(null);
-  console.log(selected,"selected Data")
+  console.log(selected.author,selected.author+"","selected Data")
   const [loading, setLoading] = useState(true);
   const socketRef = useRef<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);

@@ -32,12 +32,7 @@ export const approveSchool = async (schoolId: string): Promise<void> => {
   await apiRequest<void>(schoolAxios, 'post', '/updateSchoolData', { _id: schoolId, isVerified: true });
 };
 
-export const getSchoolBySubdomain = async (subDomain: string, token: string) => {
-  const url = `/getSchoolBySubDomain?subDomain=https://${subDomain}.eduvia.space`;
-  return apiRequest<any>(schoolAxios, 'get', url, null, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-};
+
 
 export const createDatabase = async (schoolName: string, token: string) => {
   return apiRequest<any>(
@@ -80,7 +75,15 @@ export const uploadToCloudinary = async (file: File): Promise<string> => {
 
   return response.secure_url;
 };
-
+export const getSchoolBySubdomain = async (subDomain: string, token: string) => {
+  const url = `/getSchoolBySubDomain?subDomain=https://${subDomain}.eduvia.space`;
+console.log(token)
+  return schoolAxios.get(url, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+};
 export const setSchoolBlockStatus = async (schoolId: string, isBlocked: boolean): Promise<void> => {
   await apiRequest<void>(schoolAxios, 'put', `/schools/${schoolId}/block-status`, { isBlocked });
 };

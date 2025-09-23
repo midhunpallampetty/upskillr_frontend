@@ -549,6 +549,7 @@ export default function ForumChatUI() {
                   currentUserId={user._id}
                   questionId={selected._id}
                 />
+                //updated
                 {(selected.answers || []).map(ans => (
                   <div key={ans._id}>
                     <Message

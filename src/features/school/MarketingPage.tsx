@@ -3,6 +3,7 @@ import { getSchoolBySubdomain } from './api/school.api'; // Adjust the import pa
 import { getCoursesBySchool } from './api/course.api'; // Assuming this is the import for the new API function; adjust path accordingly
 import Cookies from 'js-cookie';
 import SchoolMarketingNavbar from '../student/components/Layout/StudentNavbar'; // Adjust the import path to where SchoolMarketingNavbar is located
+import { useNavigate } from 'react-router-dom';
 
 // Embedded utility function to extract subdomain
 const getSubdomain = (url: string = window.location.href): string => {
@@ -51,6 +52,7 @@ interface Student {
 
 const MarketingPage: React.FC = () => {
   const [courses, setCourses] = useState<Course[]>([]);
+  const navigate=useNavigate()
   const [schoolData, setSchoolData] = useState({
     id: '',
     name: '',
@@ -345,7 +347,7 @@ const MarketingPage: React.FC = () => {
             </button>
             <button
               className="group bg-white/10 backdrop-blur-md border-2 border-white/30 text-white px-12 py-5 text-xl font-bold rounded-2xl hover:bg-white hover:text-purple-600 transition-all duration-300 transform hover:-translate-y-1"
-              onClick={() => window.location.href = `/school/${slugify(subdomain)}/home`}
+              onClick={() => navigate (`/school/${slugify(subdomain)}/home`)}
             >
               <span className="flex items-center justify-center">
                 📚 <span className="ml-2">Browse Courses</span>

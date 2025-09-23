@@ -76,13 +76,14 @@ export const uploadToCloudinary = async (file: File): Promise<string> => {
   return response.secure_url;
 };
 export const getSchoolBySubdomain = async (subDomain: string, token: string) => {
-  return apiRequest<any>(schoolAxios, 'get', '/getSchoolBySubDomain', 
-    { subDomain: `https://${subDomain}.eduvia.space` },
-    { headers: { Authorization: `Bearer ${token}` } }
-  );
+  const url = `/getSchoolBySubDomain?subDomain=https://${subDomain}.eduvia.space`;
+console.log(token)
+  return schoolAxios.get(url, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
 };
-
-
 export const setSchoolBlockStatus = async (schoolId: string, isBlocked: boolean): Promise<void> => {
   await apiRequest<void>(schoolAxios, 'put', `/schools/${schoolId}/block-status`, { isBlocked });
 };

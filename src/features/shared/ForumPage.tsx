@@ -511,7 +511,7 @@ export default function ForumChatUI() {
             <div className="flex-1 overflow-y-auto bg-gray-50 p-6">
               <div className="max-w-4xl mx-auto space-y-6">
                 <Message
-                  author={selected.author?.fullName || 'Unknown user'}
+                  author={selected.author || 'Unknown user'}
                   text={selected.question}
                   assets={selected.assets}
                   role={selected.author?.role}
@@ -552,7 +552,7 @@ export default function ForumChatUI() {
                 {(selected.answers || []).map(ans => (
                   <div key={ans._id}>
                     <Message
-                      author={ans.author?.fullName || 'Anonymous'}
+                      author={ans.author || 'Anonymous'}
                       text={ans.text}
                       assets={ans.assets}
                       role={ans.author?.role}

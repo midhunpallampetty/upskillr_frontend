@@ -53,6 +53,10 @@ const SchoolGrid: React.FC = () => {
   const [fromDate, setFromDate] = useState<string>('');
   const [toDate, setToDate] = useState<string>('');
 
+  // New states for modal image view and zoom
+  const [modalImageView, setModalImageView] = useState<'none' | 'main' | 'cover'>('none');
+  const [zoomLevel, setZoomLevel] = useState(1);
+
   useEffect(() => {
     const handler = setTimeout(() => setDebouncedSearch(search), 400);
     return () => clearTimeout(handler);
@@ -106,7 +110,10 @@ const SchoolGrid: React.FC = () => {
   }, [debouncedSearch, sortBy, sortOrder, page, filterVerified, fromDate, toDate]); // Added fromDate and toDate to dependencies
 
   const handleEditClick = (school: School) => setEditSchool(school);
-  const handleViewClick = (school: School) => setSelectedSchool(school);
+  const handleViewClick = (school: School) => {
+    setSelectedSchool(school);
+    setModalImageView('none'); // Reset to details view
+  };
   const handleUpdateSuccess = () => {
     setEditSchool(null);
     fetchSchools();
@@ -291,6 +298,21 @@ const SchoolGrid: React.FC = () => {
     );
   };
 
+  // Handlers for image view
+  const handleImageClick = (view: 'main' | 'cover') => {
+    setModalImageView(view);
+    setZoomLevel(1); // Reset zoom
+  };
+
+  const handleBackClick = () => {
+    setModalImageView('none');
+    setZoomLevel(1);
+  };
+
+  const handleZoomToggle = () => {
+    setZoomLevel((prev) => (prev === 1 ? 2 : 1));
+  };
+
   return (
     <div className="space-y-6">
       {/* Header with Stats */}
@@ -321,97 +343,95 @@ const SchoolGrid: React.FC = () => {
         </div>
 
         {/* Search and Filters */}
-{/* Search and Filters */}
-<div className="flex flex-col space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0 lg:gap-4">
-  {/* Search Input */}
-  <div className="relative w-full lg:max-w-md">
-    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-    <input
-      type="text"
-      placeholder="Search schools by name, address, or email..."
-      value={search}
-      onChange={(e) => {
-        setSearch(e.target.value);
-        setPage(1);
-      }}
-      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-    />
-  </div>
+        <div className="flex flex-col space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0 lg:gap-4">
+          {/* Search Input */}
+          <div className="relative w-full lg:max-w-md">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <input
+              type="text"
+              placeholder="Search schools by name, address, or email..."
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
 
-  {/* Filters & Sort Options */}
-  <div className="flex flex-wrap gap-3 sm:gap-4 justify-center lg:justify-end items-center">
-    {/* Sort By */}
-    <div className="flex items-center gap-2 w-full sm:w-auto">
-      <Filter className="w-4 h-4 text-gray-500" />
-      <select
-        value={sortBy}
-        onChange={(e) => setSortBy(e.target.value)}
-        className="border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full sm:w-auto"
-      >
-        <option value="createdAt">Date Created</option>
-        <option value="name">School Name</option>
-        <option value="experience">Experience</option>
-        <option value="isVerified">Verification Status</option>
-      </select>
-    </div>
+          {/* Filters & Sort Options */}
+          <div className="flex flex-wrap gap-3 sm:gap-4 justify-center lg:justify-end items-center">
+            {/* Sort By */}
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <Filter className="w-4 h-4 text-gray-500" />
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full sm:w-auto"
+              >
+                <option value="createdAt">Date Created</option>
+                <option value="name">School Name</option>
+                <option value="experience">Experience</option>
+                <option value="isVerified">Verification Status</option>
+              </select>
+            </div>
 
-    {/* Verification Filter */}
-    <div className="flex items-center gap-2 w-full sm:w-auto">
-      <Filter className="w-4 h-4 text-gray-500" />
-      <select
-        value={filterVerified}
-        onChange={(e) => {
-          setFilterVerified(e.target.value as 'all' | 'true' | 'false');
-          setPage(1);
-        }}
-        className="border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full sm:w-auto"
-      >
-        <option value="all">All Statuses</option>
-        <option value="true">Verified</option>
-        <option value="false">Pending</option>
-      </select>
-    </div>
+            {/* Verification Filter */}
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <Filter className="w-4 h-4 text-gray-500" />
+              <select
+                value={filterVerified}
+                onChange={(e) => {
+                  setFilterVerified(e.target.value as 'all' | 'true' | 'false');
+                  setPage(1);
+                }}
+                className="border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full sm:w-auto"
+              >
+                <option value="all">All Statuses</option>
+                <option value="true">Verified</option>
+                <option value="false">Pending</option>
+              </select>
+            </div>
 
-    {/* Date Range */}
-    <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto">
-      <div className="flex items-center gap-2 w-full sm:w-auto">
-        <Calendar className="w-4 h-4 text-gray-500" />
-        <input
-          type="date"
-          value={fromDate}
-          onChange={(e) => {
-            setFromDate(e.target.value);
-            setPage(1);
-          }}
-          className="border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full sm:w-auto"
-          placeholder="From Date"
-        />
-      </div>
-      <div className="flex items-center gap-2 w-full sm:w-auto">
-        <input
-          type="date"
-          value={toDate}
-          onChange={(e) => {
-            setToDate(e.target.value);
-            setPage(1);
-          }}
-          className="border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full sm:w-auto"
-          placeholder="To Date"
-        />
-      </div>
-    </div>
+            {/* Date Range */}
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto">
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <Calendar className="w-4 h-4 text-gray-500" />
+                <input
+                  type="date"
+                  value={fromDate}
+                  onChange={(e) => {
+                    setFromDate(e.target.value);
+                    setPage(1);
+                  }}
+                  className="border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full sm:w-auto"
+                  placeholder="From Date"
+                />
+              </div>
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <input
+                  type="date"
+                  value={toDate}
+                  onChange={(e) => {
+                    setToDate(e.target.value);
+                    setPage(1);
+                  }}
+                  className="border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full sm:w-auto"
+                  placeholder="To Date"
+                />
+              </div>
+            </div>
 
-    {/* Sort Order Toggle */}
-    <button
-      onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-      className="flex items-center justify-center gap-2 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors w-full sm:w-auto"
-    >
-      {getSortIcon()}
-      <span className="text-sm">{sortOrder === 'asc' ? 'Ascending' : 'Descending'}</span>
-    </button>
-  </div>
-</div>
-
+            {/* Sort Order Toggle */}
+            <button
+              onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+              className="flex items-center justify-center gap-2 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors w-full sm:w-auto"
+            >
+              {getSortIcon()}
+              <span className="text-sm">{sortOrder === 'asc' ? 'Ascending' : 'Descending'}</span>
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* School Grid */}
@@ -543,170 +563,195 @@ const SchoolGrid: React.FC = () => {
                   </div>
                 ) : selectedSchool && (
                   <>
-                    <div className="relative h-48 sm:h-64 bg-gradient-to-r from-blue-600 to-purple-600">
-                      <img
-                        src={selectedSchool.coverImage || 'https://images.pexels.com/photos/207692/pexels-photo-207692.jpeg?auto=compress&cs=tinysrgb&w=800'}
-                        alt="Cover"
-                        className="w-full h-full object-cover opacity-30"
-                      />
-                      <div className="absolute inset-0 flex items-center justify-center p-4">
-                        <div className="text-center text-white">
-                          <h1 className="text-2xl sm:text-4xl font-bold mb-2">{selectedSchool.name}</h1>
-                          <div className="flex items-center justify-center">
-                            {getStatusBadge(selectedSchool.isVerified, selectedSchool.isBlocked || false)}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="p-4 sm:p-8">
-                      {successMessage && (
-                        <div className="mb-6 p-4 bg-green-100 border border-green-200 text-green-700 rounded-lg">
-                          <div className="flex items-center">
-                            <CheckCircle className="w-5 h-5 mr-2" />
-                            {successMessage}
-                          </div>
-                        </div>
-                      )}
-                      
-                      {error && (
-                        <div className="mb-6 p-4 bg-red-100 border border-red-200 text-red-700 rounded-lg">
-                          <div className="flex items-center">
-                            <XCircle className="w-5 h-5 mr-2" />
-                            {error}
-                          </div>
-                        </div>
-                      )}
-
-                      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
-                        <div className="lg:col-span-2 space-y-6">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="space-y-4">
-                              <div className="flex items-start space-x-3">
-                                <MapPin className="w-5 h-5 text-gray-400 mt-1 flex-shrink-0" />
-                                <div>
-                                  <p className="font-medium text-gray-900">Address</p>
-                                  <p className="text-gray-600">{selectedSchool.address}</p>
-                                </div>
+                    {modalImageView === 'none' ? (
+                      // Default School Details View
+                      <>
+                        <div className="relative h-48 sm:h-64 bg-gradient-to-r from-blue-600 to-purple-600">
+                          <img
+                            src={selectedSchool.coverImage || 'https://images.pexels.com/photos/207692/pexels-photo-207692.jpeg?auto=compress&cs=tinysrgb&w=800'}
+                            alt="Cover"
+                            className="w-full h-full object-cover opacity-30"
+                          />
+                          <div className="absolute inset-0 flex items-center justify-center p-4">
+                            <div className="text-center text-white">
+                              <h1 className="text-2xl sm:text-4xl font-bold mb-2">{selectedSchool.name}</h1>
+                              <div className="flex items-center justify-center">
+                                {getStatusBadge(selectedSchool.isVerified, selectedSchool.isBlocked || false)}
                               </div>
-                              
-                              <div className="flex items-start space-x-3">
-                                <Phone className="w-5 h-5 text-gray-400 mt-1 flex-shrink-0" />
-                                <div>
-                                  <p className="font-medium text-gray-900">Contact</p>
-                                  <p className="text-gray-600">{selectedSchool.officialContact}</p>
-                                </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="p-4 sm:p-8">
+                          {successMessage && (
+                            <div className="mb-6 p-4 bg-green-100 border border-green-200 text-green-700 rounded-lg">
+                              <div className="flex items-center">
+                                <CheckCircle className="w-5 h-5 mr-2" />
+                                {successMessage}
                               </div>
-                              
-                              <div className="flex items-start space-x-3">
-                                <Mail className="w-5 h-5 text-gray-400 mt-1 flex-shrink-0" />
-                                <div>
-                                  <p className="font-medium text-gray-900">Email</p>
-                                  <p className="text-gray-600">{selectedSchool.email}</p>
+                            </div>
+                          )}
+                          
+                          {error && (
+                            <div className="mb-6 p-4 bg-red-100 border border-red-200 text-red-700 rounded-lg">
+                              <div className="flex items-center">
+                                <XCircle className="w-5 h-5 mr-2" />
+                                {error}
+                              </div>
+                            </div>
+                          )}
+
+                          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
+                            <div className="lg:col-span-2 space-y-6">
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-4">
+                                  <div className="flex items-start space-x-3">
+                                    <MapPin className="w-5 h-5 text-gray-400 mt-1 flex-shrink-0" />
+                                    <div>
+                                      <p className="font-medium text-gray-900">Address</p>
+                                      <p className="text-gray-600">{selectedSchool.address}</p>
+                                    </div>
+                                  </div>
+                                  
+                                  <div className="flex items-start space-x-3">
+                                    <Phone className="w-5 h-5 text-gray-400 mt-1 flex-shrink-0" />
+                                    <div>
+                                      <p className="font-medium text-gray-900">Contact</p>
+                                      <p className="text-gray-600">{selectedSchool.officialContact}</p>
+                                    </div>
+                                  </div>
+                                  
+                                  <div className="flex items-start space-x-3">
+                                    <Mail className="w-5 h-5 text-gray-400 mt-1 flex-shrink-0" />
+                                    <div>
+                                      <p className="font-medium text-gray-900">Email</p>
+                                      <p className="text-gray-600">{selectedSchool.email}</p>
+                                    </div>
+                                  </div>
+                                </div>
+                                
+                                <div className="space-y-4">
+                                  <div className="flex items-start space-x-3">
+                                    <Award className="w-5 h-5 text-gray-400 mt-1 flex-shrink-0" />
+                                    <div>
+                                      <p className="font-medium text-gray-900">Experience</p>
+                                      <p className="text-gray-600">{selectedSchool.experience} years</p>
+                                    </div>
+                                  </div>
+                                  
+                                  <div className="flex items-start space-x-3">
+                                    <Globe className="w-5 h-5 text-gray-400 mt-1 flex-shrink-0" />
+                                    <div>
+                                      <p className="font-medium text-gray-900">Subdomain</p>
+                                      <p className="text-gray-600">{selectedSchool.subDomain || 'Not set'}</p>
+                                    </div>
+                                  </div>
+                                  
+                                  <div className="flex items-start space-x-3">
+                                    <Calendar className="w-5 h-5 text-gray-400 mt-1 flex-shrink-0" />
+                                    <div>
+                                      <p className="font-medium text-gray-900">Created</p>
+                                      <p className="text-gray-600">
+                                        {new Date(selectedSchool.createdAt || Date.now()).toLocaleDateString()}
+                                      </p>
+                                    </div>
+                                  </div>
                                 </div>
                               </div>
                             </div>
                             
                             <div className="space-y-4">
-                              <div className="flex items-start space-x-3">
-                                <Award className="w-5 h-5 text-gray-400 mt-1 flex-shrink-0" />
-                                <div>
-                                  <p className="font-medium text-gray-900">Experience</p>
-                                  <p className="text-gray-600">{selectedSchool.experience} years</p>
-                                </div>
-                              </div>
-                              
-                              <div className="flex items-start space-x-3">
-                                <Globe className="w-5 h-5 text-gray-400 mt-1 flex-shrink-0" />
-                                <div>
-                                  <p className="font-medium text-gray-900">Subdomain</p>
-                                  <p className="text-gray-600">{selectedSchool.subDomain || 'Not set'}</p>
-                                </div>
-                              </div>
-                              
-                              <div className="flex items-start space-x-3">
-                                <Calendar className="w-5 h-5 text-gray-400 mt-1 flex-shrink-0" />
-                                <div>
-                                  <p className="font-medium text-gray-900">Created</p>
-                                  <p className="text-gray-600">
-                                    {new Date(selectedSchool.createdAt || Date.now()).toLocaleDateString()}
-                                  </p>
+                              <div className="bg-gray-50 rounded-lg p-4">
+                                <h3 className="font-medium text-gray-900 mb-3">School Images</h3>
+                                <div className="space-y-3">
+                                  <div>
+                                    <p className="text-sm text-gray-600 mb-2">Main Image</p>
+                                    <img
+                                      src={selectedSchool.image || 'https://images.pexels.com/photos/207692/pexels-photo-207692.jpeg?auto=compress&cs=tinysrgb&w=300'}
+                                      alt="School"
+                                      className="w-full h-32 object-cover rounded-lg cursor-pointer"
+                                      onClick={() => handleImageClick('main')}
+                                    />
+                                  </div>
+                                  <div>
+                                    <p className="text-sm text-gray-600 mb-2">Cover Image</p>
+                                    <img
+                                      src={selectedSchool.coverImage || 'https://images.pexels.com/photos/207692/pexels-photo-207692.jpeg?auto=compress&cs=tinysrgb&w=300'}
+                                      alt="Cover"
+                                      className="w-full h-32 object-cover rounded-lg cursor-pointer"
+                                      onClick={() => handleImageClick('cover')}
+                                    />
+                                  </div>
                                 </div>
                               </div>
                             </div>
                           </div>
-                        </div>
-                        
-                        <div className="space-y-4">
-                          <div className="bg-gray-50 rounded-lg p-4">
-                            <h3 className="font-medium text-gray-900 mb-3">School Images</h3>
-                            <div className="space-y-3">
-                              <div>
-                                <p className="text-sm text-gray-600 mb-2">Main Image</p>
-                                <img
-                                  src={selectedSchool.image || 'https://images.pexels.com/photos/207692/pexels-photo-207692.jpeg?auto=compress&cs=tinysrgb&w=300'}
-                                  alt="School"
-                                  className="w-full h-32 object-cover rounded-lg"
-                                />
-                              </div>
-                              <div>
-                                <p className="text-sm text-gray-600 mb-2">Cover Image</p>
-                                <img
-                                  src={selectedSchool.coverImage || 'https://images.pexels.com/photos/207692/pexels-photo-207692.jpeg?auto=compress&cs=tinysrgb&w=300'}
-                                  alt="Cover"
-                                  className="w-full h-32 object-cover rounded-lg"
-                                />
-                              </div>
-                            </div>
+                          
+                          <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row sm:justify-end sm:gap-3 space-y-3 sm:space-y-0">
+                            {!selectedSchool.isVerified && (
+                              <button
+                                onClick={() => handleApprove(selectedSchool._id)}
+                                disabled={modalLoading}
+                                className={`flex items-center justify-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg font-medium transition-colors ${
+                                  modalLoading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-green-700'
+                                }`}
+                              >
+                                <CheckCircle className="w-5 h-5" />
+                                Approve School
+                              </button>
+                            )}
+                            <button
+                              onClick={() => handleBlockToggle(selectedSchool._id, selectedSchool.isBlocked || false)}
+                              disabled={modalLoading}
+                              className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors ${
+                                selectedSchool.isBlocked
+                                  ? 'bg-green-600 text-white hover:bg-green-700'
+                                  : 'bg-red-600 text-white hover:bg-red-700'
+                              } ${modalLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            >
+                              {selectedSchool.isBlocked ? (
+                                <>
+                                  <CheckCircle className="w-5 h-5" />
+                                  Unblock School
+                                </>
+                              ) : (
+                                <>
+                                  <XCircle className="w-5 h-5" />
+                                  Block School
+                                </>
+                              )}
+                            </button>
+                            <button
+                              onClick={() => setSelectedSchool(null)}
+                              disabled={modalLoading}
+                              className={`flex items-center justify-center px-6 py-3 bg-gray-600 text-white rounded-lg font-medium transition-colors ${
+                                modalLoading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-700'
+                              }`}
+                            >
+                              Close
+                            </button>
                           </div>
                         </div>
-                      </div>
-                      
-                      <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row sm:justify-end sm:gap-3 space-y-3 sm:space-y-0">
-                        {!selectedSchool.isVerified && (
-                          <button
-                            onClick={() => handleApprove(selectedSchool._id)}
-                            disabled={modalLoading}
-                            className={`flex items-center justify-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg font-medium transition-colors ${
-                              modalLoading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-green-700'
-                            }`}
-                          >
-                            <CheckCircle className="w-5 h-5" />
-                            Approve School
-                          </button>
-                        )}
+                      </>
+                    ) : (
+                      // Full Image View
+                      <div className="relative h-[90vh] bg-black flex items-center justify-center overflow-auto">
                         <button
-                          onClick={() => handleBlockToggle(selectedSchool._id, selectedSchool.isBlocked || false)}
-                          disabled={modalLoading}
-                          className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors ${
-                            selectedSchool.isBlocked
-                              ? 'bg-green-600 text-white hover:bg-green-700'
-                              : 'bg-red-600 text-white hover:bg-red-700'
-                          } ${modalLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                          onClick={handleBackClick}
+                          className="absolute top-4 left-4 z-10 flex items-center gap-2 px-4 py-2 bg-white text-gray-900 rounded-lg hover:bg-gray-100 transition-colors"
                         >
-                          {selectedSchool.isBlocked ? (
-                            <>
-                              <CheckCircle className="w-5 h-5" />
-                              Unblock School
-                            </>
-                          ) : (
-                            <>
-                              <XCircle className="w-5 h-5" />
-                              Block School
-                            </>
-                          )}
+                          <ChevronLeft className="w-5 h-5" />
+                          Back
                         </button>
-                        <button
-                          onClick={() => setSelectedSchool(null)}
-                          disabled={modalLoading}
-                          className={`flex items-center justify-center px-6 py-3 bg-gray-600 text-white rounded-lg font-medium transition-colors ${
-                            modalLoading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-700'
-                          }`}
-                        >
-                          Close
-                        </button>
+                        <img
+                          src={modalImageView === 'main' ? (selectedSchool.image || 'https://images.pexels.com/photos/207692/pexels-photo-207692.jpeg?auto=compress&cs=tinysrgb&w=300') : (selectedSchool.coverImage || 'https://images.pexels.com/photos/207692/pexels-photo-207692.jpeg?auto=compress&cs=tinysrgb&w=300')}
+                          alt={modalImageView === 'main' ? 'Main Image' : 'Cover Image'}
+                          className="max-w-full max-h-full object-contain cursor-zoom-in transition-transform duration-300"
+                          style={{ transform: `scale(${zoomLevel})` }}
+                          onClick={handleZoomToggle}
+                        />
                       </div>
-                    </div>
+                    )}
                   </>
                 )}
               </Dialog.Panel>

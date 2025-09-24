@@ -136,7 +136,6 @@ const StudentHomePage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Navbar */}
-      <SchoolMarketingNavbar student={student} handleLogout={handleLogout} />
 
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-blue-600 via-purple-600 to-blue-800 text-white py-16 px-6 md:px-12">
@@ -234,31 +233,36 @@ const StudentHomePage: React.FC = () => {
           <div className="text-center py-20 text-gray-500">Loading schools...</div>
         ) : schoolData.schools.length ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {schoolData.schools.map((school) => (
-              <div
-                key={school._id}
-                onClick={() => handleSchoolClick(school.subDomain || '')}
-                className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow hover:shadow-lg transition-all duration-300 cursor-pointer"
-              >
-                <img
-                  src={school?.image || 'https://asset.gecdesigns.com/img/background-templates/abstract-yellow-and-grey-wavy-background-template-sr17012401-1705501529081-cover.webp'}
-                  alt={school.name}
-                  className="w-full h-44 object-cover"
-                />
-                <div className="p-5">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">{school.name}</h3>
-                  <div className="text-sm text-gray-600 flex justify-between mb-2">
-                    <span><Clock className="inline w-4 h-4" /> {school.experience} yrs</span>
-                  </div>
-                  <div className="text-sm text-gray-600 mb-2">
-                    <span>{school.address}, {school.city}, {school.state}, {school.country}</span>
-                  </div>
-                  <div className="text-sm flex justify-between items-center pt-2 border-t">
-                    <button className="text-blue-600 hover:underline text-sm">View Courses</button>
-                  </div>
-                </div>
-              </div>
-            ))}
+        {schoolData.schools.map((school) => {
+  if (!school) return null; // skip null/undefined items
+
+  return (
+    <div
+      key={school._id || Math.random()} // fallback key if _id missing
+      onClick={() => handleSchoolClick(school.subDomain || '')}
+      className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow hover:shadow-lg transition-all duration-300 cursor-pointer"
+    >
+      <img
+        src={school.image || 'https://asset.gecdesigns.com/img/background-templates/abstract-yellow-and-grey-wavy-background-template-sr17012401-1705501529081-cover.webp'}
+        alt={school.name || 'School Image'}
+        className="w-full h-44 object-cover"
+      />
+      <div className="p-5">
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">{school.name || 'Unnamed School'}</h3>
+        <div className="text-sm text-gray-600 flex justify-between mb-2">
+          <span><Clock className="inline w-4 h-4" /> {school.experience || 0} yrs</span>
+        </div>
+        <div className="text-sm text-gray-600 mb-2">
+          <span>{school.address || ''}, {school.city || ''}, {school.state || ''}, {school.country || ''}</span>
+        </div>
+        <div className="text-sm flex justify-between items-center pt-2 border-t">
+          <button className="text-blue-600 hover:underline text-sm">View Courses</button>
+        </div>
+      </div>
+    </div>
+  );
+})}
+
           </div>
         ) : (
           <p className="text-center py-10 text-gray-500">No verified schools found for this search.</p>

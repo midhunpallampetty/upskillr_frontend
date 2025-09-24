@@ -246,7 +246,17 @@ const StudentHomePage: React.FC = () => {
           <span>{school.address || ''}, {school.city || ''}, {school.state || ''}, {school.country || ''}</span>
         </div>
         <div className="text-sm flex justify-between items-center pt-2 border-t">
-          <button className="text-blue-600 hover:underline text-sm">View Courses</button>
+         <button
+  className="text-blue-600 hover:underline text-sm"
+  onClick={(e) => {
+    e.stopPropagation(); // prevent triggering card click
+    const schoolUrl = `https://${school.subDomain}.eduvia.space/school/${school.subDomain}/home`;
+    window.location.href = schoolUrl;
+  }}
+>
+  View Courses
+</button>
+
         </div>
       </div>
     </div>

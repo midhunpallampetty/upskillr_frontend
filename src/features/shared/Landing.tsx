@@ -4,14 +4,7 @@ import { motion } from 'framer-motion';
 import Cookies from 'js-cookie';
 
 const subjects: string[] = [
-  'Playlist',
-  'Directory',
-  'Zodotry',
-  'Botany',
-  'Math',
-  'History',
-  'Computer',
-  'Computing',
+  'Playlist', 'Directory', 'Zodotry', 'Botany', 'Math', 'History', 'Computer', 'Computing',
 ];
 
 const features = [
@@ -57,6 +50,13 @@ const LandingPage: React.FC = () => {
   const [contactForm, setContactForm] = useState({ name: '', email: '', message: '' });
   const [formSent, setFormSent] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [loading, setLoading] = useState(true); // Page loader state
+
+  // Page loader effect
+  useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 1500); // Loader for 1.5s
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     const refreshToken = Cookies.get('refreshToken');
@@ -64,11 +64,7 @@ const LandingPage: React.FC = () => {
     setIsLoggedIn(!!refreshToken && !!accessToken);
   }, []);
 
-  const handleSubjectClick = (subject: string) => {
-    setSelectedSubject(subject);
-    // Example: navigate to subject page
-    // navigate(`/subjects/${subject.toLowerCase()}`);
-  };
+  const handleSubjectClick = (subject: string) => setSelectedSubject(subject);
 
   const handleContactChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setContactForm({ ...contactForm, [e.target.name]: e.target.value });
@@ -89,6 +85,20 @@ const LandingPage: React.FC = () => {
     navigate('/');
   };
 
+  // -------------------- Loader --------------------
+  if (loading) {
+    return (
+      <div className="w-full h-screen flex items-center justify-center bg-gradient-to-br from-pink-100 via-indigo-100 to-yellow-100">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ repeat: Infinity, duration: 1 }}
+          className="w-16 h-16 border-4 border-indigo-600 border-t-pink-500 rounded-full"
+        ></motion.div>
+      </div>
+    );
+  }
+
+  // -------------------- Main Page --------------------
   return (
     <div className="font-sans bg-gradient-to-br from-pink-100 via-indigo-100 to-yellow-100 min-h-screen">
       {/* Header */}
@@ -157,45 +167,7 @@ const LandingPage: React.FC = () => {
           >
             Empowering students and teachers with interactive live classes, certified schools, and 24/7 support.
           </motion.p>
-          <motion.div
-            initial="hidden"
-            animate="visible"
-            variants={{
-              hidden: { opacity: 0, y: 40 },
-              visible: { opacity: 1, y: 0 },
-            }}
-            transition={{ delay: 0.5, duration: 0.7 }}
-            className="flex justify-center gap-4 mb-8"
-          >
-            <motion.button
-              whileHover={{ scale: 1.1, backgroundColor: "#f472b6" }}
-              onClick={() => navigate(isLoggedIn ? '/schoolLogin' : '/schoolRegister')}
-              className="bg-pink-600 hover:bg-pink-700 text-white font-bold px-6 py-3 rounded-lg shadow-lg transition"
-            >
-              Get Started
-            </motion.button>
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.7, duration: 0.7 }}
-            className="rounded-lg p-4 max-w-2xl mx-auto h-64 flex items-center justify-center bg-indigo-800/30 shadow-lg"
-          >
-            <img className="w-96 h-80 object-cover rounded-xl" src="/images/schools/school1.png" alt="School" />
-          </motion.div>
         </div>
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 0.6 }}
-          transition={{ duration: 1 }}
-          className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-indigo-900/60 to-pink-600/60 pointer-events-none"
-        ></motion.div>
-        <motion.div
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1, opacity: 0.2 }}
-          transition={{ delay: 0.5, duration: 1 }}
-          className="absolute -bottom-16 -right-16 w-72 h-72 bg-yellow-400 rounded-full blur-2xl"
-        ></motion.div>
       </section>
 
       {/* Features Section */}
@@ -275,187 +247,6 @@ const LandingPage: React.FC = () => {
           )}
         </div>
       </section>
-
-      {/* About Section */}
-      <section className="py-16 bg-gradient-to-br from-yellow-50 via-pink-50 to-indigo-50">
-        <div className="container mx-auto px-4 max-w-4xl">
-          <motion.h2
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={fadeUp}
-            transition={{ duration: 0.7 }}
-            className="text-3xl font-extrabold text-center mb-8 text-gray-800"
-          >
-            About Us
-          </motion.h2>
-          <motion.p
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.7 }}
-            className="text-gray-600 text-center text-lg leading-relaxed mb-6"
-          >
-            Welcome to Upskillr! We are a team of passionate MCA students, bridging the gap between schools and eager learners. Our platform delivers the latest learning tools and resources to foster academic growth and success.
-          </motion.p>
-          {/* <div className="flex justify-center gap-6">
-            {['team1', 'team2', 'team3'].map((img, i) => (
-              <motion.img
-                key={img}
-                src={`/images/${img}.png`}
-                alt="Team"
-                initial={{ opacity: 0, scale: 0.8 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.2, duration: 0.7 }}
-                className="w-24 h-24 rounded-full object-cover shadow-md"
-              />
-            ))}
-          </div> */}
-        </div>
-      </section>
-
-      {/* Contact Section */}
-      {/* <section className="bg-gradient-to-br from-indigo-900 via-pink-600 to-yellow-500 text-white py-16">
-        <div className="container mx-auto px-4">
-          <motion.h2
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={fadeUp}
-            transition={{ duration: 0.7 }}
-            className="text-3xl font-extrabold text-center mb-12"
-          >
-            Contact Us
-          </motion.h2>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-5xl mx-auto">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.7 }}
-              className="flex flex-col items-center"
-            >
-              <div className="bg-indigo-700 rounded-xl w-full h-64 flex items-center justify-center shadow-lg">
-                <img className="w-96 h-80 object-cover rounded-xl" src="/images/schools/school2.png" alt="Contact" />
-              </div>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.7 }}
-              className="bg-white p-8 rounded-xl shadow-lg"
-            >
-              <h3 className="text-xl font-bold text-gray-800 mb-6">Send a Message</h3>
-              <form className="space-y-5" onSubmit={handleContactSubmit}>
-                <div>
-                  <input
-                    type="text"
-                    name="name"
-                    value={contactForm.name}
-                    onChange={handleContactChange}
-                    placeholder="Your Name"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    required
-                  />
-                </div>
-                <div>
-                  <input
-                    type="email"
-                    name="email"
-                    value={contactForm.email}
-                    onChange={handleContactChange}
-                    placeholder="Email Address"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    required
-                  />
-                </div>
-                <div>
-                  <textarea
-                    name="message"
-                    value={contactForm.message}
-                    onChange={handleContactChange}
-                    placeholder="Your Message"
-                    rows={4}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    required
-                  ></textarea>
-                </div>
-                <motion.button
-                  whileHover={{ scale: 1.05, backgroundColor: "#22c55e" }}
-                  type="submit"
-                  className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-6 rounded-lg transition"
-                >
-                  Send Message
-                </motion.button>
-                {formSent && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="text-green-600 font-semibold text-center mt-2 animate-pulse"
-                  >
-                    Message sent! We'll get back to you soon.
-                  </motion.div>
-                )}
-              </form>
-            </motion.div>
-          </div>
-        </div>
-      </section> */}
-
-      {/* Footer */}
-      <footer className="bg-gradient-to-br from-indigo-900 via-pink-600 to-yellow-500 text-white py-12">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            <div>
-              <div className="text-2xl font-bold mb-4">Upskillr</div>
-              <p className="text-gray-200">Content © 2024 Upskillr</p>
-            </div>
-            <div className="md:col-span-2">
-              <div className="flex space-x-4">
-                {/* LinkedIn */}
-                <a
-                  href="https://www.linkedin.com/in/midhun-ps/"
-                  aria-label="LinkedIn"
-                  className="bg-gray-800 w-10 h-10 rounded-full flex items-center justify-center
-               hover:bg-blue-600 transition"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <svg
-                    className="w-5 h-5 text-white"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    aria-hidden="true"
-                  >
-                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 .774v22.452C0 23.226.792 24 1.771 24h20.451C23.2 24 24 23.226 24 22.774V1.774C24 .774 23.2 0 22.225 0z" />
-                  </svg>
-                </a>
-
-                {/* YouTube */}
-                <a
-                  href="https://www.youtube.com/digitalsciencemalayalam"
-                  aria-label="YouTube"
-                  className="bg-gray-800 w-10 h-10 rounded-full flex items-center justify-center
-               hover:bg-red-600 transition"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <svg
-                    className="w-5 h-5 text-white"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    aria-hidden="true"
-                  >
-                    <path d="M23.498 6.186a3.01 3.01 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.376.505A3.013 3.013 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.01 3.01 0 002.122 2.136C4.495 20.5 12 20.5 12 20.5s7.505 0 9.376-.505a3.01 3.01 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L16.09 12l-6.545 3.568z" />
-                  </svg>
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 };

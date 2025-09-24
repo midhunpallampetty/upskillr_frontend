@@ -13,7 +13,7 @@ import useStudentAuthGuard from './hooks/useStudentAuthGuard';
 const ITEMS_PER_PAGE = 6;
 
 const StudentHomePage: React.FC = () => {
-  useStudentAuthGuard();
+
   const [schoolData, setSchoolData] = useState<{
     schools: School[];
     total: number;
@@ -241,7 +241,7 @@ const StudentHomePage: React.FC = () => {
                 className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow hover:shadow-lg transition-all duration-300 cursor-pointer"
               >
                 <img
-                  src={school.image || 'https://asset.gecdesigns.com/img/background-templates/abstract-yellow-and-grey-wavy-background-template-sr17012401-1705501529081-cover.webp'}
+                  src={school?.image || 'https://asset.gecdesigns.com/img/background-templates/abstract-yellow-and-grey-wavy-background-template-sr17012401-1705501529081-cover.webp'}
                   alt={school.name}
                   className="w-full h-44 object-cover"
                 />

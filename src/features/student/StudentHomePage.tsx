@@ -251,7 +251,7 @@ const StudentHomePage: React.FC = () => {
   onClick={(e) => {
     e.stopPropagation(); // prevent card click
     const subdomainName = extractSubdomain(`https://${school.subDomain}`);
-    const schoolUrl = `https://${school.subDomain}/school/${subdomainName}/home`;
+    const schoolUrl = `${school.subDomain}/school/${subdomainName}/home`;
     window.location.href = schoolUrl; // or window.open(schoolUrl, '_blank') for new tab
   }}
 >

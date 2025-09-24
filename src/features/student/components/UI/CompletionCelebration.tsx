@@ -9,15 +9,12 @@ import {
   Award,
   Target,
   TrendingUp,
-  Gift,
-  RefreshCw  // NEW: Icon for update
+  Gift
 } from 'lucide-react';
 
 interface CompletionCelebrationProps {
   course: any;
   onCertificateRequest: () => void;
-  onAddCertificate: () => void;  // NEW: Handler for add
-  onUpdateCertificate: (dateIssued: string) => void;  // NEW: Handler for update with data
   certificateUrl: string | null;
   progressLoading: boolean;
   onReviewCourse: () => void;
@@ -26,15 +23,11 @@ interface CompletionCelebrationProps {
 const CompletionCelebration: React.FC<CompletionCelebrationProps> = ({
   course,
   onCertificateRequest,
-  onAddCertificate,  // NEW
-  onUpdateCertificate,  // NEW
   certificateUrl,
   progressLoading,
   onReviewCourse
 }) => {
   const [showConfetti, setShowConfetti] = React.useState(true);
-  const [showUpdateForm, setShowUpdateForm] = React.useState(false);  // NEW: Toggle for update input
-  const [newDate, setNewDate] = React.useState('');  // NEW: State for update data
 
   React.useEffect(() => {
     const timer = setTimeout(() => setShowConfetti(false), 3000);
@@ -47,14 +40,6 @@ const CompletionCelebration: React.FC<CompletionCelebrationProps> = ({
     { icon: Award, label: "Skills Mastered", color: "text-purple-400" },
     { icon: Gift, label: "Certificate Earned", color: "text-yellow-400" }
   ];
-
-  const handleUpdateSubmit = () => {
-    if (newDate) {
-      onUpdateCertificate(newDate);
-      setShowUpdateForm(false);
-      setNewDate('');
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-indigo-900 to-blue-900 relative overflow-hidden">
@@ -106,7 +91,7 @@ const CompletionCelebration: React.FC<CompletionCelebrationProps> = ({
                 <Trophy className="w-32 h-32 text-yellow-400 mx-auto" />
               </motion.div>
               
-              {/* Sparkles around trophy */}
+              {/* Sparkles */}
               {[...Array(8)].map((_, i) => (
                 <motion.div
                   key={i}
@@ -215,7 +200,7 @@ const CompletionCelebration: React.FC<CompletionCelebrationProps> = ({
             Your dedication and hard work have paid off. Ready to showcase your achievement?
           </motion.p>
 
-          {/* Action Buttons */}
+          {/* Action Button */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -239,66 +224,7 @@ const CompletionCelebration: React.FC<CompletionCelebrationProps> = ({
                 'Get Your Certificate'
               )}
             </motion.button>
-
-            {/* NEW: Button to Add New Certificate */}
-            <motion.button
-              whileHover={{ scale: 1.05, boxShadow: "0 20px 40px rgba(0,0,0,0.3)" }}
-              whileTap={{ scale: 0.95 }}
-              onClick={onAddCertificate}
-              className="bg-gradient-to-r from-blue-400 to-purple-400 text-white px-8 py-4 rounded-xl font-bold text-lg hover:from-blue-300 hover:to-purple-300 transition-all duration-300 flex items-center justify-center gap-3 shadow-2xl"
-            >
-              <Award className="w-6 h-6" />
-              Add New Certificate
-            </motion.button>
-
-            {/* NEW: Button to Update Certificate (toggles form) */}
-            <motion.button
-              whileHover={{ scale: 1.05, boxShadow: "0 20px 40px rgba(0,0,0,0.3)" }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setShowUpdateForm(!showUpdateForm)}
-              disabled={!certificateUrl}  // Disable if no existing certificate
-              className="bg-gradient-to-r from-green-400 to-teal-400 text-white px-8 py-4 rounded-xl font-bold text-lg hover:from-green-300 hover:to-teal-300 transition-all duration-300 flex items-center justify-center gap-3 disabled:opacity-50 shadow-2xl"
-            >
-              <RefreshCw className="w-6 h-6" />
-              Update Certificate
-            </motion.button>
           </motion.div>
-
-          {/* NEW: Update Form (simple date input) */}
-          <AnimatePresence>
-            {showUpdateForm && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                className="mb-8 bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20 max-w-md mx-auto"
-              >
-                <h3 className="text-xl font-bold mb-4">Update Certificate Details</h3>
-                <input
-                  type="date"
-                  value={newDate}
-                  onChange={(e) => setNewDate(e.target.value)}
-                  className="w-full p-3 mb-4 rounded-lg bg-white/20 border border-white/30 text-white placeholder-gray-300"
-                  placeholder="New Issue Date"
-                />
-                <div className="flex gap-4">
-                  <button
-                    onClick={handleUpdateSubmit}
-                    disabled={!newDate}
-                    className="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50"
-                  >
-                    Submit Update
-                  </button>
-                  <button
-                    onClick={() => setShowUpdateForm(false)}
-                    className="bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
 
           {/* Certificate Download */}
           <AnimatePresence>

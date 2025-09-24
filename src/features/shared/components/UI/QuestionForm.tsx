@@ -63,7 +63,7 @@ export const QuestionForm = ({ onSubmit }: { onSubmit: (q: string, imgs: string[
   return (
     <div className="border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50 p-6">
       <div className="space-y-4">
-        <button className="text-black" onClick={() => navigate('/studenthome')}>Back</button>
+        <button className="text-black" onClick={() => navigate(-1)}>Back</button>
         <div className="flex items-center gap-3">
           <ChatBubbleLeftIcon className="h-6 w-6 text-blue-600" />
           <h2 className="text-lg font-semibold text-gray-900">Ask a Question</h2>

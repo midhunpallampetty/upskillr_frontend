@@ -252,7 +252,7 @@ const LandingPage: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             <div>
               <div className="text-2xl font-bold mb-4">Upskillr</div>
-              <p className="text-gray-200">Content © 2024 Upskillr</p>
+              <p className="text-gray-200">Content © 2025 Upskillr</p>
             </div>
             <div className="md:col-span-2">
               <div className="flex space-x-4">

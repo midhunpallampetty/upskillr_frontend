@@ -86,12 +86,7 @@ const StudentHomePage: React.FC = () => {
     fetchData();
   }, [search, sortBy, sortOrder, currentPage, fromDate, toDate]);
 
-  const handleLogout = () => {
-    Cookies.remove('studentAccessToken');
-    Cookies.remove('studentRefreshToken');
-    localStorage.removeItem('student');
-    navigate('/studentlogin');
-  };
+  
 
   const extractSubdomain = (fullUrl: string) => {
     const url = new URL(fullUrl);
@@ -154,12 +149,7 @@ const StudentHomePage: React.FC = () => {
               <span className="mr-4">🎓 {schoolData.total} Verified Schools</span>
               <span>📚 Quality Education</span>
             </div>
-            <a
-              href="/forum"
-              className="inline-block px-6 py-3 text-lg font-semibold text-blue-900 bg-yellow-300 rounded-lg shadow hover:bg-yellow-400 transition-colors"
-            >
-              Wanna start discussion with other learners? Visit Forum
-            </a>
+            
           </div>
           <img
             src="/images/students/student_home.png"

@@ -247,6 +247,57 @@ const LandingPage: React.FC = () => {
           )}
         </div>
       </section>
+            <footer className="bg-gradient-to-br from-indigo-900 via-pink-600 to-yellow-500 text-white py-12">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            <div>
+              <div className="text-2xl font-bold mb-4">Upskillr</div>
+              <p className="text-gray-200">Content © 2024 Upskillr</p>
+            </div>
+            <div className="md:col-span-2">
+              <div className="flex space-x-4">
+                {/* LinkedIn */}
+                <a
+                  href="https://www.linkedin.com/in/midhun-ps/"
+                  aria-label="LinkedIn"
+                  className="bg-gray-800 w-10 h-10 rounded-full flex items-center justify-center
+               hover:bg-blue-600 transition"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <svg
+                    className="w-5 h-5 text-white"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 .774v22.452C0 23.226.792 24 1.771 24h20.451C23.2 24 24 23.226 24 22.774V1.774C24 .774 23.2 0 22.225 0z" />
+                  </svg>
+                </a>
+
+                {/* YouTube */}
+                <a
+                  href="https://www.youtube.com/digitalsciencemalayalam"
+                  aria-label="YouTube"
+                  className="bg-gray-800 w-10 h-10 rounded-full flex items-center justify-center
+               hover:bg-red-600 transition"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <svg
+                    className="w-5 h-5 text-white"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path d="M23.498 6.186a3.01 3.01 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.376.505A3.013 3.013 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.01 3.01 0 002.122 2.136C4.495 20.5 12 20.5 12 20.5s7.505 0 9.376-.505a3.01 3.01 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L16.09 12l-6.545 3.568z" />
+                  </svg>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };

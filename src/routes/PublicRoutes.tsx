@@ -58,7 +58,7 @@ const PublicRoutes = () => (
     {/* <Route path="/studentRegister" element={<StudentRegister />} /> */}
     <Route path="/dashboard" element={<ProtectedDashboard />} />
    <Route path="/school/:schoolName/home" element={<CoursesPage />} />
-   {/* <Route path="/studenthome" element={<StudentHomePage />} /> */}
+   <Route path="/studenthome" element={<StudentHomePage />} />
     <Route path="/addCourse" element={<AddCoursePage />} />
     <Route path="/school/:verifiedSchool" element={<VerifiedSchoolHome />} />
     <Route path="/school/:verifiedSchool/addCourse" element={<AddCoursePage />} />

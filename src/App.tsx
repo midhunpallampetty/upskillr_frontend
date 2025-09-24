@@ -25,7 +25,7 @@ const SubdomainRoutes: React.FC<{ subdomain: string }> = ({ subdomain }) => {
   const routePatterns: { pattern: RegExp; component: React.ReactElement }[] = [
     { pattern: /^\/studentLogin$/, component: <StudentLogin /> },
     { pattern: /^\/studentRegister$/, component: <StudentRegister /> },
-    { pattern: /^\/studenthome$/, component: <StudentHomePage /> },
+   
     { 
   pattern: /^\/school\/[^/]+\/course\/[^/]+$/, 
   component: <CourseDetailsPage /> 

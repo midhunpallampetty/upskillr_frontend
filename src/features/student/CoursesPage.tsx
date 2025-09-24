@@ -79,7 +79,7 @@ const CoursesPage: React.FC = () => {
       .filter(
         (course) =>
           course.courseName.toLowerCase().includes(term) ||
-          course.description.toLowerCase().includes(term)
+          (course.description?.toLowerCase() || '').includes(term)
       )
       .sort((a, b) => {
         if (sortOption === 'name') {

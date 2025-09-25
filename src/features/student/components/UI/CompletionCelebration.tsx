@@ -18,8 +18,6 @@ interface CompletionCelebrationProps {
   certificateUrl: string | null;
   progressLoading: boolean;
   onReviewCourse: () => void;
-  // NEW: Add a prop to indicate if certificate is already available
-  isCertificateAvailable: boolean;
 }
 
 const CompletionCelebration: React.FC<CompletionCelebrationProps> = ({
@@ -27,8 +25,7 @@ const CompletionCelebration: React.FC<CompletionCelebrationProps> = ({
   onCertificateRequest,
   certificateUrl,
   progressLoading,
-  onReviewCourse,
-  isCertificateAvailable // NEW: Use this to check if certificate exists
+  onReviewCourse
 }) => {
   const [showConfetti, setShowConfetti] = React.useState(true);
 
@@ -210,43 +207,28 @@ const CompletionCelebration: React.FC<CompletionCelebrationProps> = ({
             transition={{ delay: 2.3, duration: 0.8 }}
             className="flex flex-col sm:flex-row gap-4 justify-center mb-8"
           >
-            {!isCertificateAvailable ? ( // NEW: Conditionally render generate button if not available
-              <motion.button
-                whileHover={{ scale: 1.05, boxShadow: "0 20px 40px rgba(0,0,0,0.3)" }}
-                whileTap={{ scale: 0.95 }}
-                onClick={onCertificateRequest}
-                disabled={progressLoading}
-                className="bg-gradient-to-r from-yellow-400 to-orange-400 text-gray-900 px-8 py-4 rounded-xl font-bold text-lg hover:from-yellow-300 hover:to-orange-300 transition-all duration-300 flex items-center justify-center gap-3 disabled:opacity-50 shadow-2xl"
-              >
-                <Download className="w-6 h-6" />
-                {progressLoading ? (
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 border-2 border-gray-900 border-t-transparent rounded-full animate-spin" />
-                    Generating Certificate...
-                  </div>
-                ) : (
-                  'Get Your Certificate'
-                )}
-              </motion.button>
-            ) : (
-              // NEW: If certificate is available, show download button directly
-              <motion.a
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                href={certificateUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-3 bg-green-500 text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-green-400 transition-colors shadow-2xl"
-              >
-                <Download className="w-6 h-6" />
-                Download Your Certificate
-              </motion.a>
-            )}
+            <motion.button
+              whileHover={{ scale: 1.05, boxShadow: "0 20px 40px rgba(0,0,0,0.3)" }}
+              whileTap={{ scale: 0.95 }}
+              onClick={onCertificateRequest}
+              disabled={progressLoading}
+              className="bg-gradient-to-r from-yellow-400 to-orange-400 text-gray-900 px-8 py-4 rounded-xl font-bold text-lg hover:from-yellow-300 hover:to-orange-300 transition-all duration-300 flex items-center justify-center gap-3 disabled:opacity-50 shadow-2xl"
+            >
+              <Download className="w-6 h-6" />
+              {progressLoading ? (
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-gray-900 border-t-transparent rounded-full animate-spin" />
+                  Generating Certificate...
+                </div>
+              ) : (
+                'Get Your Certificate'
+              )}
+            </motion.button>
           </motion.div>
 
-          {/* Certificate Download (Retained for animation, but now conditional on generation) */}
+          {/* Certificate Download */}
           <AnimatePresence>
-            {certificateUrl && isCertificateAvailable && ( // NEW: Only show if available and URL exists
+            {certificateUrl && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}

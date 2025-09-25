@@ -5,9 +5,8 @@ import SchoolMarketingNavbar from '../student/components/Layout/StudentNavbar'; 
 import Cookies from 'js-cookie';
 import Footer from './components/Layout/Footer';
 import useStudentAuthGuard from './hooks/useStudentAuthGuard';
-import { fetchPurchasedCourses } from './api/course.api';
+import { fetchPurchasedCourses,getCertificate } from './api/course.api';
 import { getSchoolBySubdomain } from '../school/api/school.api'; // Import from MarketingPage
-import { getCertificate } from './api/certificate.api'; // Adjust import path for getCertificate (from your previous query)
 
 
 // Embedded utility function to extract subdomain (from MarketingPage)

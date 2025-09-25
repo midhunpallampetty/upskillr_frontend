@@ -45,8 +45,8 @@ const CompletionCelebration: React.FC<CompletionCelebrationProps> = ({
         const schoolName = course?.schoolName || ''; // Get from course or context
         const courseId = course?._id || '';
           const studentId = getStudentId();
-console.log(studentId,'student')
         if (!schoolName || !courseId || !studentId) {
+          console.log(schoolName,studentId,courseId,'All params')
           console.error('Missing parameters for certificate fetch');
           return;
         }

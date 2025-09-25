@@ -11,7 +11,7 @@ import {
   TrendingUp,
   Gift
 } from 'lucide-react';
-import { getCertificate } from '../../api/course.api';// Adjust import path to your getCertificate API function
+import { getCertificate } from '../../api/course.api'; // Adjust import path to your getCertificate API function
 
 interface CompletionCelebrationProps {
   course: any;
@@ -31,26 +31,43 @@ const CompletionCelebration: React.FC<CompletionCelebrationProps> = ({
   const [showConfetti, setShowConfetti] = useState(true);
   const [localCertificateUrl, setLocalCertificateUrl] = useState<string | null>(propCertificateUrl);
   const [isLoading, setIsLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
+
   const getStudentId = () => {
     const student = localStorage.getItem('student');
-    return student ? JSON.parse(student).id || JSON.parse(student)._id : null;
+    if (!student) return null;
+    try {
+      const parsed = JSON.parse(student);
+      return parsed?._id || parsed?.id || null;
+    } catch {
+      return null;
+    }
   };
 
   // Fetch existing certificate on mount using getCertificate API
   useEffect(() => {
     const checkExistingCertificate = async () => {
+      const studentId = getStudentId();
+      if (!studentId) {
+        setFetchError('Student ID not found. Please log in again.');
+        setIsLoading(false);
+        return;
+      }
+
       try {
         setIsLoading(true);
-        // Assuming course.schoolName and studentId are available; adjust based on your context
+        // Assuming course.schoolName is available; adjust based on your context
         const schoolName = course?.schoolName || ''; // Get from course or context
         const courseId = course?._id || '';
-          const studentId = getStudentId();
-        if (!schoolName || !courseId || !studentId) {
-          console.log(schoolName,studentId,courseId,'All params')
+
+        if (!schoolName || !courseId) {
+          console.log(schoolName, studentId, courseId, 'All params');
           console.error('Missing parameters for certificate fetch');
+          setFetchError('Missing course details. Unable to fetch certificate.');
           return;
         }
-console.log(schoolName,courseId,studentId,"test")
+
+        console.log(schoolName, courseId, studentId, "test");
         const response = await getCertificate(schoolName, courseId, studentId);
         
         if (response?.certificateUrl) {
@@ -58,6 +75,7 @@ console.log(schoolName,courseId,studentId,"test")
         }
       } catch (error) {
         console.error('Error fetching existing certificate:', error);
+        setFetchError('Failed to fetch certificate. Please try generating one.');
       } finally {
         setIsLoading(false);
       }
@@ -247,6 +265,8 @@ console.log(schoolName,courseId,studentId,"test")
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 Checking certificate...
               </div>
+            ) : fetchError ? (
+              <p className="text-red-300">{fetchError}</p>
             ) : localCertificateUrl ? (
               <motion.a
                 whileHover={{ scale: 1.05 }}

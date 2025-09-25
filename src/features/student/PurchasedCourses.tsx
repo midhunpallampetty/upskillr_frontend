@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { School, Video, DollarSign, BookOpen } from 'lucide-react';
+import { School, Video, DollarSign, BookOpen, Download } from 'lucide-react';
 import SchoolMarketingNavbar from '../student/components/Layout/StudentNavbar'; // Adjust import path to match your project structure (using SchoolMarketingNavbar as in MarketingPage)
 import Cookies from 'js-cookie';
 import Footer from './components/Layout/Footer';
 import useStudentAuthGuard from './hooks/useStudentAuthGuard';
 import { fetchPurchasedCourses } from './api/course.api';
 import { getSchoolBySubdomain } from '../school/api/school.api'; // Import from MarketingPage
+import { getCertificate } from './api/certificate.api'; // Adjust import path for getCertificate (from your previous query)
+
 
 // Embedded utility function to extract subdomain (from MarketingPage)
 const getSubdomain = (url: string = window.location.href): string => {
@@ -24,16 +26,20 @@ const getSubdomain = (url: string = window.location.href): string => {
   }
 };
 
+
 // Utility function to slugify school name for URL (from MarketingPage)
 const slugify = (text: string): string => {
   return text.toLowerCase().replace(/\s+/g, '-').replace(/[^\w\-]+/g, '').replace(/--+/g, '-').replace(/^-+|-+$/g, '');
 };
 
+
 // Interface for Student (from MarketingPage)
 interface Student {
   fullName?: string;
   image: string;
+  _id: string; // Added for studentId usage
 }
+
 
 // Define interface for course objects (adjusted from MarketingPage)
 interface Course {
@@ -53,6 +59,7 @@ interface Course {
   __v: number;
 }
 
+
 type CourseData = {
   schoolName: string;
   course: {
@@ -64,12 +71,15 @@ type CourseData = {
   };
 };
 
+
 const PurchasedCourses = () => {
   useStudentAuthGuard();
   const [student, setStudent] = useState<Student | null>(null);
   const [courses, setCourses] = useState<CourseData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [certificates, setCertificates] = useState<Map<string, string>>(new Map()); // NEW: Map of courseId to certificateUrl
   const navigate = useNavigate();
+
 
   // States from MarketingPage
   const [schoolData, setSchoolData] = useState({
@@ -89,11 +99,14 @@ const PurchasedCourses = () => {
     coursesOffered: [] // Keep empty initially; will be set from API
   });
 
+
   // New state for subdomain (computed once on mount)
   const [subdomain, setSubdomain] = useState<string>(getSubdomain());
 
+
   // State to check if user is logged in
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+
 
   useEffect(() => {
     // Check for tokens in localStorage (from MarketingPage)
@@ -101,6 +114,7 @@ const PurchasedCourses = () => {
     const refreshToken = Cookies.get('studentRefreshToken');
     setIsLoggedIn(!!accessToken && !!refreshToken);
   }, []);
+
 
   // Fetch student data if logged in (from MarketingPage, adjusted)
   useEffect(() => {
@@ -123,6 +137,7 @@ const PurchasedCourses = () => {
     }
   }, [isLoggedIn]);
 
+
   // Fetch school data based on subdomain (from MarketingPage)
   useEffect(() => {
     if (subdomain) {
@@ -132,16 +147,20 @@ const PurchasedCourses = () => {
           const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4NGQ4YjI5NDRhMzg4N2E4MjJkNTg2YiIsImVtYWlsIjoieWljZXdhYjkzOUBsaXRlcGF4LmNvbSIsInJvbGUiOiJzY2hvb2wiLCJzdWJEb21haW4iOiJodHRwOi8vZ2FtZXJzY2x1Yi5lZHV2aWEuc3BhY2UiLCJpYXQiOjE3NTU5NjMyMjUsImV4cCI6MTc1NTk2MzI4NX0.1GcqFwkWRABUA6RvFdNjTZaRZHCQY-djW8SIeslT4es'; // Implement proper token handling
           console.log(subdomain, 'subdomain');
 
+
           const response = await getSchoolBySubdomain(subdomain, token);
           console.log(response.data.school, 'response');
 
+
           const data = response.data.school; // Adjust based on axios response structure
+
 
           // Check if school data exists; if not, redirect
           if (!data) {
             window.location.href = 'https://eduvia.space';
             return;
           }
+
 
           const updatedData = {
             id: data._id || '',
@@ -160,6 +179,7 @@ const PurchasedCourses = () => {
             coursesOffered: [] // Initialize empty; will be updated if needed
           };
 
+
           setSchoolData(updatedData);
           console.log(updatedData, 'data'); // Log after setting state (note: state update is async, use callback if needed for immediate logging)
         } catch (error) {
@@ -174,6 +194,7 @@ const PurchasedCourses = () => {
       window.location.href = 'https://eduvia.space';
     }
   }, [subdomain]); // Depend on subdomain state
+
 
   // Original fetch student data and courses
   useEffect(() => {
@@ -198,6 +219,7 @@ const PurchasedCourses = () => {
     fetchStudentData();
   }, []);
 
+
   const fetchCourses = async (studentId: string) => {
     try {
       const data = await fetchPurchasedCourses(studentId);
@@ -211,18 +233,64 @@ const PurchasedCourses = () => {
     }
   };
 
+  // NEW: Fetch certificates for each purchased course after courses load
+  useEffect(() => {
+    if (courses.length > 0 && student?._id) {
+      const fetchAllCertificates = async () => {
+        const promises = courses.map(async (item) => {
+          try {
+            const response = await getCertificate(item.schoolName, item.course._id, student._id);
+            if (response.certificateUrl) {
+              return { courseId: item.course._id, url: response.certificateUrl };
+            }
+          } catch (error) {
+            console.error(`Error fetching certificate for course ${item.course._id}:`, error);
+          }
+          return null;
+        });
+
+        const results = await Promise.all(promises);
+        const newCertificates = new Map<string, string>();
+        results.forEach((result) => {
+          if (result) {
+            newCertificates.set(result.courseId, result.url);
+          }
+        });
+
+        setCertificates(newCertificates);
+      };
+
+      fetchAllCertificates();
+    }
+  }, [courses, student?._id]); // Depend on courses and studentId
+
+
   const handleLogout = () => {
     Cookies.remove('studentAccessToken');
     Cookies.remove('studentRefreshToken');
     localStorage.removeItem('student');
 
+
     navigate('/studentlogin');
   };
+
 
   const handleLogin = () => {
     // Redirect to login page
     window.location.href = '/studentLogin'; // Adjust the login URL as needed
   };
+
+
+  // Function to trigger download
+  const handleDownloadCertificate = (url: string, courseName: string) => {
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${courseName}_certificate.pdf`; // Suggest filename
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
 
   return (
     <>
@@ -239,6 +307,7 @@ const PurchasedCourses = () => {
           />
         </div>
 
+
         {/* Heading */}
         <div className="text-center mt-10">
           <h1 className="text-4xl font-extrabold text-gray-800">
@@ -246,6 +315,7 @@ const PurchasedCourses = () => {
           </h1>
           <p className="text-gray-500 mt-2">Enjoy your learning journey 🎓</p>
         </div>
+
 
         {/* Course Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 max-w-7xl mx-auto mt-12 px-4 pb-20">
@@ -259,44 +329,59 @@ const PurchasedCourses = () => {
               Explore available courses and start learning today!
             </div>
           ) : (
-            courses.map((item, index) => (
-              <div
-                key={index}
-                className="bg-white rounded-2xl shadow-md hover:shadow-xl transition duration-300 overflow-hidden flex flex-col"
-              >
-                <img
-                  src={item.course.courseThumbnail}
-                  alt={item.course.courseName}
-                  className="h-40 w-full object-cover"
-                />
-                <div className="p-6 flex-1 flex flex-col justify-between">
-                  <div>
-                    <h2 className="text-lg font-semibold text-gray-800 mb-1 flex items-center gap-2">
-                      <School className="w-5 h-5 text-purple-600" />
-                      {item.schoolName}
-                    </h2>
-                    <p className="flex items-center text-sm text-gray-600 mb-1">
-                      <BookOpen className="w-4 h-4 mr-2 text-blue-500" />
-                      {item.course.courseName}
-                    </p>
-                    <p className="flex items-center text-sm text-gray-600 mb-1">
-                      <DollarSign className="w-4 h-4 mr-2 text-green-500" />
-                      ₹{item.course.fee}
-                    </p>
-                    <p className="flex items-center text-sm text-gray-600">
-                      <Video className="w-4 h-4 mr-2 text-red-500" />
-                      {item.course.noOfLessons} videos
-                    </p>
+            courses.map((item, index) => {
+              const certificateUrl = certificates.get(item.course._id); // Check if certificate exists for this course
+
+              return (
+                <div
+                  key={index}
+                  className="bg-white rounded-2xl shadow-md hover:shadow-xl transition duration-300 overflow-hidden flex flex-col"
+                >
+                  <img
+                    src={item.course.courseThumbnail}
+                    alt={item.course.courseName}
+                    className="h-40 w-full object-cover"
+                  />
+                  <div className="p-6 flex-1 flex flex-col justify-between">
+                    <div>
+                      <h2 className="text-lg font-semibold text-gray-800 mb-1 flex items-center gap-2">
+                        <School className="w-5 h-5 text-purple-600" />
+                        {item.schoolName}
+                      </h2>
+                      <p className="flex items-center text-sm text-gray-600 mb-1">
+                        <BookOpen className="w-4 h-4 mr-2 text-blue-500" />
+                        {item.course.courseName}
+                      </p>
+                      <p className="flex items-center text-sm text-gray-600 mb-1">
+                        <DollarSign className="w-4 h-4 mr-2 text-green-500" />
+                        ₹{item.course.fee}
+                      </p>
+                      <p className="flex items-center text-sm text-gray-600">
+                        <Video className="w-4 h-4 mr-2 text-red-500" />
+                        {item.course.noOfLessons} videos
+                      </p>
+                    </div>
+                    <div className="mt-4 flex justify-between items-center">
+                      <Link
+                        to={`/student/course-page/${item.schoolName}/${item.course._id}`}
+                        className="text-purple-600 hover:text-purple-800 font-semibold transition"
+                      >
+                        ▶ Watch Now
+                      </Link>
+                      {certificateUrl && ( // Show icon only if certificate exists
+                        <button
+                          onClick={() => handleDownloadCertificate(certificateUrl, item.course.courseName)}
+                          className="text-gray-600 hover:text-blue-600 transition"
+                          title="Download Certificate"
+                        >
+                          <Download className="w-5 h-5" />
+                        </button>
+                      )}
+                    </div>
                   </div>
-                  <Link
-                    to={`/student/course-page/${item.schoolName}/${item.course._id}`}
-                    className="mt-4 inline-block text-purple-600 hover:text-purple-800 font-semibold transition"
-                  >
-                    ▶ Watch Now
-                  </Link>
                 </div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
       </div>
@@ -304,5 +389,6 @@ const PurchasedCourses = () => {
     </>
   );
 };
+
 
 export default PurchasedCourses;

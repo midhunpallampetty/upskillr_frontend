@@ -11,7 +11,8 @@ import {
   TrendingUp,
   Gift
 } from 'lucide-react';
-import { getCertificate } from '../../api/course.api'; // Adjust import path to your getCertificate API function
+import { getCertificate } from '../../api/course.api';// Adjust import path to your getCertificate API function
+
 
 interface CompletionCelebrationProps {
   course: any;
@@ -20,6 +21,7 @@ interface CompletionCelebrationProps {
   progressLoading: boolean;
   onReviewCourse: () => void;
 }
+
 
 const CompletionCelebration: React.FC<CompletionCelebrationProps> = ({
   course,
@@ -31,43 +33,41 @@ const CompletionCelebration: React.FC<CompletionCelebrationProps> = ({
   const [showConfetti, setShowConfetti] = useState(true);
   const [localCertificateUrl, setLocalCertificateUrl] = useState<string | null>(propCertificateUrl);
   const [isLoading, setIsLoading] = useState(true);
-  const [fetchError, setFetchError] = useState<string | null>(null);
-
   const getStudentId = () => {
     const student = localStorage.getItem('student');
-    if (!student) return null;
+    if (!student) {
+      console.log('Error: No "student" item found in localStorage');
+      return null;
+    }
     try {
       const parsed = JSON.parse(student);
-      return parsed?._id || parsed?.id || null;
-    } catch {
+      const id = parsed ? JSON.parse(student).id || JSON.parse(student)._id : null;
+      if (!id) {
+        console.log('Error: Student ID is missing or invalid in parsed localStorage data', parsed);
+      }
+      return id;
+    } catch (error) {
+      console.error('Error parsing "student" from localStorage:', error);
       return null;
     }
   };
 
+
   // Fetch existing certificate on mount using getCertificate API
   useEffect(() => {
     const checkExistingCertificate = async () => {
-      const studentId = getStudentId();
-      if (!studentId) {
-        setFetchError('Student ID not found. Please log in again.');
-        setIsLoading(false);
-        return;
-      }
-
       try {
         setIsLoading(true);
-        // Assuming course.schoolName is available; adjust based on your context
+        // Assuming course.schoolName and studentId are available; adjust based on your context
         const schoolName = course?.schoolName || ''; // Get from course or context
         const courseId = course?._id || '';
-
-        if (!schoolName || !courseId) {
-          console.log(schoolName, studentId, courseId, 'All params');
+          const studentId = getStudentId();
+        if (!schoolName || !courseId || !studentId) {
+          console.log(schoolName,studentId,courseId,'All params')
           console.error('Missing parameters for certificate fetch');
-          setFetchError('Missing course details. Unable to fetch certificate.');
           return;
         }
-
-        console.log(schoolName, courseId, studentId, "test");
+console.log(schoolName,courseId,studentId,"test")
         const response = await getCertificate(schoolName, courseId, studentId);
         
         if (response?.certificateUrl) {
@@ -75,17 +75,19 @@ const CompletionCelebration: React.FC<CompletionCelebrationProps> = ({
         }
       } catch (error) {
         console.error('Error fetching existing certificate:', error);
-        setFetchError('Failed to fetch certificate. Please try generating one.');
       } finally {
         setIsLoading(false);
       }
     };
 
+
     checkExistingCertificate();
+
 
     const timer = setTimeout(() => setShowConfetti(false), 3000);
     return () => clearTimeout(timer);
   }, [course]);
+
 
   const achievements = [
     { icon: Target, label: "Course Completed", color: "text-green-400" },
@@ -93,6 +95,7 @@ const CompletionCelebration: React.FC<CompletionCelebrationProps> = ({
     { icon: Award, label: "Skills Mastered", color: "text-purple-400" },
     { icon: Gift, label: "Certificate Earned", color: "text-yellow-400" }
   ];
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-indigo-900 to-blue-900 relative overflow-hidden">
@@ -120,6 +123,7 @@ const CompletionCelebration: React.FC<CompletionCelebrationProps> = ({
           />
         ))}
       </div>
+
 
       {/* Main Content */}
       <div className="relative z-10 flex items-center justify-center min-h-screen p-6">
@@ -170,6 +174,7 @@ const CompletionCelebration: React.FC<CompletionCelebrationProps> = ({
               ))}
             </div>
 
+
             {/* Star Rating */}
             <motion.div
               initial={{ opacity: 0 }}
@@ -190,6 +195,7 @@ const CompletionCelebration: React.FC<CompletionCelebrationProps> = ({
             </motion.div>
           </motion.div>
 
+
           {/* Congratulations Text */}
           <motion.div
             initial={{ opacity: 0, y: 50 }}
@@ -203,6 +209,7 @@ const CompletionCelebration: React.FC<CompletionCelebrationProps> = ({
               You've mastered the course!
             </h2>
           </motion.div>
+
 
           {/* Course Name */}
           <motion.div
@@ -220,6 +227,7 @@ const CompletionCelebration: React.FC<CompletionCelebrationProps> = ({
               </div>
             </div>
           </motion.div>
+
 
           {/* Achievements Grid */}
           <motion.div
@@ -242,6 +250,7 @@ const CompletionCelebration: React.FC<CompletionCelebrationProps> = ({
             ))}
           </motion.div>
 
+
           {/* Description */}
           <motion.p
             initial={{ opacity: 0 }}
@@ -252,6 +261,7 @@ const CompletionCelebration: React.FC<CompletionCelebrationProps> = ({
             You've successfully completed all sections and mastered every concept in this course.
             Your dedication and hard work have paid off. Ready to showcase your achievement?
           </motion.p>
+
 
           {/* Action Button */}
           <motion.div
@@ -265,8 +275,6 @@ const CompletionCelebration: React.FC<CompletionCelebrationProps> = ({
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 Checking certificate...
               </div>
-            ) : fetchError ? (
-              <p className="text-red-300">{fetchError}</p>
             ) : localCertificateUrl ? (
               <motion.a
                 whileHover={{ scale: 1.05 }}
@@ -300,6 +308,7 @@ const CompletionCelebration: React.FC<CompletionCelebrationProps> = ({
             )}
           </motion.div>
 
+
           {/* Navigation Buttons */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -327,5 +336,6 @@ const CompletionCelebration: React.FC<CompletionCelebrationProps> = ({
     </div>
   );
 };
+
 
 export default CompletionCelebration;

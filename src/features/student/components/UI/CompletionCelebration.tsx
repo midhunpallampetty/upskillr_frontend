@@ -31,6 +31,10 @@ const CompletionCelebration: React.FC<CompletionCelebrationProps> = ({
   const [showConfetti, setShowConfetti] = useState(true);
   const [localCertificateUrl, setLocalCertificateUrl] = useState<string | null>(propCertificateUrl);
   const [isLoading, setIsLoading] = useState(true);
+  const getStudentId = () => {
+    const student = localStorage.getItem('student');
+    return student ? JSON.parse(student).id || JSON.parse(student)._id : null;
+  };
 
   // Fetch existing certificate on mount using getCertificate API
   useEffect(() => {
@@ -40,7 +44,7 @@ const CompletionCelebration: React.FC<CompletionCelebrationProps> = ({
         // Assuming course.schoolName and studentId are available; adjust based on your context
         const schoolName = course?.schoolName || ''; // Get from course or context
         const courseId = course?._id || '';
-        const studentId = localStorage.getItem('student') ? JSON.parse(localStorage.getItem('student') || '{}')._id : '';
+          const studentId = getStudentId();
 
         if (!schoolName || !courseId || !studentId) {
           console.error('Missing parameters for certificate fetch');

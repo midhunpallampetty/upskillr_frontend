@@ -1,23 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import {
-  Trophy,
-  Star,
-  Download,
-  Sparkles,
-  Award,
-  Target,
-  TrendingUp,
-  Gift
-} from 'lucide-react';
+import { Trophy, Star, Download, Sparkles, Award, Target, TrendingUp, Gift } from 'lucide-react';
 import { getCertificate } from '../../api/course.api'; // Adjust import path
-
 
 interface CompletionCelebrationProps {
   course: any;
   onCertificateRequest: () => void;
-  certificateUrl: string | null;
+  certificateUrl: string | null; // Certificate passed from parent (after generating)
   progressLoading: boolean;
   onReviewCourse: () => void;
 }
@@ -25,9 +15,9 @@ interface CompletionCelebrationProps {
 const CompletionCelebration: React.FC<CompletionCelebrationProps> = ({
   course,
   onCertificateRequest,
-  certificateUrl: propCertificateUrl, // renamed to avoid shadowing
+  certificateUrl: propCertificateUrl,
   progressLoading,
-  onReviewCourse
+  onReviewCourse,
 }) => {
   const [showConfetti, setShowConfetti] = useState(true);
   const [localCertificateUrl, setLocalCertificateUrl] = useState<string | null>(propCertificateUrl);
@@ -37,7 +27,6 @@ const CompletionCelebration: React.FC<CompletionCelebrationProps> = ({
     try {
       const studentData = localStorage.getItem('student');
       if (!studentData) return null;
-
       const parsed = JSON.parse(studentData);
       return parsed.id || parsed._id || null;
     } catch (error) {
@@ -46,86 +35,77 @@ const CompletionCelebration: React.FC<CompletionCelebrationProps> = ({
     }
   };
 
-  // Fetch certificate if available
+  // Fetch certificate only if not already passed from parent
   useEffect(() => {
-    const checkExistingCertificate = async () => {
+    if (localCertificateUrl) {
+      setIsLoading(false);
+      return;
+    }
+
+    const fetchExistingCertificate = async () => {
       try {
         setIsLoading(true);
-
         const schoolName = course?.schoolName || '';
         const courseId = course?._id || '';
         const studentId = getStudentId();
-
-        if (!schoolName || !courseId || !studentId) {
-          console.warn("Missing parameters for certificate fetch:", {
-            schoolName,
-            courseId,
-            studentId
-          });
-          return;
-        }
+        if (!schoolName || !courseId || !studentId) return;
 
         const response = await getCertificate(schoolName, courseId, studentId);
-
         if (response?.certificateUrl) {
           setLocalCertificateUrl(response.certificateUrl);
         }
       } catch (error) {
-        console.error("Error fetching existing certificate:", error);
+        console.error("Error fetching certificate:", error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    checkExistingCertificate();
+    fetchExistingCertificate();
 
     // Stop confetti after 3s
     const timer = setTimeout(() => setShowConfetti(false), 3000);
     return () => clearTimeout(timer);
-  }, [course]);
+  }, [course, localCertificateUrl]);
 
-  // Re-check when certificateUrl prop changes (after generating new one)
+  // Update localCertificateUrl if parent prop changes
   useEffect(() => {
     if (propCertificateUrl) {
       setLocalCertificateUrl(propCertificateUrl);
     }
   }, [propCertificateUrl]);
 
+  const handleDownload = (url: string) => {
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${course?.courseName || 'certificate'}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const achievements = [
     { icon: Target, label: "Course Completed", color: "text-green-400" },
     { icon: TrendingUp, label: "Knowledge Gained", color: "text-blue-400" },
     { icon: Award, label: "Skills Mastered", color: "text-purple-400" },
-    { icon: Gift, label: "Certificate Earned", color: "text-yellow-400" }
+    { icon: Gift, label: "Certificate Earned", color: "text-yellow-400" },
   ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-indigo-900 to-blue-900 relative overflow-hidden">
-      {/* Background Confetti Animation */}
+      {/* Confetti */}
       <div className="absolute inset-0">
         {[...Array(50)].map((_, i) => (
           <motion.div
             key={i}
             className="absolute w-2 h-2 bg-white rounded-full"
-            initial={{
-              x: Math.random() * window.innerWidth,
-              y: window.innerHeight + 100,
-              opacity: 0
-            }}
-            animate={showConfetti ? {
-              y: -100,
-              opacity: [0, 1, 1, 0],
-              scale: [0, 1, 1, 0]
-            } : {}}
-            transition={{
-              duration: 3,
-              delay: Math.random() * 2,
-              ease: "easeOut"
-            }}
+            initial={{ x: Math.random() * window.innerWidth, y: window.innerHeight + 100, opacity: 0 }}
+            animate={showConfetti ? { y: -100, opacity: [0, 1, 1, 0], scale: [0, 1, 1, 0] } : {}}
+            transition={{ duration: 3, delay: Math.random() * 2, ease: "easeOut" }}
           />
         ))}
       </div>
 
-      {/* Main Content */}
       <div className="relative z-10 flex items-center justify-center min-h-screen p-6">
         <motion.div
           initial={{ opacity: 0, scale: 0.5 }}
@@ -134,157 +114,60 @@ const CompletionCelebration: React.FC<CompletionCelebrationProps> = ({
           className="text-center text-white max-w-4xl mx-auto"
         >
           {/* Trophy + Sparkles */}
-          <motion.div
-            initial={{ y: -100, rotate: -180 }}
-            animate={{ y: 0, rotate: 0 }}
-            transition={{ duration: 1, ease: "easeOut", delay: 0.3 }}
-            className="mb-8 relative"
-          >
+          <motion.div initial={{ y: -100, rotate: -180 }} animate={{ y: 0, rotate: 0 }} transition={{ duration: 1, ease: "easeOut", delay: 0.3 }} className="mb-8 relative">
             <div className="relative inline-block">
-              <motion.div
-                animate={{ rotate: [0, -5, 5, -5, 0] }}
-                transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}
-              >
+              <motion.div animate={{ rotate: [0, -5, 5, -5, 0] }} transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}>
                 <Trophy className="w-32 h-32 text-yellow-400 mx-auto" />
               </motion.div>
-
-              {/* Sparkles around Trophy */}
               {[...Array(8)].map((_, i) => (
-                <motion.div
-                  key={i}
-                  className="absolute"
-                  style={{
-                    top: '50%',
-                    left: '50%',
-                    transform: `rotate(${i * 45}deg) translateY(-80px)`
-                  }}
-                  animate={{
-                    scale: [0, 1, 0],
-                    rotate: [0, 180, 360]
-                  }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    delay: i * 0.2,
-                    ease: "easeInOut"
-                  }}
-                >
+                <motion.div key={i} className="absolute" style={{ top: '50%', left: '50%', transform: `rotate(${i * 45}deg) translateY(-80px)` }}
+                  animate={{ scale: [0, 1, 0], rotate: [0, 180, 360] }} transition={{ duration: 2, repeat: Infinity, delay: i * 0.2, ease: "easeInOut" }}>
                   <Sparkles className="w-6 h-6 text-yellow-300" />
                 </motion.div>
               ))}
             </div>
-
-            {/* Star Rating */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 1 }}
-              className="flex justify-center gap-2 mt-6"
-            >
-              {[...Array(5)].map((_, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ scale: 0, rotate: -180 }}
-                  animate={{ scale: 1, rotate: 0 }}
-                  transition={{ delay: 1.2 + i * 0.1, type: "spring", stiffness: 500 }}
-                >
-                  <Star className="w-8 h-8 fill-yellow-300 text-yellow-300" />
-                </motion.div>
-              ))}
-            </motion.div>
           </motion.div>
 
-          {/* Congratulations Text */}
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8, duration: 0.8 }}
-          >
-            <h1 className="text-6xl lg:text-7xl font-bold mb-4 bg-gradient-to-r from-yellow-300 via-yellow-400 to-orange-400 bg-clip-text text-transparent">
-              Congratulations!
-            </h1>
-            <h2 className="text-3xl lg:text-4xl font-semibold mb-6">
-              You've mastered the course!
-            </h2>
-          </motion.div>
+          {/* Text */}
+          <h1 className="text-6xl lg:text-7xl font-bold mb-4 bg-gradient-to-r from-yellow-300 via-yellow-400 to-orange-400 bg-clip-text text-transparent">
+            Congratulations!
+          </h1>
+          <h2 className="text-3xl lg:text-4xl font-semibold mb-6">You've mastered the course!</h2>
 
           {/* Course Name */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 1.2, duration: 0.6 }}
-            className="mb-8"
-          >
-            <div className="inline-block bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
-              <h3 className="text-2xl lg:text-3xl font-bold text-yellow-200 mb-2">
-                {course?.courseName}
-              </h3>
-              <div className="text-lg text-gray-300">
-                Course completed with excellence!
-              </div>
-            </div>
-          </motion.div>
+          <div className="inline-block bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 mb-8">
+            <h3 className="text-2xl lg:text-3xl font-bold text-yellow-200 mb-2">{course?.courseName}</h3>
+            <div className="text-lg text-gray-300">Course completed with excellence!</div>
+          </div>
 
           {/* Achievements */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.5, duration: 0.8 }}
-            className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8"
-          >
-            {achievements.map((achievement, index) => (
-              <motion.div
-                key={achievement.label}
-                initial={{ opacity: 0, scale: 0 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 1.7 + index * 0.1, type: "spring", stiffness: 300 }}
-                className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20"
-              >
-                <achievement.icon className={`w-8 h-8 ${achievement.color} mx-auto mb-2`} />
-                <div className="text-sm font-medium">{achievement.label}</div>
-              </motion.div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            {achievements.map((ach, idx) => (
+              <div key={idx} className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                <ach.icon className={`w-8 h-8 ${ach.color} mx-auto mb-2`} />
+                <div className="text-sm font-medium">{ach.label}</div>
+              </div>
             ))}
-          </motion.div>
+          </div>
 
-          {/* Description */}
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 2, duration: 0.8 }}
-            className="text-xl lg:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed"
-          >
-            You've successfully completed all sections and mastered every concept in this course.
-            Your dedication and hard work have paid off. Ready to showcase your achievement?
-          </motion.p>
-
-          {/* Action Buttons */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 2.3, duration: 0.8 }}
-            className="flex flex-col sm:flex-row gap-4 justify-center mb-8"
-          >
+          {/* Certificate Action */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
             {isLoading ? (
               <div className="flex items-center gap-2 text-white">
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 Checking certificate...
               </div>
             ) : localCertificateUrl ? (
-              <motion.a
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+              <a
                 href={localCertificateUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-3 bg-green-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-green-400 transition-colors shadow-2xl"
               >
-                <Download className="w-5 h-5" />
-                Download Your Certificate
-              </motion.a>
+                <Download className="w-5 h-5" /> Download Your Certificate
+              </a>
             ) : (
-              <motion.button
-                whileHover={{ scale: 1.05, boxShadow: "0 20px 40px rgba(0,0,0,0.3)" }}
-                whileTap={{ scale: 0.95 }}
+              <button
                 onClick={onCertificateRequest}
                 disabled={progressLoading}
                 className="bg-gradient-to-r from-yellow-400 to-orange-400 text-gray-900 px-8 py-4 rounded-xl font-bold text-lg hover:from-yellow-300 hover:to-orange-300 transition-all duration-300 flex items-center justify-center gap-3 disabled:opacity-50 shadow-2xl"
@@ -298,32 +181,22 @@ const CompletionCelebration: React.FC<CompletionCelebrationProps> = ({
                 ) : (
                   'Get Your Certificate'
                 )}
-              </motion.button>
+              </button>
             )}
-          </motion.div>
+          </div>
 
           {/* Navigation */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 2.8, duration: 0.8 }}
-            className="flex flex-col sm:flex-row gap-4 justify-center"
-          >
-            <Link
-              to="/student/purchased-courses"
-              className="inline-flex items-center justify-center bg-white text-indigo-900 px-8 py-3 rounded-xl font-semibold hover:bg-gray-100 transition-colors shadow-xl"
-            >
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link to="/student/purchased-courses" className="inline-flex items-center justify-center bg-white text-indigo-900 px-8 py-3 rounded-xl font-semibold hover:bg-gray-100 transition-colors shadow-xl">
               Back to Dashboard
             </Link>
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+            <button
               onClick={onReviewCourse}
               className="bg-transparent border-2 border-white text-white px-8 py-3 rounded-xl font-semibold hover:bg-white hover:text-indigo-900 transition-colors"
             >
               Review Course Content
-            </motion.button>
-          </motion.div>
+            </button>
+          </div>
         </motion.div>
       </div>
     </div>

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import {
@@ -11,6 +11,7 @@ import {
   TrendingUp,
   Gift
 } from 'lucide-react';
+import { getCertificate } from '../../api/course.api';// Adjust import path to your getCertificate API function
 
 interface CompletionCelebrationProps {
   course: any;
@@ -23,16 +24,46 @@ interface CompletionCelebrationProps {
 const CompletionCelebration: React.FC<CompletionCelebrationProps> = ({
   course,
   onCertificateRequest,
-  certificateUrl,
+  certificateUrl: propCertificateUrl, // Renamed to avoid shadowing
   progressLoading,
   onReviewCourse
 }) => {
-  const [showConfetti, setShowConfetti] = React.useState(true);
+  const [showConfetti, setShowConfetti] = useState(true);
+  const [localCertificateUrl, setLocalCertificateUrl] = useState<string | null>(propCertificateUrl);
+  const [isLoading, setIsLoading] = useState(true);
 
-  React.useEffect(() => {
+  // Fetch existing certificate on mount using getCertificate API
+  useEffect(() => {
+    const checkExistingCertificate = async () => {
+      try {
+        setIsLoading(true);
+        // Assuming course.schoolName and studentId are available; adjust based on your context
+        const schoolName = course?.schoolName || ''; // Get from course or context
+        const courseId = course?._id || '';
+        const studentId = localStorage.getItem('student') ? JSON.parse(localStorage.getItem('student') || '{}')._id : '';
+
+        if (!schoolName || !courseId || !studentId) {
+          console.error('Missing parameters for certificate fetch');
+          return;
+        }
+
+        const response = await getCertificate(schoolName, courseId, studentId);
+        
+        if (response?.certificateUrl) {
+          setLocalCertificateUrl(response.certificateUrl);
+        }
+      } catch (error) {
+        console.error('Error fetching existing certificate:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkExistingCertificate();
+
     const timer = setTimeout(() => setShowConfetti(false), 3000);
     return () => clearTimeout(timer);
-  }, []);
+  }, [course]);
 
   const achievements = [
     { icon: Target, label: "Course Completed", color: "text-green-400" },
@@ -207,48 +238,43 @@ const CompletionCelebration: React.FC<CompletionCelebrationProps> = ({
             transition={{ delay: 2.3, duration: 0.8 }}
             className="flex flex-col sm:flex-row gap-4 justify-center mb-8"
           >
-            <motion.button
-              whileHover={{ scale: 1.05, boxShadow: "0 20px 40px rgba(0,0,0,0.3)" }}
-              whileTap={{ scale: 0.95 }}
-              onClick={onCertificateRequest}
-              disabled={progressLoading}
-              className="bg-gradient-to-r from-yellow-400 to-orange-400 text-gray-900 px-8 py-4 rounded-xl font-bold text-lg hover:from-yellow-300 hover:to-orange-300 transition-all duration-300 flex items-center justify-center gap-3 disabled:opacity-50 shadow-2xl"
-            >
-              <Download className="w-6 h-6" />
-              {progressLoading ? (
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-gray-900 border-t-transparent rounded-full animate-spin" />
-                  Generating Certificate...
-                </div>
-              ) : (
-                'Get Your Certificate'
-              )}
-            </motion.button>
-          </motion.div>
-
-          {/* Certificate Download */}
-          <AnimatePresence>
-            {certificateUrl && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                className="mb-8"
+            {isLoading ? (
+              <div className="flex items-center gap-2 text-white">
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                Checking certificate...
+              </div>
+            ) : localCertificateUrl ? (
+              <motion.a
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                href={localCertificateUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-3 bg-green-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-green-400 transition-colors shadow-2xl"
               >
-                <motion.a
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  href={certificateUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-3 bg-green-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-green-400 transition-colors shadow-2xl"
-                >
-                  <Download className="w-5 h-5" />
-                  Download Your Certificate
-                </motion.a>
-              </motion.div>
+                <Download className="w-5 h-5" />
+                Download Your Certificate
+              </motion.a>
+            ) : (
+              <motion.button
+                whileHover={{ scale: 1.05, boxShadow: "0 20px 40px rgba(0,0,0,0.3)" }}
+                whileTap={{ scale: 0.95 }}
+                onClick={onCertificateRequest}
+                disabled={progressLoading}
+                className="bg-gradient-to-r from-yellow-400 to-orange-400 text-gray-900 px-8 py-4 rounded-xl font-bold text-lg hover:from-yellow-300 hover:to-orange-300 transition-all duration-300 flex items-center justify-center gap-3 disabled:opacity-50 shadow-2xl"
+              >
+                <Download className="w-6 h-6" />
+                {progressLoading ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-gray-900 border-t-transparent rounded-full animate-spin" />
+                    Generating Certificate...
+                  </div>
+                ) : (
+                  'Get Your Certificate'
+                )}
+              </motion.button>
             )}
-          </AnimatePresence>
+          </motion.div>
 
           {/* Navigation Buttons */}
           <motion.div

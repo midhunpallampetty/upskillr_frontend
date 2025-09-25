@@ -223,7 +223,7 @@ export const getCertificate = async (
   const res = await apiRequest<{ message: string; data: { certificateUrl: string; [key: string]: any } }>(
     courseAxios,
     "get",
-    `/api/schools/${schoolName}/courses/${courseId}/certificate?studentId=${studentId}`
+    `/schools/${schoolName}/courses/${courseId}/certificate?studentId=${studentId}`
   );
   return res.data; // Returns the certificate data object (includes certificateUrl and other fields)
 };

@@ -46,7 +46,7 @@ const CompletionCelebration: React.FC<CompletionCelebrationProps> = ({
           console.error('Missing parameters for certificate fetch');
           return;
         }
-
+console.log(schoolName,courseId,studentId,"test")
         const response = await getCertificate(schoolName, courseId, studentId);
         
         if (response?.certificateUrl) {

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import {
@@ -11,62 +11,28 @@ import {
   TrendingUp,
   Gift
 } from 'lucide-react';
-import { getCertificate } from '../../api/course.api'; // Adjust import path as needed
 
 interface CompletionCelebrationProps {
   course: any;
-  studentId: string;
   onCertificateRequest: () => void;
+  certificateUrl: string | null;
   progressLoading: boolean;
   onReviewCourse: () => void;
 }
 
 const CompletionCelebration: React.FC<CompletionCelebrationProps> = ({
   course,
-  studentId,
   onCertificateRequest,
+  certificateUrl,
   progressLoading,
   onReviewCourse
 }) => {
-  const [showConfetti, setShowConfetti] = useState(true);
-  const [certificateUrl, setCertificateUrl] = useState<string | null>(null);
+  const [showConfetti, setShowConfetti] = React.useState(true);
 
-  useEffect(() => {
-    // Auto-hide confetti after 3 seconds
+  React.useEffect(() => {
     const timer = setTimeout(() => setShowConfetti(false), 3000);
     return () => clearTimeout(timer);
   }, []);
-
-  useEffect(() => {
-    // Fetch existing certificate on mount or when course or studentId changes
-    const fetchCertificate = async () => {
-      try {
-        if (course && studentId) {
-          const response = await getCertificate(course.schoolName, course._id, studentId);
-          if (response.certificateUrl) {
-            setCertificateUrl(response.certificateUrl);
-          } else {
-            setCertificateUrl(null);
-          }
-        }
-      } catch (error) {
-        console.error('Error fetching certificate:', error);
-        setCertificateUrl(null);
-      }
-    };
-    fetchCertificate();
-  }, [course, studentId]);
-
-  const handleDownloadCertificate = () => {
-    if (certificateUrl) {
-      const link = document.createElement('a');
-      link.href = certificateUrl;
-      link.download = `${course.courseName}_certificate.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-  };
 
   const achievements = [
     { icon: Target, label: "Course Completed", color: "text-green-400" },
@@ -124,7 +90,7 @@ const CompletionCelebration: React.FC<CompletionCelebrationProps> = ({
               >
                 <Trophy className="w-32 h-32 text-yellow-400 mx-auto" />
               </motion.div>
-
+              
               {/* Sparkles */}
               {[...Array(8)].map((_, i) => (
                 <motion.div
@@ -234,32 +200,55 @@ const CompletionCelebration: React.FC<CompletionCelebrationProps> = ({
             Your dedication and hard work have paid off. Ready to showcase your achievement?
           </motion.p>
 
-          {/* Action Buttons */}
+          {/* Action Button */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 2.3, duration: 0.8 }}
             className="flex flex-col sm:flex-row gap-4 justify-center mb-8"
           >
-            {certificateUrl ? (
-              <button
-                onClick={handleDownloadCertificate}
-                className="inline-flex items-center gap-3 bg-green-500 text-white px-8 py-4 rounded-xl font-semibold hover:bg-green-400 transition-colors shadow-2xl"
-              >
-                <Download className="w-6 h-6" />
-                Download Your Certificate
-              </button>
-            ) : (
-              <button
-                onClick={onCertificateRequest}
-                disabled={progressLoading}
-                className="bg-gradient-to-r from-yellow-400 to-orange-400 text-gray-900 px-8 py-4 rounded-xl font-bold text-lg hover:from-yellow-300 hover:to-orange-300 transition-all duration-300 flex items-center justify-center gap-3 disabled:opacity-50 shadow-2xl"
-              >
-                <Download className="w-6 h-6" />
-                {progressLoading ? 'Generating Certificate...' : 'Get Your Certificate'}
-              </button>
-            )}
+            <motion.button
+              whileHover={{ scale: 1.05, boxShadow: "0 20px 40px rgba(0,0,0,0.3)" }}
+              whileTap={{ scale: 0.95 }}
+              onClick={onCertificateRequest}
+              disabled={progressLoading}
+              className="bg-gradient-to-r from-yellow-400 to-orange-400 text-gray-900 px-8 py-4 rounded-xl font-bold text-lg hover:from-yellow-300 hover:to-orange-300 transition-all duration-300 flex items-center justify-center gap-3 disabled:opacity-50 shadow-2xl"
+            >
+              <Download className="w-6 h-6" />
+              {progressLoading ? (
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-gray-900 border-t-transparent rounded-full animate-spin" />
+                  Generating Certificate...
+                </div>
+              ) : (
+                'Get Your Certificate'
+              )}
+            </motion.button>
           </motion.div>
+
+          {/* Certificate Download */}
+          <AnimatePresence>
+            {certificateUrl && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                className="mb-8"
+              >
+                <motion.a
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  href={certificateUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-3 bg-green-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-green-400 transition-colors shadow-2xl"
+                >
+                  <Download className="w-5 h-5" />
+                  Download Your Certificate
+                </motion.a>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Navigation Buttons */}
           <motion.div

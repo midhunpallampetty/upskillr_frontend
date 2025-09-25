@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import {
@@ -11,8 +11,6 @@ import {
   TrendingUp,
   Gift
 } from 'lucide-react';
-import { getCertificate } from '../../api/course.api';// Adjust import path to your getCertificate API function
-
 
 interface CompletionCelebrationProps {
   course: any;
@@ -22,72 +20,19 @@ interface CompletionCelebrationProps {
   onReviewCourse: () => void;
 }
 
-
 const CompletionCelebration: React.FC<CompletionCelebrationProps> = ({
   course,
   onCertificateRequest,
-  certificateUrl: propCertificateUrl, // Renamed to avoid shadowing
+  certificateUrl,
   progressLoading,
   onReviewCourse
 }) => {
-  const [showConfetti, setShowConfetti] = useState(true);
-  const [localCertificateUrl, setLocalCertificateUrl] = useState<string | null>(propCertificateUrl);
-  const [isLoading, setIsLoading] = useState(true);
-  const getStudentId = () => {
-    const student = localStorage.getItem('student');
-    if (!student) {
-      console.log('Error: No "student" item found in localStorage');
-      return null;
-    }
-    try {
-      const parsed = JSON.parse(student);
-      const id = parsed ? JSON.parse(student).id || JSON.parse(student)._id : null;
-      if (!id) {
-        console.log('Error: Student ID is missing or invalid in parsed localStorage data', parsed);
-      }
-      return id;
-    } catch (error) {
-      console.error('Error parsing "student" from localStorage:', error);
-      return null;
-    }
-  };
+  const [showConfetti, setShowConfetti] = React.useState(true);
 
-
-  // Fetch existing certificate on mount using getCertificate API
-  useEffect(() => {
-    const checkExistingCertificate = async () => {
-      try {
-        setIsLoading(true);
-        // Assuming course.schoolName and studentId are available; adjust based on your context
-        const schoolName = course?.schoolName || ''; // Get from course or context
-        const courseId = course?._id || '';
-          const studentId = getStudentId();
-        if (!schoolName || !courseId || !studentId) {
-          console.log(schoolName,studentId,courseId,'All params')
-          console.error('Missing parameters for certificate fetch');
-          return;
-        }
-console.log(schoolName,courseId,studentId,"test")
-        const response = await getCertificate(schoolName, courseId, studentId);
-        
-        if (response?.certificateUrl) {
-          setLocalCertificateUrl(response.certificateUrl);
-        }
-      } catch (error) {
-        console.error('Error fetching existing certificate:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-
-    checkExistingCertificate();
-
-
+  React.useEffect(() => {
     const timer = setTimeout(() => setShowConfetti(false), 3000);
     return () => clearTimeout(timer);
-  }, [course]);
-
+  }, []);
 
   const achievements = [
     { icon: Target, label: "Course Completed", color: "text-green-400" },
@@ -95,7 +40,6 @@ console.log(schoolName,courseId,studentId,"test")
     { icon: Award, label: "Skills Mastered", color: "text-purple-400" },
     { icon: Gift, label: "Certificate Earned", color: "text-yellow-400" }
   ];
-
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-indigo-900 to-blue-900 relative overflow-hidden">
@@ -123,7 +67,6 @@ console.log(schoolName,courseId,studentId,"test")
           />
         ))}
       </div>
-
 
       {/* Main Content */}
       <div className="relative z-10 flex items-center justify-center min-h-screen p-6">
@@ -174,7 +117,6 @@ console.log(schoolName,courseId,studentId,"test")
               ))}
             </div>
 
-
             {/* Star Rating */}
             <motion.div
               initial={{ opacity: 0 }}
@@ -195,7 +137,6 @@ console.log(schoolName,courseId,studentId,"test")
             </motion.div>
           </motion.div>
 
-
           {/* Congratulations Text */}
           <motion.div
             initial={{ opacity: 0, y: 50 }}
@@ -209,7 +150,6 @@ console.log(schoolName,courseId,studentId,"test")
               You've mastered the course!
             </h2>
           </motion.div>
-
 
           {/* Course Name */}
           <motion.div
@@ -227,7 +167,6 @@ console.log(schoolName,courseId,studentId,"test")
               </div>
             </div>
           </motion.div>
-
 
           {/* Achievements Grid */}
           <motion.div
@@ -250,7 +189,6 @@ console.log(schoolName,courseId,studentId,"test")
             ))}
           </motion.div>
 
-
           {/* Description */}
           <motion.p
             initial={{ opacity: 0 }}
@@ -262,7 +200,6 @@ console.log(schoolName,courseId,studentId,"test")
             Your dedication and hard work have paid off. Ready to showcase your achievement?
           </motion.p>
 
-
           {/* Action Button */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -270,44 +207,48 @@ console.log(schoolName,courseId,studentId,"test")
             transition={{ delay: 2.3, duration: 0.8 }}
             className="flex flex-col sm:flex-row gap-4 justify-center mb-8"
           >
-            {isLoading ? (
-              <div className="flex items-center gap-2 text-white">
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                Checking certificate...
-              </div>
-            ) : localCertificateUrl ? (
-              <motion.a
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                href={localCertificateUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-3 bg-green-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-green-400 transition-colors shadow-2xl"
-              >
-                <Download className="w-5 h-5" />
-                Download Your Certificate
-              </motion.a>
-            ) : (
-              <motion.button
-                whileHover={{ scale: 1.05, boxShadow: "0 20px 40px rgba(0,0,0,0.3)" }}
-                whileTap={{ scale: 0.95 }}
-                onClick={onCertificateRequest}
-                disabled={progressLoading}
-                className="bg-gradient-to-r from-yellow-400 to-orange-400 text-gray-900 px-8 py-4 rounded-xl font-bold text-lg hover:from-yellow-300 hover:to-orange-300 transition-all duration-300 flex items-center justify-center gap-3 disabled:opacity-50 shadow-2xl"
-              >
-                <Download className="w-6 h-6" />
-                {progressLoading ? (
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 border-2 border-gray-900 border-t-transparent rounded-full animate-spin" />
-                    Generating Certificate...
-                  </div>
-                ) : (
-                  'Get Your Certificate'
-                )}
-              </motion.button>
-            )}
+            <motion.button
+              whileHover={{ scale: 1.05, boxShadow: "0 20px 40px rgba(0,0,0,0.3)" }}
+              whileTap={{ scale: 0.95 }}
+              onClick={onCertificateRequest}
+              disabled={progressLoading}
+              className="bg-gradient-to-r from-yellow-400 to-orange-400 text-gray-900 px-8 py-4 rounded-xl font-bold text-lg hover:from-yellow-300 hover:to-orange-300 transition-all duration-300 flex items-center justify-center gap-3 disabled:opacity-50 shadow-2xl"
+            >
+              <Download className="w-6 h-6" />
+              {progressLoading ? (
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-gray-900 border-t-transparent rounded-full animate-spin" />
+                  Generating Certificate...
+                </div>
+              ) : (
+                'Get Your Certificate'
+              )}
+            </motion.button>
           </motion.div>
 
+          {/* Certificate Download */}
+          <AnimatePresence>
+            {certificateUrl && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                className="mb-8"
+              >
+                <motion.a
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  href={certificateUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-3 bg-green-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-green-400 transition-colors shadow-2xl"
+                >
+                  <Download className="w-5 h-5" />
+                  Download Your Certificate
+                </motion.a>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Navigation Buttons */}
           <motion.div
@@ -336,6 +277,5 @@ console.log(schoolName,courseId,studentId,"test")
     </div>
   );
 };
-
 
 export default CompletionCelebration;

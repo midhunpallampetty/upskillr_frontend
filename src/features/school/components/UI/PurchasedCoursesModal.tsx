@@ -177,6 +177,7 @@ const CourseCard: React.FC<CourseCardProps> = ({
   onViewCertificate,
 }) => {
   const [loadingCert, setLoadingCert] = React.useState(false);
+  const [certificateUnavailable, setCertificateUnavailable] = React.useState(false);
 
   const videosOfCourse = studentProgress?.videos || {};
   const completedVideoCount = Object.values(videosOfCourse).filter(
@@ -196,7 +197,7 @@ const CourseCard: React.FC<CourseCardProps> = ({
     3 *
     100;
 
-  const canGetCertificate = overallProgress === 100 && finalExamPassed;
+  const canGetCertificate = overallProgress === 100 && finalExamPassed && !certificateUnavailable;
 
   const handleGetCertificate = async () => {
     setLoadingCert(true);
@@ -204,8 +205,15 @@ const CourseCard: React.FC<CourseCardProps> = ({
       const res = await getCertificate(schoolName, course._id, studentId);
       const certificateUrl = res.certificateUrl;
       onViewCertificate(certificateUrl);
-    } catch (error) {
-      alert('Failed to get certificate');
+    } catch (error: any) {
+      if (
+        error?.message === '❌ Certificate not found or not yet issued' ||
+        error?.response?.data?.message === '❌ Certificate not found or not yet issued'
+      ) {
+        setCertificateUnavailable(true);
+      } else {
+        alert('Failed to get certificate');
+      }
     } finally {
       setLoadingCert(false);
     }
@@ -277,7 +285,7 @@ const CourseCard: React.FC<CourseCardProps> = ({
           <ExamStatusCard passed={finalExamPassed} score={finalExamScore} />
         </div>
 
-        {/* Certificate button only if completed */}
+        {/* Certificate button only if completed and available */}
         {canGetCertificate && (
           <button
             onClick={handleGetCertificate}
@@ -288,8 +296,15 @@ const CourseCard: React.FC<CourseCardProps> = ({
           </button>
         )}
 
+        {/* Show message if certificate unavailable */}
+        {certificateUnavailable && (
+          <p className="mt-4 text-red-600 text-sm font-medium">
+            Certificate not found or not yet issued.
+          </p>
+        )}
+
         {/* Completion message */}
-        {overallProgress === 100 && (
+        {overallProgress === 100 && !certificateUnavailable && (
           <div className="mt-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-green-100 rounded-full">

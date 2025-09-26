@@ -31,11 +31,11 @@ type FinalExam = {
 interface PurchasedCoursesModalProps {
   isOpen: boolean;
   courses: Course[];
-  studentProgress?: {
+  studentProgressMap?: Record<string, {
     videos: Record<string, VideoProgress>;
     passedSections: PassedSection[];
     finalExam: FinalExam;
-  };
+  }>;
   onClose: () => void;
 }
 
@@ -71,8 +71,8 @@ const ProgressCard: React.FC<{
 
   return (
     <div className={`relative p-4 rounded-xl border-2 transition-all duration-300 ${completed
-        ? 'border-green-200 bg-gradient-to-br from-green-50 to-green-100'
-        : 'border-gray-200 bg-white hover:border-gray-300'
+      ? 'border-green-200 bg-gradient-to-br from-green-50 to-green-100'
+      : 'border-gray-200 bg-white hover:border-gray-300'
       }`}>
       <div className="flex items-center gap-3 mb-3">
         <div className={`p-2 rounded-lg ${bgColor}`}>
@@ -81,7 +81,7 @@ const ProgressCard: React.FC<{
         <div className="flex-1">
           <h4 className="font-semibold text-gray-800 text-sm">{title}</h4>
           <p className="text-xs text-gray-600">
-            {current} of {total} {completed && '✓'}
+            {current} {title === "Sections" ? "" : `of ${total}`} {completed && '✓'}
           </p>
         </div>
         {completed && (
@@ -103,8 +103,8 @@ const ExamStatusCard: React.FC<{
   score?: number;
 }> = ({ passed, score }) => (
   <div className={`relative p-4 rounded-xl border-2 transition-all duration-300 ${passed
-      ? 'border-green-200 bg-gradient-to-br from-green-50 to-green-100'
-      : 'border-orange-200 bg-gradient-to-br from-orange-50 to-orange-100'
+    ? 'border-green-200 bg-gradient-to-br from-green-50 to-green-100'
+    : 'border-orange-200 bg-gradient-to-br from-orange-50 to-orange-100'
     }`}>
     <div className="flex items-center gap-3 mb-3">
       <div className={`p-2 rounded-lg ${passed ? 'bg-green-200' : 'bg-orange-200'}`}>
@@ -150,7 +150,6 @@ const CourseCard: React.FC<{
   const finalExamPassed = studentProgress?.finalExam?.passed ?? false;
   const finalExamScore = studentProgress?.finalExam?.score;
 
-  // Since we don't have total sections, use 1 for denominator to avoid division by zero
   const overallProgress = ((completedVideoCount / totalVideos) +
     (passedSectionsCount / (passedSectionsCount || 1)) +
     (finalExamPassed ? 1 : 0)) / 3 * 100;
@@ -240,7 +239,7 @@ const CourseCard: React.FC<{
 const PurchasedCoursesModal: React.FC<PurchasedCoursesModalProps> = ({
   isOpen,
   courses,
-  studentProgress,
+  studentProgressMap,
   onClose
 }) => {
   if (!isOpen) return null;
@@ -280,7 +279,7 @@ const PurchasedCoursesModal: React.FC<PurchasedCoursesModalProps> = ({
                 <CourseCard
                   key={course._id}
                   course={course}
-                  studentProgress={studentProgress}
+                  studentProgress={studentProgressMap ? studentProgressMap[course._id] : undefined}
                 />
               ))}
             </div>

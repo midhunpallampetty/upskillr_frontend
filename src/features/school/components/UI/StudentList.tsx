@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { getAllStudents, getPurchasedCoursesByStudent } from '../../api/student.api';
-import PurchasedCoursesModal from './PurchasedCoursesModal'; // Adjust path
+import PurchasedCoursesModal from './PurchasedCoursesModal';
 import { fetchStudentProgress } from '../../../student/api/course.api';
 
 type Student = {
@@ -44,16 +44,18 @@ const StudentList: React.FC<StudentListProps> = ({ dbname, schoolData }) => {
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
-  
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   const [purchasedCourses, setPurchasedCourses] = useState<Course[]>([]);
   const [loadingCourses, setLoadingCourses] = useState(false);
   const [coursesError, setCoursesError] = useState<string>('');
 
-  const [studentProgress, setStudentProgress] = useState<any>(null);
+  // Map of courseId to its student progress data
+  const [studentProgressMap, setStudentProgressMap] = useState<Record<string, any>>({});
   const [progressError, setProgressError] = useState<string>('');
   const [loadingProgress, setLoadingProgress] = useState(false);
+
 
   useEffect(() => {
     const fetchStudents = async () => {
@@ -73,44 +75,49 @@ const StudentList: React.FC<StudentListProps> = ({ dbname, schoolData }) => {
     fetchStudents();
   }, [dbname, schoolData]);
 
-const handleViewPurchasedCourses = async (studentId: string) => {
-  if (!schoolData.subDomain && !schoolData.name) {
-    setCoursesError("School info missing");
-    return;
-  }
-  setIsModalOpen(true);
-  setLoadingCourses(true);
-  setCoursesError('');
-  setStudentProgress(null);
-  setProgressError('');
-  setLoadingProgress(true);
-
-  const schoolName = extractSubdomain(schoolData.subDomain || '') || schoolData.name;
-
-  try {
-    const purchasedCoursesResponse = await getPurchasedCoursesByStudent(studentId, schoolName);
-    setPurchasedCourses(purchasedCoursesResponse.courses);
-
-    if (purchasedCoursesResponse.courses.length > 0) {
-      const firstCourseId = purchasedCoursesResponse.courses[0]._id;
-      const progressResponse = await fetchStudentProgress(schoolName, firstCourseId, studentId);
-      setStudentProgress({
-        videos: progressResponse.videos,
-        passedSections: progressResponse.passedSections,
-        finalExam: progressResponse.finalExam,
-      });
-    } else {
-      setStudentProgress(null);
+  const handleViewPurchasedCourses = async (studentId: string) => {
+    if (!schoolData.subDomain && !schoolData.name) {
+      setCoursesError("School info missing");
+      return;
     }
-  } catch (err) {
-    setCoursesError('Failed to load purchased courses');
-    setProgressError('Failed to load student progress');
-  } finally {
-    setLoadingCourses(false);
-    setLoadingProgress(false);
-  }
-};
+    setIsModalOpen(true);
+    setLoadingCourses(true);
+    setCoursesError('');
 
+    setStudentProgressMap({});
+    setProgressError('');
+    setLoadingProgress(true);
+
+    const schoolName = extractSubdomain(schoolData.subDomain || '') || schoolData.name;
+
+    try {
+      const purchasedCoursesResponse = await getPurchasedCoursesByStudent(studentId, schoolName);
+      const courses = purchasedCoursesResponse.courses;
+      setPurchasedCourses(courses);
+
+      const progressMap: Record<string, any> = {};
+
+      // Fetch progress for each course
+      await Promise.all(
+        courses.map(async (course) => {
+          const progressResponse = await fetchStudentProgress(schoolName, course._id, studentId);
+          progressMap[course._id] = {
+            videos: progressResponse.videos,
+            passedSections: progressResponse.passedSections,
+            finalExam: progressResponse.finalExam,
+          };
+        })
+      );
+
+      setStudentProgressMap(progressMap);
+    } catch (err) {
+      setCoursesError('Failed to load purchased courses');
+      setProgressError('Failed to load student progress');
+    } finally {
+      setLoadingCourses(false);
+      setLoadingProgress(false);
+    }
+  };
 
   if (loading) return <p className="text-center text-gray-600">Loading students...</p>;
   if (error) return <p className="text-center text-red-500">{error}</p>;
@@ -156,7 +163,7 @@ const handleViewPurchasedCourses = async (studentId: string) => {
       <PurchasedCoursesModal
         isOpen={isModalOpen}
         courses={purchasedCourses}
-        studentProgress={studentProgress}
+        studentProgressMap={studentProgressMap}
         onClose={() => setIsModalOpen(false)}
       />
     </>

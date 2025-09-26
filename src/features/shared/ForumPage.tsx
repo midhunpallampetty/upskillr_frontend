@@ -12,6 +12,7 @@ import { User, Question, Answer, Reply, Toast, API } from './types/ImportsAndTyp
 
 export default function ForumChatUI() {
   const studentData = JSON.parse(localStorage.getItem('student') || '{}');
+  const schoolName = localStorage.getItem('schoolName') || 'defaultSchool'; // Retrieve schoolName
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -62,7 +63,7 @@ export default function ForumChatUI() {
   // Fetch initial questions only once
   useEffect(() => {
     setLoading(true);
-    axios.get(`${API}/forum/questions`)
+    axios.get(`${API}/forum/questions`, { params: { schoolName } })
       .then(res => {
         const fetchedQuestions = Array.isArray(res.data) ? res.data : [];
         // Ensure author defaults
@@ -77,7 +78,7 @@ export default function ForumChatUI() {
         addToast('Failed to load questions. Please try again.', 'error');
       })
       .finally(() => setLoading(false));
-  }, [addToast]);
+  }, [addToast, schoolName]);
 
   // Socket setup
   useEffect(() => {
@@ -89,7 +90,7 @@ export default function ForumChatUI() {
 
     socketRef.current.on('new_question', (qDoc: Question) => {
       // Fetch full question data
-      axios.get(`${API}/forum/questions/${qDoc._id}`)
+      axios.get(`${API}/forum/questions/${qDoc._id}`, { params: { schoolName } })
         .then(res => {
           let fullQuestion = res.data;
           fullQuestion = {
@@ -287,7 +288,7 @@ export default function ForumChatUI() {
     if (!force && selected?._id === qid) return;
 
     setLoading(true);
-    axios.get(`${API}/forum/questions/${qid}`)
+    axios.get(`${API}/forum/questions/${qid}`, { params: { schoolName } })
       .then(res => {
         if (!res.data || !res.data._id) {
           throw new Error('Invalid question data');
@@ -322,12 +323,12 @@ export default function ForumChatUI() {
         addToast(`Failed to load question: ${err.message}. Please try again.`, 'error');
       })
       .finally(() => setLoading(false));
-  }, [selected, addToast]);
+  }, [selected, addToast, schoolName]);
 
   const deleteQuestion = useCallback((questionId: string) => {
     if (!confirm('Are you sure you want to delete this question?')) return;
 
-    axios.delete(`${API}/forum/questions/${questionId}`)
+    axios.delete(`${API}/forum/questions/${questionId}`, { data: { schoolName } })
       .then(() => {
         if (socketRef.current) {
           socketRef.current.emit('delete_question', questionId);
@@ -337,12 +338,12 @@ export default function ForumChatUI() {
         console.error('Failed to delete question:', err);
         addToast('Failed to delete question. Please try again.', 'error');
       });
-  }, [addToast]);
+  }, [addToast, schoolName]);
 
   const deleteAnswer = useCallback((answerId: string, questionId: string) => {
     if (!confirm('Are you sure you want to delete this answer?')) return;
 
-    axios.delete(`${API}/forum/answers/${answerId}`)
+    axios.delete(`${API}/forum/answers/${answerId}`, { data: { schoolName } })
       .then(() => {
         if (socketRef.current) {
           socketRef.current.emit('delete_answer', { answerId, questionId });
@@ -355,12 +356,12 @@ export default function ForumChatUI() {
         console.error('Failed to delete answer:', err);
         addToast('Failed to delete answer. Please try again.', 'error');
       });
-  }, [selected, selectQuestion, addToast]);
+  }, [selected, selectQuestion, addToast, schoolName]);
 
   const deleteReply = useCallback((replyId: string, questionId: string, answerId?: string) => {
     if (!confirm('Are you sure you want to delete this reply?')) return;
 
-    axios.delete(`${API}/forum/replies/${replyId}`)
+    axios.delete(`${API}/forum/replies/${replyId}`, { data: { schoolName } })
       .then(() => {
         if (socketRef.current) {
           socketRef.current.emit('delete_reply', { replyId, questionId, answerId });
@@ -373,7 +374,7 @@ export default function ForumChatUI() {
         console.error('Failed to delete reply:', err);
         addToast('Failed to delete reply. Please try again.', 'error');
       });
-  }, [selected, selectQuestion, addToast]);
+  }, [selected, selectQuestion, addToast, schoolName]);
 
   const categories = useMemo(() => [
     { value: 'all', label: 'All Categories' },
@@ -391,6 +392,7 @@ export default function ForumChatUI() {
         <QuestionForm
           onSubmit={(text, imgs, category) =>
             axios.post(`${API}/forum/questions`, {
+              schoolName,
               question: text,
               author: user._id,
               category,
@@ -402,7 +404,7 @@ export default function ForumChatUI() {
                 addToast('Question posted successfully!', 'success');
 
                 // Fetch full question
-                return axios.get(`${API}/forum/questions/${newQuestionId}`)
+                return axios.get(`${API}/forum/questions/${newQuestionId}`, { params: { schoolName } })
                   .then(fetchRes => {
                     let fullQuestion = fetchRes.data;
                     fullQuestion = {
@@ -500,7 +502,7 @@ export default function ForumChatUI() {
                   <div className="mt-1 flex items-center gap-4 text-sm text-gray-500">
                     <span className="flex items-center gap-1">
                       <UserCircleIcon className="h-4 w-4" />
-                       'User'
+                      'User'
                     </span>
                     <span>•</span>
                     <span>Category: {selected.category}</span>
@@ -530,6 +532,7 @@ export default function ForumChatUI() {
                   replies={selected.replies?.filter(r => r != null) ?? []} // Null filter
                   onReplySubmit={(text, imgs, parentReplyId, forum_question_id, forum_answer_id) =>
                     axios.post(`${API}/forum/replies`, {
+                      schoolName,
                       forum_question_id: forum_question_id || selected._id,
                       forum_answer_id: forum_answer_id,
                       text,
@@ -570,6 +573,7 @@ export default function ForumChatUI() {
                       replies={ans.replies?.filter(r => r != null) ?? []} // Null filter
                       onReplySubmit={(text, imgs, parentReplyId, forum_question_id, forum_answer_id) =>
                         axios.post(`${API}/forum/replies`, {
+                          schoolName,
                           forum_question_id: forum_question_id || selected._id,
                           forum_answer_id: forum_answer_id || ans._id,
                           text,
@@ -616,6 +620,7 @@ export default function ForumChatUI() {
             <ResponseForm
               onSubmit={(text, imgs) =>
                 axios.post(`${API}/forum/answers`, {
+                  schoolName,
                   forum_question_id: selected._id,
                   text,
                   author: user._id,

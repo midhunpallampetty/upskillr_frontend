@@ -166,7 +166,7 @@ const CourseCard: React.FC<{
     setLoadingCert(true);
     try {
       const res = await getCertificate(schoolName, course._id, studentId);
-      const certificateUrl = res.data.url;
+      const certificateUrl = res.certificateUrl;
       window.open(certificateUrl, '_blank');
     } catch (error) {
       alert('Failed to get certificate');

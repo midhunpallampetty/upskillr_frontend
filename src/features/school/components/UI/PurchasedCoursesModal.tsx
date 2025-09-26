@@ -145,7 +145,8 @@ const CourseCard: React.FC<{
   };
   studentId: string;
   schoolName: string;
-}> = ({ course, studentProgress, studentId, schoolName }) => {
+  onOpenCertificate: (url: string) => void;
+}> = ({ course, studentProgress, studentId, schoolName, onOpenCertificate }) => {
   const [loadingCert, setLoadingCert] = React.useState(false);
 
   const videosOfCourse = studentProgress?.videos || {};
@@ -161,13 +162,16 @@ const CourseCard: React.FC<{
     (passedSectionsCount / (passedSectionsCount || 1)) +
     (finalExamPassed ? 1 : 0)) / 3 * 100;
 
-
   const handleGetCertificate = async () => {
     setLoadingCert(true);
     try {
       const res = await getCertificate(schoolName, course._id, studentId);
-      const certificateUrl = res.certificateUrl;
-      window.open(certificateUrl, '_blank');
+      const certificateUrl = res.data.certificateUrl || res.data.url;
+      if (certificateUrl) {
+        onOpenCertificate(certificateUrl);
+      } else {
+        alert('Certificate not available yet');
+      }
     } catch (error) {
       alert('Failed to get certificate');
     } finally {
@@ -240,7 +244,7 @@ const CourseCard: React.FC<{
           disabled={loadingCert}
           className="mt-6 w-full bg-green-600 text-white rounded px-4 py-3 hover:bg-green-700 transition disabled:opacity-60"
         >
-          {loadingCert ? 'Loading Certificate...' : 'Get Certificate'}
+          {loadingCert ? 'Loading Certificate...' : 'View Certificate'}
         </button>
 
         {overallProgress === 100 && (
@@ -269,48 +273,72 @@ const PurchasedCoursesModal: React.FC<PurchasedCoursesModalProps> = ({
   schoolName,
   onClose
 }) => {
+  const [certificateUrl, setCertificateUrl] = useState<string | null>(null);
+
+  const openCertificateModal = (url: string) => setCertificateUrl(url);
+  const closeCertificateModal = () => setCertificateUrl(null);
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-50 p-4">
-      <div className="bg-gray-50 rounded-3xl max-w-6xl w-full max-h-[90vh] overflow-hidden shadow-2xl">
-        <div className="bg-white p-6 border-b border-gray-200 flex items-center justify-between">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900">My Learning Progress</h2>
-            <p className="text-gray-600 mt-1">Track your progress across all purchased courses</p>
+    <>
+      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-50 p-4">
+        <div className="bg-gray-50 rounded-3xl max-w-6xl w-full max-h-[90vh] overflow-hidden shadow-2xl">
+          <div className="bg-white p-6 border-b border-gray-200 flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900">My Learning Progress</h2>
+              <p className="text-gray-600 mt-1">Track your progress across all purchased courses</p>
+            </div>
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors duration-200 group"
+            >
+              <X className="w-6 h-6 text-gray-500 group-hover:text-gray-700" />
+            </button>
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors duration-200 group"
-          >
-            <X className="w-6 h-6 text-gray-500 group-hover:text-gray-700" />
-          </button>
-        </div>
-        <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
-          {courses.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <BookOpen className="w-12 h-12 text-gray-400" />
+          <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+            {courses.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <BookOpen className="w-12 h-12 text-gray-400" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-800 mb-2">No Courses Yet</h3>
+                <p className="text-gray-600">You haven't purchased any courses yet. Start learning today!</p>
               </div>
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">No Courses Yet</h3>
-              <p className="text-gray-600">You haven't purchased any courses yet. Start learning today!</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {courses.map((course) => (
-                <CourseCard
-                  key={course._id}
-                  course={course}
-                  studentProgress={studentProgressMap ? studentProgressMap[course._id] : undefined}
-                  studentId={studentId}
-                  schoolName={schoolName}
-                />
-              ))}
-            </div>
-          )}
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {courses.map((course) => (
+                  <CourseCard
+                    key={course._id}
+                    course={course}
+                    studentProgress={studentProgressMap ? studentProgressMap[course._id] : undefined}
+                    studentId={studentId}
+                    schoolName={schoolName}
+                    onOpenCertificate={openCertificateModal}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
-    </div>
+
+      {certificateUrl && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex flex-col justify-center items-center z-60 p-4">
+          <button
+            onClick={closeCertificateModal}
+            className="absolute top-4 right-4 p-2 rounded-full bg-white hover:bg-gray-200"
+          >
+            <X className="w-6 h-6 text-gray-700" />
+          </button>
+          <iframe
+            src={certificateUrl}
+            title="Certificate Preview"
+            className="w-full max-w-5xl h-[90vh] rounded-lg shadow-lg border border-gray-400"
+          />
+        </div>
+      )}
+    </>
   );
 };
 

@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { X, Play, BookOpen, Award, CheckCircle, Clock } from 'lucide-react';
+import { getCertificate } from '../../../student/api/course.api';
 
 type Course = {
   _id: string;
@@ -26,7 +27,6 @@ type FinalExam = {
   passed: boolean;
   score: number;
   passedAt: string;
-  certificateUrl?: string; // ✅ added for certificate availability
 };
 
 interface PurchasedCoursesModalProps {
@@ -118,7 +118,11 @@ const ExamStatusCard: React.FC<{
     }`}
   >
     <div className="flex items-center gap-3 mb-3">
-      <div className={`p-2 rounded-lg ${passed ? 'bg-green-200' : 'bg-orange-200'}`}>
+      <div
+        className={`p-2 rounded-lg ${
+          passed ? 'bg-green-200' : 'bg-orange-200'
+        }`}
+      >
         {passed ? (
           <Award className="w-5 h-5 text-green-700" />
         ) : (
@@ -162,7 +166,7 @@ const CourseCard: React.FC<{
   };
   studentId: string;
   schoolName: string;
-}> = ({ course, studentProgress }) => {
+}> = ({ course, studentProgress, studentId, schoolName }) => {
   const [loadingCert, setLoadingCert] = React.useState(false);
 
   const videosOfCourse = studentProgress?.videos || {};
@@ -175,7 +179,6 @@ const CourseCard: React.FC<{
 
   const finalExamPassed = studentProgress?.finalExam?.passed ?? false;
   const finalExamScore = studentProgress?.finalExam?.score;
-  const certificateUrl = studentProgress?.finalExam?.certificateUrl;
 
   const overallProgress =
     ((completedVideoCount / totalVideos) +
@@ -184,13 +187,16 @@ const CourseCard: React.FC<{
     3 *
     100;
 
+  const canGetCertificate = overallProgress === 100 && finalExamPassed;
+
   const handleGetCertificate = async () => {
-    if (!certificateUrl) return;
     setLoadingCert(true);
     try {
+      const res = await getCertificate(schoolName, course._id, studentId);
+      const certificateUrl = res.certificateUrl;
       window.open(certificateUrl, '_blank');
     } catch (error) {
-      alert('Failed to open certificate');
+      alert('Failed to get certificate');
     } finally {
       setLoadingCert(false);
     }
@@ -220,7 +226,7 @@ const CourseCard: React.FC<{
       </div>
 
       <div className="p-6">
-        {/* Overall Progress */}
+        {/* Overall progress */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-2">
             <h4 className="text-lg font-semibold text-gray-800">
@@ -237,7 +243,7 @@ const CourseCard: React.FC<{
           />
         </div>
 
-        {/* Cards */}
+        {/* Detailed progress */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <ProgressCard
             icon={<Play className="w-5 h-5 text-blue-700" />}
@@ -262,23 +268,18 @@ const CourseCard: React.FC<{
           <ExamStatusCard passed={finalExamPassed} score={finalExamScore} />
         </div>
 
-        {/* Certificate Button */}
-        <button
-          onClick={handleGetCertificate}
-          disabled={loadingCert || !certificateUrl}
-          className={`mt-6 w-full rounded px-4 py-3 transition ${
-            certificateUrl
-              ? 'bg-green-600 text-white hover:bg-green-700'
-              : 'bg-gray-300 text-gray-600 cursor-not-allowed'
-          }`}
-        >
-          {loadingCert
-            ? 'Loading Certificate...'
-            : certificateUrl
-            ? 'Download Certificate'
-            : 'Certificate Not Available'}
-        </button>
+        {/* Certificate button only if completed */}
+        {canGetCertificate && (
+          <button
+            onClick={handleGetCertificate}
+            disabled={loadingCert}
+            className="mt-6 w-full bg-green-600 text-white rounded px-4 py-3 hover:bg-green-700 transition disabled:opacity-60"
+          >
+            {loadingCert ? 'Loading Certificate...' : 'Get Certificate'}
+          </button>
+        )}
 
+        {/* Completion message */}
         {overallProgress === 100 && (
           <div className="mt-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl">
             <div className="flex items-center gap-3">
@@ -314,6 +315,7 @@ const PurchasedCoursesModal: React.FC<PurchasedCoursesModalProps> = ({
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-50 p-4">
       <div className="bg-gray-50 rounded-3xl max-w-6xl w-full max-h-[90vh] overflow-hidden shadow-2xl">
+        {/* Header */}
         <div className="bg-white p-6 border-b border-gray-200 flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold text-gray-900">
@@ -330,6 +332,8 @@ const PurchasedCoursesModal: React.FC<PurchasedCoursesModalProps> = ({
             <X className="w-6 h-6 text-gray-500 group-hover:text-gray-700" />
           </button>
         </div>
+
+        {/* Body */}
         <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
           {courses.length === 0 ? (
             <div className="text-center py-12">
@@ -350,9 +354,7 @@ const PurchasedCoursesModal: React.FC<PurchasedCoursesModalProps> = ({
                   key={course._id}
                   course={course}
                   studentProgress={
-                    studentProgressMap
-                      ? studentProgressMap[course._id]
-                      : undefined
+                    studentProgressMap ? studentProgressMap[course._id] : undefined
                   }
                   studentId={studentId}
                   schoolName={schoolName}

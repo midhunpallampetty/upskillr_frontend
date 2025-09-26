@@ -43,7 +43,7 @@ const CompletionCelebration: React.FC<CompletionCelebrationProps> = ({
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-indigo-900 to-blue-900 relative overflow-hidden">
-      {/* Background Animation */}
+      {/* Confetti Animation */}
       <div className="absolute inset-0">
         {[...Array(50)].map((_, i) => (
           <motion.div
@@ -76,7 +76,7 @@ const CompletionCelebration: React.FC<CompletionCelebrationProps> = ({
           transition={{ duration: 0.8, ease: "easeOut" }}
           className="text-center text-white max-w-4xl mx-auto"
         >
-          {/* Trophy Animation */}
+          {/* Trophy and Animation */}
           <motion.div
             initial={{ y: -100, rotate: -180 }}
             animate={{ y: 0, rotate: 0 }}
@@ -90,7 +90,6 @@ const CompletionCelebration: React.FC<CompletionCelebrationProps> = ({
               >
                 <Trophy className="w-32 h-32 text-yellow-400 mx-auto" />
               </motion.div>
-              
               {/* Sparkles */}
               {[...Array(8)].map((_, i) => (
                 <motion.div
@@ -116,7 +115,6 @@ const CompletionCelebration: React.FC<CompletionCelebrationProps> = ({
                 </motion.div>
               ))}
             </div>
-
             {/* Star Rating */}
             <motion.div
               initial={{ opacity: 0 }}
@@ -200,55 +198,45 @@ const CompletionCelebration: React.FC<CompletionCelebrationProps> = ({
             Your dedication and hard work have paid off. Ready to showcase your achievement?
           </motion.p>
 
-          {/* Action Button */}
+          {/* Action Button or Certificate Download */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 2.3, duration: 0.8 }}
             className="flex flex-col sm:flex-row gap-4 justify-center mb-8"
           >
-            <motion.button
-              whileHover={{ scale: 1.05, boxShadow: "0 20px 40px rgba(0,0,0,0.3)" }}
-              whileTap={{ scale: 0.95 }}
-              onClick={onCertificateRequest}
-              disabled={progressLoading}
-              className="bg-gradient-to-r from-yellow-400 to-orange-400 text-gray-900 px-8 py-4 rounded-xl font-bold text-lg hover:from-yellow-300 hover:to-orange-300 transition-all duration-300 flex items-center justify-center gap-3 disabled:opacity-50 shadow-2xl"
-            >
-              <Download className="w-6 h-6" />
-              {progressLoading ? (
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-gray-900 border-t-transparent rounded-full animate-spin" />
-                  Generating Certificate...
-                </div>
-              ) : (
-                'Get Your Certificate'
-              )}
-            </motion.button>
-          </motion.div>
-
-          {/* Certificate Download */}
-          <AnimatePresence>
-            {certificateUrl && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                className="mb-8"
+            {certificateUrl ? (
+              <motion.a
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                href={certificateUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-3 bg-green-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-green-400 transition-colors shadow-2xl"
               >
-                <motion.a
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  href={certificateUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-3 bg-green-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-green-400 transition-colors shadow-2xl"
-                >
-                  <Download className="w-5 h-5" />
-                  Download Your Certificate
-                </motion.a>
-              </motion.div>
+                <Download className="w-5 h-5" />
+                Download Your Certificate
+              </motion.a>
+            ) : (
+              <motion.button
+                whileHover={{ scale: 1.05, boxShadow: "0 20px 40px rgba(0,0,0,0.3)" }}
+                whileTap={{ scale: 0.95 }}
+                onClick={onCertificateRequest}
+                disabled={progressLoading}
+                className="bg-gradient-to-r from-yellow-400 to-orange-400 text-gray-900 px-8 py-4 rounded-xl font-bold text-lg hover:from-yellow-300 hover:to-orange-300 transition-all duration-300 flex items-center justify-center gap-3 disabled:opacity-50 shadow-2xl"
+              >
+                <Download className="w-6 h-6" />
+                {progressLoading ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-gray-900 border-t-transparent rounded-full animate-spin" />
+                    Generating Certificate...
+                  </div>
+                ) : (
+                  'Get Your Certificate'
+                )}
+              </motion.button>
             )}
-          </AnimatePresence>
+          </motion.div>
 
           {/* Navigation Buttons */}
           <motion.div

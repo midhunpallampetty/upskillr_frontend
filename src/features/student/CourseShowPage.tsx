@@ -42,7 +42,7 @@ import {
   saveFinalExamProgress, 
   checkFinalExamStatus   
 } from './api/course.api'; 
-
+import { getCertificate } from './api/course.api';
 interface ExamType {
   _id: string;
   title: string;
@@ -638,6 +638,22 @@ const CourseShowPage = () => {
     }
     return allSectionsCompleted;
   };
+// Add this in CourseShowPage, NOT inside ExamComponent
+useEffect(() => {
+  if (showCourseCompletion) {
+    const fetchCertificate = async () => {
+      const studentId = getStudentId();
+      if (!studentId || !schoolName || !courseId) return;
+      try {
+        const result = await getCertificate(schoolName, courseId, studentId);
+        setCertificateUrl(result?.data?.certificateUrl || null);
+      } catch (err) {
+        setCertificateUrl(null);
+      }
+    };
+    fetchCertificate();
+  }
+}, [showCourseCompletion, schoolName, courseId]);
 
   useEffect(() => {
     if (checkCourseCompletion() && !showCourseCompletion) {

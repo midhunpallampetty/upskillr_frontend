@@ -6,6 +6,12 @@ export const getAllStudents = async (schoolId: string, schoolName: string) => {
   const response = await studentAxios.post('/students', { schoolId, schoolName });
   return response.data;
 };
+export const getPurchasedCoursesByStudent = async (studentId: string, schoolName: string) => {
+  const response = await studentAxios.get(`/payments/student/${studentId}/purchased-courses`, {
+    params: { schoolName }
+  });
+  return response.data;
+};
 
 
 

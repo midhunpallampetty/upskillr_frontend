@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { getAllStudents } from '../../api/student.api';
+import { getAllStudents ,getPurchasedCoursesByStudent} from '../../api/student.api';
+import PurchasedCoursesModal from './PurchasedCoursesModal'; // Adjust path
 
 type Student = {
   _id: string;
@@ -12,7 +13,14 @@ type School = {
   _id: string;
   name: string;
   subDomain?: string;
-  // add other fields if needed
+};
+
+type Course = {
+  _id: string;
+  courseName: string;
+  courseThumbnail: string;
+  fee: number;
+  createdAt: string;
 };
 
 interface StudentListProps {
@@ -27,7 +35,7 @@ const extractSubdomain = (url: string): string => {
     return parts.length > 2 ? parts[0] : '';
   } catch (error) {
     console.error('Invalid URL for subdomain extraction:', error);
-    return '';  // Fallback to empty string on error
+    return '';
   }
 };
 
@@ -35,16 +43,18 @@ const StudentList: React.FC<StudentListProps> = ({ dbname, schoolData }) => {
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
+  
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
+  const [purchasedCourses, setPurchasedCourses] = useState<Course[]>([]);
+  const [loadingCourses, setLoadingCourses] = useState(false);
+  const [coursesError, setCoursesError] = useState<string>('');
 
   useEffect(() => {
     const fetchStudents = async () => {
       try {
         console.log("Fetching students for DB:", schoolData);
-        console.group(schoolData.name, 'name');  // Keeping your debug statement
-        
-        // Extract schoolName from schoolData.subDomain (assuming it's a full URL like 'https://gamersclub.eduvia.space')
-        const schoolName = extractSubdomain(schoolData.subDomain || '') || schoolData.name;  // Fallback to schoolData.name if extraction fails or subDomain is missing
-        
+        const schoolName = extractSubdomain(schoolData.subDomain || '') || schoolData.name;
         const data = await getAllStudents(schoolData._id, schoolName);
         console.log("Fetched students:", data);
         setStudents(data.students);
@@ -58,34 +68,74 @@ const StudentList: React.FC<StudentListProps> = ({ dbname, schoolData }) => {
     fetchStudents();
   }, [dbname, schoolData]);
 
+  const handleViewPurchasedCourses = async (studentId: string) => {
+    if (!schoolData.subDomain && !schoolData.name) {
+      setCoursesError("School info missing");
+      return;
+    }
+    setIsModalOpen(true);
+    setLoadingCourses(true);
+    setCoursesError('');
+    setSelectedStudentId(studentId);
+
+    const schoolName = extractSubdomain(schoolData.subDomain || '') || schoolData.name;
+
+    try {
+      const response = await getPurchasedCoursesByStudent(studentId, schoolName);
+      setPurchasedCourses(response.courses);
+    } catch (err) {
+      setCoursesError('Failed to load purchased courses');
+    } finally {
+      setLoadingCourses(false);
+    }
+  };
+
   if (loading) return <p className="text-center text-gray-600">Loading students...</p>;
   if (error) return <p className="text-center text-red-500">{error}</p>;
   if (students.length === 0) return <p className="text-center text-gray-500">No students enrolled yet.</p>;
 
   return (
-    <div className="mt-8 p-6 bg-white rounded-xl shadow">
-      <h2 className="text-2xl font-bold mb-4">Enrolled Students</h2>
-      <table className="w-full border border-gray-200 rounded-md overflow-hidden">
-        <thead className="bg-gray-100">
-          <tr>
-            <th className="text-left px-4 py-2">Full Name</th>
-            <th className="text-left px-4 py-2">Email</th>
-            <th className="text-left px-4 py-2">Joined On</th>
-          </tr>
-        </thead>
-        <tbody>
-          {students.map((student) => (
-            <tr key={student._id} className="border-t">
-              <td className="px-4 py-2">{student.fullName}</td>
-              <td className="px-4 py-2">{student.email}</td>
-              <td className="px-4 py-2">
-                {student.createdAt ? new Date(student.createdAt).toLocaleDateString() : 'N/A'}
-              </td>
+    <>
+      <div className="mt-8 p-6 bg-white rounded-xl shadow">
+        <h2 className="text-2xl font-bold mb-4">Enrolled Students</h2>
+        <table className="w-full border border-gray-200 rounded-md overflow-hidden">
+          <thead className="bg-gray-100">
+            <tr>
+              <th className="text-left px-4 py-2">Full Name</th>
+              <th className="text-left px-4 py-2">Email</th>
+              <th className="text-left px-4 py-2">Joined On</th>
+              <th className="text-left px-4 py-2">Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            {students.map((student) => (
+              <tr key={student._id} className="border-t">
+                <td className="px-4 py-2">{student.fullName}</td>
+                <td className="px-4 py-2">{student.email}</td>
+                <td className="px-4 py-2">{student.createdAt ? new Date(student.createdAt).toLocaleDateString() : 'N/A'}</td>
+                <td className="px-4 py-2">
+                  <button
+                    className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+                    onClick={() => handleViewPurchasedCourses(student._id)}
+                  >
+                    View More
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {loadingCourses && <p className="text-center text-gray-600 mt-2">Loading purchased courses...</p>}
+      {coursesError && <p className="text-center text-red-500 mt-2">{coursesError}</p>}
+
+      <PurchasedCoursesModal
+        isOpen={isModalOpen}
+        courses={purchasedCourses}
+        onClose={() => setIsModalOpen(false)}
+      />
+    </>
   );
 };
 

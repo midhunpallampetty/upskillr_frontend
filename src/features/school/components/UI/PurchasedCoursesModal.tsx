@@ -31,11 +31,11 @@ type FinalExam = {
 interface PurchasedCoursesModalProps {
   isOpen: boolean;
   courses: Course[];
-  studentProgress?: {
+  studentProgress?: Record<string, { // Keyed by course._id
     videos: Record<string, VideoProgress>;
     passedSections: PassedSection[];
     finalExam: FinalExam;
-  };
+  }>;
   onClose: () => void;
 }
 
@@ -150,7 +150,6 @@ const CourseCard: React.FC<{
   const finalExamPassed = studentProgress?.finalExam?.passed ?? false;
   const finalExamScore = studentProgress?.finalExam?.score;
 
-  // Since we don't have total sections, use 1 for denominator to avoid division by zero
   const overallProgress = ((completedVideoCount / totalVideos) +
     (passedSectionsCount / (passedSectionsCount || 1)) +
     (finalExamPassed ? 1 : 0)) / 3 * 100;
@@ -280,7 +279,7 @@ const PurchasedCoursesModal: React.FC<PurchasedCoursesModalProps> = ({
                 <CourseCard
                   key={course._id}
                   course={course}
-                  studentProgress={studentProgress}
+                  studentProgress={studentProgress?.[course._id]}
                 />
               ))}
             </div>

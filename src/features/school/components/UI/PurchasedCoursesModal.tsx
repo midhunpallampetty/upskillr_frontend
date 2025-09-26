@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { X, Play, BookOpen, Award, CheckCircle, Clock } from 'lucide-react';
-import { getCertificate } from '../../../student/api/course.api';
 
 type Course = {
   _id: string;
@@ -27,16 +26,20 @@ type FinalExam = {
   passed: boolean;
   score: number;
   passedAt: string;
+  certificateUrl?: string; // ✅ added for certificate availability
 };
 
 interface PurchasedCoursesModalProps {
   isOpen: boolean;
   courses: Course[];
-  studentProgressMap?: Record<string, {
-    videos: Record<string, VideoProgress>;
-    passedSections: PassedSection[];
-    finalExam: FinalExam;
-  }>;
+  studentProgressMap?: Record<
+    string,
+    {
+      videos: Record<string, VideoProgress>;
+      passedSections: PassedSection[];
+      finalExam: FinalExam;
+    }
+  >;
   studentId: string;
   schoolName: string;
   onClose: () => void;
@@ -47,7 +50,7 @@ const ProgressBar: React.FC<{
   color: string;
   height?: string;
   showPercentage?: boolean;
-}> = ({ progress, color, height = "h-2", showPercentage = false }) => (
+}> = ({ progress, color, height = 'h-2', showPercentage = false }) => (
   <div className="w-full">
     <div className={`w-full bg-gray-200 rounded-full ${height} overflow-hidden`}>
       <div
@@ -56,7 +59,9 @@ const ProgressBar: React.FC<{
       />
     </div>
     {showPercentage && (
-      <span className="text-xs text-gray-600 mt-1 block">{Math.round(progress)}%</span>
+      <span className="text-xs text-gray-600 mt-1 block">
+        {Math.round(progress)}%
+      </span>
     )}
   </div>
 );
@@ -73,23 +78,23 @@ const ProgressCard: React.FC<{
   const percentage = total > 0 ? (current / total) * 100 : 0;
 
   return (
-    <div className={`relative p-4 rounded-xl border-2 transition-all duration-300 ${completed
-      ? 'border-green-200 bg-gradient-to-br from-green-50 to-green-100'
-      : 'border-gray-200 bg-white hover:border-gray-300'
-      }`}>
+    <div
+      className={`relative p-4 rounded-xl border-2 transition-all duration-300 ${
+        completed
+          ? 'border-green-200 bg-gradient-to-br from-green-50 to-green-100'
+          : 'border-gray-200 bg-white hover:border-gray-300'
+      }`}
+    >
       <div className="flex items-center gap-3 mb-3">
-        <div className={`p-2 rounded-lg ${bgColor}`}>
-          {icon}
-        </div>
+        <div className={`p-2 rounded-lg ${bgColor}`}>{icon}</div>
         <div className="flex-1">
           <h4 className="font-semibold text-gray-800 text-sm">{title}</h4>
           <p className="text-xs text-gray-600">
-            {current} {title === "Sections" ? "" : `of ${total}`} {completed && '✓'}
+            {current} {title === 'Sections' ? '' : `of ${total}`}{' '}
+            {completed && '✓'}
           </p>
         </div>
-        {completed && (
-          <CheckCircle className="w-5 h-5 text-green-600" />
-        )}
+        {completed && <CheckCircle className="w-5 h-5 text-green-600" />}
       </div>
       <ProgressBar
         progress={percentage}
@@ -105,13 +110,20 @@ const ExamStatusCard: React.FC<{
   passed: boolean;
   score?: number;
 }> = ({ passed, score }) => (
-  <div className={`relative p-4 rounded-xl border-2 transition-all duration-300 ${passed
-    ? 'border-green-200 bg-gradient-to-br from-green-50 to-green-100'
-    : 'border-orange-200 bg-gradient-to-br from-orange-50 to-orange-100'
-    }`}>
+  <div
+    className={`relative p-4 rounded-xl border-2 transition-all duration-300 ${
+      passed
+        ? 'border-green-200 bg-gradient-to-br from-green-50 to-green-100'
+        : 'border-orange-200 bg-gradient-to-br from-orange-50 to-orange-100'
+    }`}
+  >
     <div className="flex items-center gap-3 mb-3">
       <div className={`p-2 rounded-lg ${passed ? 'bg-green-200' : 'bg-orange-200'}`}>
-        {passed ? <Award className="w-5 h-5 text-green-700" /> : <Clock className="w-5 h-5 text-orange-700" />}
+        {passed ? (
+          <Award className="w-5 h-5 text-green-700" />
+        ) : (
+          <Clock className="w-5 h-5 text-orange-700" />
+        )}
       </div>
       <div className="flex-1">
         <h4 className="font-semibold text-gray-800 text-sm">Final Exam</h4>
@@ -119,14 +131,19 @@ const ExamStatusCard: React.FC<{
           {passed ? `Passed${score ? ` (${score}%)` : ''}` : 'Pending'}
         </p>
       </div>
-      {passed && (
-        <CheckCircle className="w-5 h-5 text-green-600" />
-      )}
+      {passed && <CheckCircle className="w-5 h-5 text-green-600" />}
     </div>
-    <div className={`w-full h-3 rounded-full ${passed ? 'bg-green-300' : 'bg-orange-300'}`}>
+    <div
+      className={`w-full h-3 rounded-full ${
+        passed ? 'bg-green-300' : 'bg-orange-300'
+      }`}
+    >
       <div
-        className={`h-3 rounded-full transition-all duration-500 ${passed ? 'bg-gradient-to-r from-green-500 to-green-600' : 'bg-gradient-to-r from-orange-400 to-orange-500'
-          }`}
+        className={`h-3 rounded-full transition-all duration-500 ${
+          passed
+            ? 'bg-gradient-to-r from-green-500 to-green-600'
+            : 'bg-gradient-to-r from-orange-400 to-orange-500'
+        }`}
         style={{ width: passed ? '100%' : '0%' }}
       />
     </div>
@@ -145,31 +162,35 @@ const CourseCard: React.FC<{
   };
   studentId: string;
   schoolName: string;
-}> = ({ course, studentProgress, studentId, schoolName }) => {
+}> = ({ course, studentProgress }) => {
   const [loadingCert, setLoadingCert] = React.useState(false);
 
   const videosOfCourse = studentProgress?.videos || {};
-  const completedVideoCount = Object.values(videosOfCourse).filter(v => v.completed).length;
+  const completedVideoCount = Object.values(videosOfCourse).filter(
+    (v) => v.completed
+  ).length;
   const totalVideos = Object.keys(videosOfCourse).length || 1;
 
   const passedSectionsCount = studentProgress?.passedSections?.length ?? 0;
 
   const finalExamPassed = studentProgress?.finalExam?.passed ?? false;
   const finalExamScore = studentProgress?.finalExam?.score;
+  const certificateUrl = studentProgress?.finalExam?.certificateUrl;
 
-  const overallProgress = ((completedVideoCount / totalVideos) +
-    (passedSectionsCount / (passedSectionsCount || 1)) +
-    (finalExamPassed ? 1 : 0)) / 3 * 100;
-
+  const overallProgress =
+    ((completedVideoCount / totalVideos) +
+      (passedSectionsCount / (passedSectionsCount || 1)) +
+      (finalExamPassed ? 1 : 0)) /
+    3 *
+    100;
 
   const handleGetCertificate = async () => {
+    if (!certificateUrl) return;
     setLoadingCert(true);
     try {
-      const res = await getCertificate(schoolName, course._id, studentId);
-      const certificateUrl = res.certificateUrl;
       window.open(certificateUrl, '_blank');
     } catch (error) {
-      alert('Failed to get certificate');
+      alert('Failed to open certificate');
     } finally {
       setLoadingCert(false);
     }
@@ -186,7 +207,10 @@ const CourseCard: React.FC<{
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
         <div className="absolute bottom-4 left-4 text-white">
           <h3 className="text-xl font-bold mb-1">{course.courseName}</h3>
-          <p className="text-sm opacity-90">₹{course.fee} • {new Date(course.createdAt).toLocaleDateString()}</p>
+          <p className="text-sm opacity-90">
+            ₹{course.fee} •{' '}
+            {new Date(course.createdAt).toLocaleDateString()}
+          </p>
         </div>
         <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-lg px-3 py-1">
           <span className="text-sm font-semibold text-gray-800">
@@ -196,10 +220,15 @@ const CourseCard: React.FC<{
       </div>
 
       <div className="p-6">
+        {/* Overall Progress */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-2">
-            <h4 className="text-lg font-semibold text-gray-800">Overall Progress</h4>
-            <span className="text-sm text-gray-600 font-medium">{Math.round(overallProgress)}%</span>
+            <h4 className="text-lg font-semibold text-gray-800">
+              Overall Progress
+            </h4>
+            <span className="text-sm text-gray-600 font-medium">
+              {Math.round(overallProgress)}%
+            </span>
           </div>
           <ProgressBar
             progress={overallProgress}
@@ -208,6 +237,7 @@ const CourseCard: React.FC<{
           />
         </div>
 
+        {/* Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <ProgressCard
             icon={<Play className="w-5 h-5 text-blue-700" />}
@@ -229,18 +259,24 @@ const CourseCard: React.FC<{
             completed={false}
           />
 
-          <ExamStatusCard
-            passed={finalExamPassed}
-            score={finalExamScore}
-          />
+          <ExamStatusCard passed={finalExamPassed} score={finalExamScore} />
         </div>
 
+        {/* Certificate Button */}
         <button
           onClick={handleGetCertificate}
-          disabled={loadingCert}
-          className="mt-6 w-full bg-green-600 text-white rounded px-4 py-3 hover:bg-green-700 transition disabled:opacity-60"
+          disabled={loadingCert || !certificateUrl}
+          className={`mt-6 w-full rounded px-4 py-3 transition ${
+            certificateUrl
+              ? 'bg-green-600 text-white hover:bg-green-700'
+              : 'bg-gray-300 text-gray-600 cursor-not-allowed'
+          }`}
         >
-          {loadingCert ? 'Loading Certificate...' : 'Get Certificate'}
+          {loadingCert
+            ? 'Loading Certificate...'
+            : certificateUrl
+            ? 'Download Certificate'
+            : 'Certificate Not Available'}
         </button>
 
         {overallProgress === 100 && (
@@ -250,8 +286,12 @@ const CourseCard: React.FC<{
                 <Award className="w-6 h-6 text-green-600" />
               </div>
               <div>
-                <h5 className="font-semibold text-green-800">Course Completed!</h5>
-                <p className="text-sm text-green-700">Congratulations on completing this course</p>
+                <h5 className="font-semibold text-green-800">
+                  Course Completed!
+                </h5>
+                <p className="text-sm text-green-700">
+                  Congratulations on completing this course
+                </p>
               </div>
             </div>
           </div>
@@ -267,7 +307,7 @@ const PurchasedCoursesModal: React.FC<PurchasedCoursesModalProps> = ({
   studentProgressMap,
   studentId,
   schoolName,
-  onClose
+  onClose,
 }) => {
   if (!isOpen) return null;
 
@@ -276,8 +316,12 @@ const PurchasedCoursesModal: React.FC<PurchasedCoursesModalProps> = ({
       <div className="bg-gray-50 rounded-3xl max-w-6xl w-full max-h-[90vh] overflow-hidden shadow-2xl">
         <div className="bg-white p-6 border-b border-gray-200 flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">My Learning Progress</h2>
-            <p className="text-gray-600 mt-1">Track your progress across all purchased courses</p>
+            <h2 className="text-2xl font-bold text-gray-900">
+              My Learning Progress
+            </h2>
+            <p className="text-gray-600 mt-1">
+              Track your progress across all purchased courses
+            </p>
           </div>
           <button
             onClick={onClose}
@@ -292,8 +336,12 @@ const PurchasedCoursesModal: React.FC<PurchasedCoursesModalProps> = ({
               <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <BookOpen className="w-12 h-12 text-gray-400" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">No Courses Yet</h3>
-              <p className="text-gray-600">You haven't purchased any courses yet. Start learning today!</p>
+              <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                No Courses Yet
+              </h3>
+              <p className="text-gray-600">
+                You haven't purchased any courses yet. Start learning today!
+              </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -301,7 +349,11 @@ const PurchasedCoursesModal: React.FC<PurchasedCoursesModalProps> = ({
                 <CourseCard
                   key={course._id}
                   course={course}
-                  studentProgress={studentProgressMap ? studentProgressMap[course._id] : undefined}
+                  studentProgress={
+                    studentProgressMap
+                      ? studentProgressMap[course._id]
+                      : undefined
+                  }
                   studentId={studentId}
                   schoolName={schoolName}
                 />
@@ -315,4 +367,3 @@ const PurchasedCoursesModal: React.FC<PurchasedCoursesModalProps> = ({
 };
 
 export default PurchasedCoursesModal;
-//

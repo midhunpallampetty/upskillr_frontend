@@ -647,7 +647,7 @@ useEffect(() => {
       try {
         const result = await getCertificate(schoolName, courseId, studentId);
         console.log('getCertificate result:', result?.certificateUrl);
-        const url = result?.data?.certificateUrl;
+        const url = result?.certificateUrl;
         setCertificateUrl(url && url.trim() !== '' ? url : null);
       } catch (err) {
         console.error('Error fetching certificate:', err);

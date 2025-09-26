@@ -12,7 +12,20 @@ import { User, Question, Answer, Reply, Toast, API } from './types/ImportsAndTyp
 
 export default function ForumChatUI() {
   const studentData = JSON.parse(localStorage.getItem('student') || '{}');
-  const schoolName = localStorage.getItem('schoolName') || 'defaultSchool'; // Retrieve schoolName
+
+  // Detect schoolName from URL
+  const detectSchoolName = useCallback((): string => {
+    const url = window.location.href;
+    const hostname = new URL(url).hostname;
+    const parts = hostname.split('.');
+    if (parts.length > 2) {
+      return parts[0]; // e.g., 'gamersclub' from 'gamersclub.eduvia.space'
+    }
+    return 'defaultSchool';
+  }, []);
+
+  const schoolName = useMemo(() => detectSchoolName(), [detectSchoolName]);
+
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -269,14 +282,12 @@ export default function ForumChatUI() {
         socketRef.current.disconnect();
       }
     };
-  }, [user.fullName, user._id, addToast]);
+  }, [user.fullName, user._id, addToast, schoolName]);
 
-  // Update ref when selected changes
   useEffect(() => {
     selectedRef.current = selected;
   }, [selected]);
 
-  // Join thread when selected changes
   useEffect(() => {
     setTypingUsers([]);
     if (selected?._id && socketRef.current) {

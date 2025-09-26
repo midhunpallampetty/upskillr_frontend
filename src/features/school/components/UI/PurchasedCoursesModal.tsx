@@ -150,8 +150,9 @@ const CourseCard: React.FC<{
   const finalExamPassed = studentProgress?.finalExam?.passed ?? false;
   const finalExamScore = studentProgress?.finalExam?.score;
 
+  // Since we don't have total sections, use 1 for denominator to avoid division by zero
   const overallProgress = ((completedVideoCount / totalVideos) +
-    (passedSectionsCount / totalSections) +
+    (passedSectionsCount / (passedSectionsCount || 1)) +
     (finalExamPassed ? 1 : 0)) / 3 * 100;
 
   return (
@@ -205,10 +206,10 @@ const CourseCard: React.FC<{
             icon={<BookOpen className="w-5 h-5 text-purple-700" />}
             title="Sections"
             current={passedSectionsCount}
-            total={passedSectionsCount} // Show only completed count, no total
+            total={passedSectionsCount} // Show only completed sections count
             color="bg-gradient-to-r from-purple-500 to-purple-600"
             bgColor="bg-purple-100"
-            completed={false} // cannot complete without total, so false or omit completed prop
+            completed={false} // No total known, so no completion state
           />
 
           <ExamStatusCard

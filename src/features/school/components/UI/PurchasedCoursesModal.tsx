@@ -39,9 +39,9 @@ interface PurchasedCoursesModalProps {
   onClose: () => void;
 }
 
-const ProgressBar: React.FC<{ 
-  progress: number; 
-  color: string; 
+const ProgressBar: React.FC<{
+  progress: number;
+  color: string;
   height?: string;
   showPercentage?: boolean;
 }> = ({ progress, color, height = "h-2", showPercentage = false }) => (
@@ -68,13 +68,12 @@ const ProgressCard: React.FC<{
   completed: boolean;
 }> = ({ icon, title, current, total, color, bgColor, completed }) => {
   const percentage = total > 0 ? (current / total) * 100 : 0;
-  
+
   return (
-    <div className={`relative p-4 rounded-xl border-2 transition-all duration-300 ${
-      completed 
-        ? 'border-green-200 bg-gradient-to-br from-green-50 to-green-100' 
+    <div className={`relative p-4 rounded-xl border-2 transition-all duration-300 ${completed
+        ? 'border-green-200 bg-gradient-to-br from-green-50 to-green-100'
         : 'border-gray-200 bg-white hover:border-gray-300'
-    }`}>
+      }`}>
       <div className="flex items-center gap-3 mb-3">
         <div className={`p-2 rounded-lg ${bgColor}`}>
           {icon}
@@ -89,8 +88,8 @@ const ProgressCard: React.FC<{
           <CheckCircle className="w-5 h-5 text-green-600" />
         )}
       </div>
-      <ProgressBar 
-        progress={percentage} 
+      <ProgressBar
+        progress={percentage}
         color={color}
         height="h-3"
         showPercentage={true}
@@ -103,11 +102,10 @@ const ExamStatusCard: React.FC<{
   passed: boolean;
   score?: number;
 }> = ({ passed, score }) => (
-  <div className={`relative p-4 rounded-xl border-2 transition-all duration-300 ${
-    passed 
-      ? 'border-green-200 bg-gradient-to-br from-green-50 to-green-100' 
+  <div className={`relative p-4 rounded-xl border-2 transition-all duration-300 ${passed
+      ? 'border-green-200 bg-gradient-to-br from-green-50 to-green-100'
       : 'border-orange-200 bg-gradient-to-br from-orange-50 to-orange-100'
-  }`}>
+    }`}>
     <div className="flex items-center gap-3 mb-3">
       <div className={`p-2 rounded-lg ${passed ? 'bg-green-200' : 'bg-orange-200'}`}>
         {passed ? <Award className="w-5 h-5 text-green-700" /> : <Clock className="w-5 h-5 text-orange-700" />}
@@ -124,9 +122,8 @@ const ExamStatusCard: React.FC<{
     </div>
     <div className={`w-full h-3 rounded-full ${passed ? 'bg-green-300' : 'bg-orange-300'}`}>
       <div
-        className={`h-3 rounded-full transition-all duration-500 ${
-          passed ? 'bg-gradient-to-r from-green-500 to-green-600' : 'bg-gradient-to-r from-orange-400 to-orange-500'
-        }`}
+        className={`h-3 rounded-full transition-all duration-500 ${passed ? 'bg-gradient-to-r from-green-500 to-green-600' : 'bg-gradient-to-r from-orange-400 to-orange-500'
+          }`}
         style={{ width: passed ? '100%' : '0%' }}
       />
     </div>
@@ -149,22 +146,21 @@ const CourseCard: React.FC<{
   const totalVideos = Object.keys(videosOfCourse).length || 1;
 
   const passedSectionsCount = studentProgress?.passedSections?.length ?? 0;
-  const totalSections = 5; // This should come from course data
 
   const finalExamPassed = studentProgress?.finalExam?.passed ?? false;
   const finalExamScore = studentProgress?.finalExam?.score;
 
-  const overallProgress = ((completedVideoCount / totalVideos) + 
-                          (passedSectionsCount / totalSections) + 
-                          (finalExamPassed ? 1 : 0)) / 3 * 100;
+  const overallProgress = ((completedVideoCount / totalVideos) +
+    (passedSectionsCount / totalSections) +
+    (finalExamPassed ? 1 : 0)) / 3 * 100;
 
   return (
     <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300">
       {/* Course Header */}
       <div className="relative">
-        <img 
-          src={course.courseThumbnail} 
-          alt={course.courseName} 
+        <img
+          src={course.courseThumbnail}
+          alt={course.courseName}
           className="w-full h-48 object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
@@ -186,8 +182,8 @@ const CourseCard: React.FC<{
             <h4 className="text-lg font-semibold text-gray-800">Overall Progress</h4>
             <span className="text-sm text-gray-600 font-medium">{Math.round(overallProgress)}%</span>
           </div>
-          <ProgressBar 
-            progress={overallProgress} 
+          <ProgressBar
+            progress={overallProgress}
             color="bg-gradient-to-r from-blue-500 to-purple-600"
             height="h-4"
           />
@@ -204,17 +200,17 @@ const CourseCard: React.FC<{
             bgColor="bg-blue-100"
             completed={completedVideoCount === totalVideos}
           />
-          
+
           <ProgressCard
             icon={<BookOpen className="w-5 h-5 text-purple-700" />}
             title="Sections"
             current={passedSectionsCount}
-            total={totalSections}
+            total={passedSectionsCount} // Show only completed count, no total
             color="bg-gradient-to-r from-purple-500 to-purple-600"
             bgColor="bg-purple-100"
-            completed={passedSectionsCount === totalSections}
+            completed={false} // cannot complete without total, so false or omit completed prop
           />
-          
+
           <ExamStatusCard
             passed={finalExamPassed}
             score={finalExamScore}
@@ -240,11 +236,11 @@ const CourseCard: React.FC<{
   );
 };
 
-const PurchasedCoursesModal: React.FC<PurchasedCoursesModalProps> = ({ 
-  isOpen, 
-  courses, 
-  studentProgress, 
-  onClose 
+const PurchasedCoursesModal: React.FC<PurchasedCoursesModalProps> = ({
+  isOpen,
+  courses,
+  studentProgress,
+  onClose
 }) => {
   if (!isOpen) return null;
 

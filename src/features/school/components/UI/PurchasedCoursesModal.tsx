@@ -156,7 +156,6 @@ const CourseCard: React.FC<{
 
   return (
     <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300">
-      {/* Course Header */}
       <div className="relative">
         <img
           src={course.courseThumbnail}
@@ -175,7 +174,6 @@ const CourseCard: React.FC<{
         </div>
       </div>
 
-      {/* Progress Section */}
       <div className="p-6">
         <div className="mb-6">
           <div className="flex items-center justify-between mb-2">
@@ -189,7 +187,6 @@ const CourseCard: React.FC<{
           />
         </div>
 
-        {/* Progress Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <ProgressCard
             icon={<Play className="w-5 h-5 text-blue-700" />}
@@ -205,7 +202,7 @@ const CourseCard: React.FC<{
             icon={<BookOpen className="w-5 h-5 text-purple-700" />}
             title="Sections"
             current={passedSectionsCount}
-            total={passedSectionsCount} // Show only completed sections count
+            total={passedSectionsCount} // Show completed sections count only
             color="bg-gradient-to-r from-purple-500 to-purple-600"
             bgColor="bg-purple-100"
             completed={false} // No total known, so no completion state
@@ -217,7 +214,6 @@ const CourseCard: React.FC<{
           />
         </div>
 
-        {/* Achievement Badge */}
         {overallProgress === 100 && (
           <div className="mt-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl">
             <div className="flex items-center gap-3">
@@ -248,19 +244,17 @@ const PurchasedCoursesModal: React.FC<PurchasedCoursesModalProps> = ({
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-50 p-4">
       <div className="bg-gray-50 rounded-3xl max-w-6xl w-full max-h-[90vh] overflow-hidden shadow-2xl">
         {/* Modal Header */}
-        <div className="bg-white p-6 border-b border-gray-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900">My Learning Progress</h2>
-              <p className="text-gray-600 mt-1">Track your progress across all purchased courses</p>
-            </div>
-            <button
-              onClick={onClose}
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors duration-200 group"
-            >
-              <X className="w-6 h-6 text-gray-500 group-hover:text-gray-700" />
-            </button>
+        <div className="bg-white p-6 border-b border-gray-200 flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">My Learning Progress</h2>
+            <p className="text-gray-600 mt-1">Track your progress across all purchased courses</p>
           </div>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-gray-100 rounded-full transition-colors duration-200 group"
+          >
+            <X className="w-6 h-6 text-gray-500 group-hover:text-gray-700" />
+          </button>
         </div>
 
         {/* Modal Content */}

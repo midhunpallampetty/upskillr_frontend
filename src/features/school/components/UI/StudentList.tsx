@@ -51,11 +51,9 @@ const StudentList: React.FC<StudentListProps> = ({ dbname, schoolData }) => {
   const [loadingCourses, setLoadingCourses] = useState(false);
   const [coursesError, setCoursesError] = useState<string>('');
 
-  // Map of courseId to its student progress data
   const [studentProgressMap, setStudentProgressMap] = useState<Record<string, any>>({});
   const [progressError, setProgressError] = useState<string>('');
   const [loadingProgress, setLoadingProgress] = useState(false);
-
 
   useEffect(() => {
     const fetchStudents = async () => {
@@ -80,6 +78,7 @@ const StudentList: React.FC<StudentListProps> = ({ dbname, schoolData }) => {
       setCoursesError("School info missing");
       return;
     }
+    setSelectedStudentId(studentId);
     setIsModalOpen(true);
     setLoadingCourses(true);
     setCoursesError('');
@@ -97,7 +96,6 @@ const StudentList: React.FC<StudentListProps> = ({ dbname, schoolData }) => {
 
       const progressMap: Record<string, any> = {};
 
-      // Fetch progress for each course
       await Promise.all(
         courses.map(async (course) => {
           const progressResponse = await fetchStudentProgress(schoolName, course._id, studentId);

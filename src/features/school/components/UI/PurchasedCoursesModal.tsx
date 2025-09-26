@@ -157,7 +157,7 @@ const ExamStatusCard: React.FC<{
   </div>
 );
 
-const CourseCard: React.FC<{
+type CourseCardProps = {
   course: Course;
   studentProgress?: {
     videos: Record<string, VideoProgress>;
@@ -166,7 +166,16 @@ const CourseCard: React.FC<{
   };
   studentId: string;
   schoolName: string;
-}> = ({ course, studentProgress, studentId, schoolName }) => {
+  onViewCertificate: (url: string) => void;
+};
+
+const CourseCard: React.FC<CourseCardProps> = ({
+  course,
+  studentProgress,
+  studentId,
+  schoolName,
+  onViewCertificate,
+}) => {
   const [loadingCert, setLoadingCert] = React.useState(false);
 
   const videosOfCourse = studentProgress?.videos || {};
@@ -194,7 +203,7 @@ const CourseCard: React.FC<{
     try {
       const res = await getCertificate(schoolName, course._id, studentId);
       const certificateUrl = res.certificateUrl;
-      window.open(certificateUrl, '_blank');
+      onViewCertificate(certificateUrl);
     } catch (error) {
       alert('Failed to get certificate');
     } finally {
@@ -310,57 +319,101 @@ const PurchasedCoursesModal: React.FC<PurchasedCoursesModalProps> = ({
   schoolName,
   onClose,
 }) => {
+  const [viewingCertificateUrl, setViewingCertificateUrl] = React.useState<string | null>(null);
+
   if (!isOpen) return null;
+
+  // Back handler for certificate view
+  const handleBackToCourses = () => {
+    setViewingCertificateUrl(null);
+  };
+
+  // Handler to show certificate url
+  const handleViewCertificate = (url: string) => {
+    setViewingCertificateUrl(url);
+  };
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-50 p-4">
-      <div className="bg-gray-50 rounded-3xl max-w-6xl w-full max-h-[90vh] overflow-hidden shadow-2xl">
+      <div className="bg-gray-50 rounded-3xl max-w-6xl w-full max-h-[90vh] overflow-hidden shadow-2xl flex flex-col">
         {/* Header */}
         <div className="bg-white p-6 border-b border-gray-200 flex items-center justify-between">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900">
-              My Learning Progress
-            </h2>
-            <p className="text-gray-600 mt-1">
-              Track your progress across all purchased courses
-            </p>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors duration-200 group"
-          >
-            <X className="w-6 h-6 text-gray-500 group-hover:text-gray-700" />
-          </button>
+          {!viewingCertificateUrl ? (
+            <>
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">
+                  My Learning Progress
+                </h2>
+                <p className="text-gray-600 mt-1">
+                  Track your progress across all purchased courses
+                </p>
+              </div>
+              <button
+                onClick={onClose}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors duration-200 group"
+              >
+                <X className="w-6 h-6 text-gray-500 group-hover:text-gray-700" />
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                onClick={handleBackToCourses}
+                className="p-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition"
+              >
+                Back
+              </button>
+              <div className="flex-1 text-center font-semibold text-gray-800">
+                Certificate View
+              </div>
+              <button
+                onClick={onClose}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors duration-200 group"
+              >
+                <X className="w-6 h-6 text-gray-500 group-hover:text-gray-700" />
+              </button>
+            </>
+          )}
         </div>
 
         {/* Body */}
-        <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
-          {courses.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <BookOpen className="w-12 h-12 text-gray-400" />
+        <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)] flex-1">
+          {!viewingCertificateUrl ? (
+            courses.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <BookOpen className="w-12 h-12 text-gray-400" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                  No Courses Yet
+                </h3>
+                <p className="text-gray-600">
+                  You haven't purchased any courses yet. Start learning today!
+                </p>
               </div>
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                No Courses Yet
-              </h3>
-              <p className="text-gray-600">
-                You haven't purchased any courses yet. Start learning today!
-              </p>
-            </div>
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {courses.map((course) => (
+                  <CourseCard
+                    key={course._id}
+                    course={course}
+                    studentProgress={
+                      studentProgressMap ? studentProgressMap[course._id] : undefined
+                    }
+                    studentId={studentId}
+                    schoolName={schoolName}
+                    onViewCertificate={handleViewCertificate}
+                  />
+                ))}
+              </div>
+            )
           ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {courses.map((course) => (
-                <CourseCard
-                  key={course._id}
-                  course={course}
-                  studentProgress={
-                    studentProgressMap ? studentProgressMap[course._id] : undefined
-                  }
-                  studentId={studentId}
-                  schoolName={schoolName}
-                />
-              ))}
-            </div>
+            <iframe
+              src={viewingCertificateUrl}
+              title="Certificate"
+              className="w-full h-full rounded-xl border border-gray-300"
+              style={{ minHeight: '600px' }}
+            />
           )}
         </div>
       </div>

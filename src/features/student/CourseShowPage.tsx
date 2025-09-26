@@ -646,7 +646,7 @@ useEffect(() => {
       if (!studentId || !schoolName || !courseId) return;
       try {
         const result = await getCertificate(schoolName, courseId, studentId);
-        console.log('getCertificate result:', result);
+        console.log('getCertificate result:', result?.certificateUrl);
         const url = result?.data?.certificateUrl;
         setCertificateUrl(url && url.trim() !== '' ? url : null);
       } catch (err) {

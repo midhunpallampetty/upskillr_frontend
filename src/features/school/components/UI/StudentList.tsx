@@ -103,7 +103,6 @@ const StudentList: React.FC<StudentListProps> = ({ dbname, schoolData }) => {
             <tr>
               <th className="text-left px-4 py-2">Full Name</th>
               <th className="text-left px-4 py-2">Email</th>
-              <th className="text-left px-4 py-2">Joined On</th>
               <th className="text-left px-4 py-2">Actions</th>
             </tr>
           </thead>
@@ -112,7 +111,6 @@ const StudentList: React.FC<StudentListProps> = ({ dbname, schoolData }) => {
               <tr key={student._id} className="border-t">
                 <td className="px-4 py-2">{student.fullName}</td>
                 <td className="px-4 py-2">{student.email}</td>
-                <td className="px-4 py-2">{student.createdAt ? new Date(student.createdAt).toLocaleDateString() : 'N/A'}</td>
                 <td className="px-4 py-2">
                   <button
                     className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"

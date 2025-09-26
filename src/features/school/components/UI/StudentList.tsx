@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { getAllStudents ,getPurchasedCoursesByStudent} from '../../api/student.api';
+import { getAllStudents, getPurchasedCoursesByStudent } from '../../api/student.api';
 import PurchasedCoursesModal from './PurchasedCoursesModal'; // Adjust path
+import { fetchStudentProgress } from '../../../student/api/course.api';
 
 type Student = {
   _id: string;
@@ -23,11 +24,6 @@ type Course = {
   createdAt: string;
 };
 
-interface StudentListProps {
-  dbname: string;
-  schoolData: School;
-}
-
 const extractSubdomain = (url: string): string => {
   try {
     const hostname = new URL(url).hostname;
@@ -39,6 +35,11 @@ const extractSubdomain = (url: string): string => {
   }
 };
 
+interface StudentListProps {
+  dbname: string;
+  schoolData: School;
+}
+
 const StudentList: React.FC<StudentListProps> = ({ dbname, schoolData }) => {
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -49,6 +50,10 @@ const StudentList: React.FC<StudentListProps> = ({ dbname, schoolData }) => {
   const [purchasedCourses, setPurchasedCourses] = useState<Course[]>([]);
   const [loadingCourses, setLoadingCourses] = useState(false);
   const [coursesError, setCoursesError] = useState<string>('');
+
+  const [studentProgress, setStudentProgress] = useState<any>(null);
+  const [progressError, setProgressError] = useState<string>('');
+  const [loadingProgress, setLoadingProgress] = useState(false);
 
   useEffect(() => {
     const fetchStudents = async () => {
@@ -68,27 +73,44 @@ const StudentList: React.FC<StudentListProps> = ({ dbname, schoolData }) => {
     fetchStudents();
   }, [dbname, schoolData]);
 
-  const handleViewPurchasedCourses = async (studentId: string) => {
-    if (!schoolData.subDomain && !schoolData.name) {
-      setCoursesError("School info missing");
-      return;
-    }
-    setIsModalOpen(true);
-    setLoadingCourses(true);
-    setCoursesError('');
-    setSelectedStudentId(studentId);
+const handleViewPurchasedCourses = async (studentId: string) => {
+  if (!schoolData.subDomain && !schoolData.name) {
+    setCoursesError("School info missing");
+    return;
+  }
+  setIsModalOpen(true);
+  setLoadingCourses(true);
+  setCoursesError('');
+  setStudentProgress(null);
+  setProgressError('');
+  setLoadingProgress(true);
 
-    const schoolName = extractSubdomain(schoolData.subDomain || '') || schoolData.name;
+  const schoolName = extractSubdomain(schoolData.subDomain || '') || schoolData.name;
 
-    try {
-      const response = await getPurchasedCoursesByStudent(studentId, schoolName);
-      setPurchasedCourses(response.courses);
-    } catch (err) {
-      setCoursesError('Failed to load purchased courses');
-    } finally {
-      setLoadingCourses(false);
+  try {
+    const purchasedCoursesResponse = await getPurchasedCoursesByStudent(studentId, schoolName);
+    setPurchasedCourses(purchasedCoursesResponse.courses);
+
+    if (purchasedCoursesResponse.courses.length > 0) {
+      const firstCourseId = purchasedCoursesResponse.courses[0]._id;
+      const progressResponse = await fetchStudentProgress(schoolName, firstCourseId, studentId);
+      setStudentProgress({
+        videos: progressResponse.videos,
+        passedSections: progressResponse.passedSections,
+        finalExam: progressResponse.finalExam,
+      });
+    } else {
+      setStudentProgress(null);
     }
-  };
+  } catch (err) {
+    setCoursesError('Failed to load purchased courses');
+    setProgressError('Failed to load student progress');
+  } finally {
+    setLoadingCourses(false);
+    setLoadingProgress(false);
+  }
+};
+
 
   if (loading) return <p className="text-center text-gray-600">Loading students...</p>;
   if (error) return <p className="text-center text-red-500">{error}</p>;
@@ -126,11 +148,15 @@ const StudentList: React.FC<StudentListProps> = ({ dbname, schoolData }) => {
       </div>
 
       {loadingCourses && <p className="text-center text-gray-600 mt-2">Loading purchased courses...</p>}
+      {loadingProgress && <p className="text-center text-gray-600 mt-2">Loading student progress...</p>}
+
       {coursesError && <p className="text-center text-red-500 mt-2">{coursesError}</p>}
+      {progressError && <p className="text-center text-red-500 mt-2">{progressError}</p>}
 
       <PurchasedCoursesModal
         isOpen={isModalOpen}
         courses={purchasedCourses}
+        studentProgress={studentProgress}
         onClose={() => setIsModalOpen(false)}
       />
     </>

@@ -1,3 +1,4 @@
+import courseAxios from "../../../utils/axios/course";
 import studentAxios from "../../../utils/axios/student";
 
 // Updated API function to send both schoolId and schoolName
@@ -7,7 +8,7 @@ export const getAllStudents = async (schoolId: string, schoolName: string) => {
   return response.data;
 };
 export const getPurchasedCoursesByStudent = async (studentId: string, schoolName: string) => {
-  const response = await studentAxios.get(`/payments/student/${studentId}/purchased-courses`, {
+  const response = await courseAxios.get(`/payments/student/${studentId}/purchased-courses`, {
     params: { schoolName }
   });
   return response.data;

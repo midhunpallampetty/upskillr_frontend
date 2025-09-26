@@ -315,3 +315,4 @@ const PurchasedCoursesModal: React.FC<PurchasedCoursesModalProps> = ({
 };
 
 export default PurchasedCoursesModal;
+//

@@ -640,13 +640,16 @@ const CourseShowPage = () => {
   };
 // Add this in CourseShowPage, NOT inside ExamComponent
 useEffect(() => {
+  console.log('Rendering CompletionCelebration with certificateUrl:', certificateUrl);
   if (showCourseCompletion) {
     const fetchCertificate = async () => {
       const studentId = getStudentId();
       if (!studentId || !schoolName || !courseId) return;
       try {
         const result = await getCertificate(schoolName, courseId, studentId);
-        setCertificateUrl(result?.data?.certificateUrl || null);
+        const url = result?.data?.certificateUrl;
+        // Treat empty/whitespace URL as no certificate
+        setCertificateUrl(url && url.trim() !== '' ? url : null);
       } catch (err) {
         setCertificateUrl(null);
       }
@@ -654,6 +657,7 @@ useEffect(() => {
     fetchCertificate();
   }
 }, [showCourseCompletion, schoolName, courseId]);
+
 
   useEffect(() => {
     if (checkCourseCompletion() && !showCourseCompletion) {

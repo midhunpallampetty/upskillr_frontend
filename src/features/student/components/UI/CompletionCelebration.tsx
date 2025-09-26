@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import {
   Trophy,
@@ -40,6 +40,8 @@ const CompletionCelebration: React.FC<CompletionCelebrationProps> = ({
     { icon: Award, label: "Skills Mastered", color: "text-purple-400" },
     { icon: Gift, label: "Certificate Earned", color: "text-yellow-400" }
   ];
+
+  const validCertificateUrl = certificateUrl && certificateUrl.trim() !== '';
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-indigo-900 to-blue-900 relative overflow-hidden">
@@ -205,11 +207,11 @@ const CompletionCelebration: React.FC<CompletionCelebrationProps> = ({
             transition={{ delay: 2.3, duration: 0.8 }}
             className="flex flex-col sm:flex-row gap-4 justify-center mb-8"
           >
-            {certificateUrl ? (
+            {validCertificateUrl ? (
               <motion.a
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                href={certificateUrl}
+                href={certificateUrl!}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-3 bg-green-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-green-400 transition-colors shadow-2xl"
@@ -219,6 +221,8 @@ const CompletionCelebration: React.FC<CompletionCelebrationProps> = ({
               </motion.a>
             ) : (
               <motion.button
+                type="button"
+                aria-disabled={progressLoading}
                 whileHover={{ scale: 1.05, boxShadow: "0 20px 40px rgba(0,0,0,0.3)" }}
                 whileTap={{ scale: 0.95 }}
                 onClick={onCertificateRequest}
@@ -252,6 +256,7 @@ const CompletionCelebration: React.FC<CompletionCelebrationProps> = ({
               Back to Dashboard
             </Link>
             <motion.button
+              type="button"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={onReviewCourse}

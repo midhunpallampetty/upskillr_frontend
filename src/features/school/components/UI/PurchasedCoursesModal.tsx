@@ -73,11 +73,10 @@ const ProgressCard: React.FC<{
 
   return (
     <div
-      className={`relative p-4 rounded-xl border-2 transition-all duration-300 ${
-        completed
+      className={`relative p-4 rounded-xl border-2 transition-all duration-300 ${completed
           ? 'border-green-200 bg-gradient-to-br from-green-50 to-green-100'
           : 'border-gray-200 bg-white hover:border-gray-300'
-      }`}
+        }`}
     >
       <div className="flex items-center gap-3 mb-3">
         <div className={`p-2 rounded-lg ${bgColor}`}>{icon}</div>
@@ -99,11 +98,10 @@ const ExamStatusCard: React.FC<{
   score?: number;
 }> = ({ passed, score }) => (
   <div
-    className={`relative p-4 rounded-xl border-2 transition-all duration-300 ${
-      passed
+    className={`relative p-4 rounded-xl border-2 transition-all duration-300 ${passed
         ? 'border-green-200 bg-gradient-to-br from-green-50 to-green-100'
         : 'border-orange-200 bg-gradient-to-br from-orange-50 to-orange-100'
-    }`}
+      }`}
   >
     <div className="flex items-center gap-3 mb-3">
       <div className={`p-2 rounded-lg ${passed ? 'bg-green-200' : 'bg-orange-200'}`}>
@@ -123,11 +121,10 @@ const ExamStatusCard: React.FC<{
     </div>
     <div className={`w-full h-3 rounded-full ${passed ? 'bg-green-300' : 'bg-orange-300'}`}>
       <div
-        className={`h-3 rounded-full transition-all duration-500 ${
-          passed
+        className={`h-3 rounded-full transition-all duration-500 ${passed
             ? 'bg-gradient-to-r from-green-500 to-green-600'
             : 'bg-gradient-to-r from-orange-400 to-orange-500'
-        }`}
+          }`}
         style={{ width: passed ? '100%' : '0%' }}
       />
     </div>
@@ -287,8 +284,9 @@ const PurchasedCoursesModal: React.FC<PurchasedCoursesModalProps> = ({
                 <CourseCard
                   key={course._id}
                   course={course}
-                  progress={studentProgress[course._id]}
+                  progress={studentProgress?.[course._id]}
                 />
+
               ))}
             </div>
           )}

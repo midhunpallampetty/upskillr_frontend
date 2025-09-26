@@ -58,10 +58,8 @@ const StudentList: React.FC<StudentListProps> = ({ dbname, schoolData }) => {
   useEffect(() => {
     const fetchStudents = async () => {
       try {
-        console.log("Fetching students for DB:", schoolData);
         const schoolName = extractSubdomain(schoolData.subDomain || '') || schoolData.name;
         const data = await getAllStudents(schoolData._id, schoolName);
-        console.log("Fetched students:", data);
         setStudents(data.students);
       } catch (err) {
         setError('Failed to fetch students');
@@ -82,7 +80,6 @@ const StudentList: React.FC<StudentListProps> = ({ dbname, schoolData }) => {
     setIsModalOpen(true);
     setLoadingCourses(true);
     setCoursesError('');
-
     setStudentProgressMap({});
     setProgressError('');
     setLoadingProgress(true);
@@ -95,7 +92,6 @@ const StudentList: React.FC<StudentListProps> = ({ dbname, schoolData }) => {
       setPurchasedCourses(courses);
 
       const progressMap: Record<string, any> = {};
-
       await Promise.all(
         courses.map(async (course) => {
           const progressResponse = await fetchStudentProgress(schoolName, course._id, studentId);
@@ -106,7 +102,6 @@ const StudentList: React.FC<StudentListProps> = ({ dbname, schoolData }) => {
           };
         })
       );
-
       setStudentProgressMap(progressMap);
     } catch (err) {
       setCoursesError('Failed to load purchased courses');
@@ -162,6 +157,8 @@ const StudentList: React.FC<StudentListProps> = ({ dbname, schoolData }) => {
         isOpen={isModalOpen}
         courses={purchasedCourses}
         studentProgressMap={studentProgressMap}
+        studentId={selectedStudentId || ''}
+        schoolName={extractSubdomain(schoolData.subDomain || '') || schoolData.name}
         onClose={() => setIsModalOpen(false)}
       />
     </>

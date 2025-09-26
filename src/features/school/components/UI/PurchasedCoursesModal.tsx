@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { X, Play, BookOpen, Award, CheckCircle, Clock } from 'lucide-react';
+import { getCertificate } from '../../../student/api/course.api';
 
 type Course = {
   _id: string;
@@ -36,6 +37,8 @@ interface PurchasedCoursesModalProps {
     passedSections: PassedSection[];
     finalExam: FinalExam;
   }>;
+  studentId: string;
+  schoolName: string;
   onClose: () => void;
 }
 
@@ -140,7 +143,11 @@ const CourseCard: React.FC<{
     passedSections: PassedSection[];
     finalExam: FinalExam;
   };
-}> = ({ course, studentProgress }) => {
+  studentId: string;
+  schoolName: string;
+}> = ({ course, studentProgress, studentId, schoolName }) => {
+  const [loadingCert, setLoadingCert] = React.useState(false);
+
   const videosOfCourse = studentProgress?.videos || {};
   const completedVideoCount = Object.values(videosOfCourse).filter(v => v.completed).length;
   const totalVideos = Object.keys(videosOfCourse).length || 1;
@@ -153,6 +160,20 @@ const CourseCard: React.FC<{
   const overallProgress = ((completedVideoCount / totalVideos) +
     (passedSectionsCount / (passedSectionsCount || 1)) +
     (finalExamPassed ? 1 : 0)) / 3 * 100;
+
+
+  const handleGetCertificate = async () => {
+    setLoadingCert(true);
+    try {
+      const res = await getCertificate(schoolName, course._id, studentId);
+      const certificateUrl = res.data.url;
+      window.open(certificateUrl, '_blank');
+    } catch (error) {
+      alert('Failed to get certificate');
+    } finally {
+      setLoadingCert(false);
+    }
+  };
 
   return (
     <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300">
@@ -202,10 +223,10 @@ const CourseCard: React.FC<{
             icon={<BookOpen className="w-5 h-5 text-purple-700" />}
             title="Sections"
             current={passedSectionsCount}
-            total={passedSectionsCount} // Show completed sections count only
+            total={passedSectionsCount}
             color="bg-gradient-to-r from-purple-500 to-purple-600"
             bgColor="bg-purple-100"
-            completed={false} // No total known, so no completion state
+            completed={false}
           />
 
           <ExamStatusCard
@@ -213,6 +234,14 @@ const CourseCard: React.FC<{
             score={finalExamScore}
           />
         </div>
+
+        <button
+          onClick={handleGetCertificate}
+          disabled={loadingCert}
+          className="mt-6 w-full bg-green-600 text-white rounded px-4 py-3 hover:bg-green-700 transition disabled:opacity-60"
+        >
+          {loadingCert ? 'Loading Certificate...' : 'Get Certificate'}
+        </button>
 
         {overallProgress === 100 && (
           <div className="mt-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl">
@@ -236,6 +265,8 @@ const PurchasedCoursesModal: React.FC<PurchasedCoursesModalProps> = ({
   isOpen,
   courses,
   studentProgressMap,
+  studentId,
+  schoolName,
   onClose
 }) => {
   if (!isOpen) return null;
@@ -243,7 +274,6 @@ const PurchasedCoursesModal: React.FC<PurchasedCoursesModalProps> = ({
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-50 p-4">
       <div className="bg-gray-50 rounded-3xl max-w-6xl w-full max-h-[90vh] overflow-hidden shadow-2xl">
-        {/* Modal Header */}
         <div className="bg-white p-6 border-b border-gray-200 flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold text-gray-900">My Learning Progress</h2>
@@ -256,8 +286,6 @@ const PurchasedCoursesModal: React.FC<PurchasedCoursesModalProps> = ({
             <X className="w-6 h-6 text-gray-500 group-hover:text-gray-700" />
           </button>
         </div>
-
-        {/* Modal Content */}
         <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
           {courses.length === 0 ? (
             <div className="text-center py-12">
@@ -269,11 +297,13 @@ const PurchasedCoursesModal: React.FC<PurchasedCoursesModalProps> = ({
             </div>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {courses.map(course => (
+              {courses.map((course) => (
                 <CourseCard
                   key={course._id}
                   course={course}
                   studentProgress={studentProgressMap ? studentProgressMap[course._id] : undefined}
+                  studentId={studentId}
+                  schoolName={schoolName}
                 />
               ))}
             </div>

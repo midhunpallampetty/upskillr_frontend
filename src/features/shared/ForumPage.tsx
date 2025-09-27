@@ -84,7 +84,6 @@ export default function ForumChatUI() {
           ...q,
           author: q.author ?? { fullName: 'Anonymous', _id: '', role: '' },
         }));
-        console.log(safeQuestions,'QUESTIONS')
         setQuestions(safeQuestions);
       })
       .catch(err => {
@@ -100,10 +99,12 @@ export default function ForumChatUI() {
 
     socketRef.current.on('connect', () => {
       addToast('Connected to real-time updates', 'success');
+      // Join school room immediately on connect
+      socketRef.current.emit('join_thread', { schoolName, threadId: 'general' }); // Use a general threadId or omit if backend allows
     });
 
     socketRef.current.on('new_question', (qDoc: Question) => {
-      if (qDoc.schoolName !== schoolName) return; // Filter by schoolName
+      if (qDoc.schoolName !== schoolName) return;
 
       // Fetch full question data
       axios.get(`${API}/forum/questions/${qDoc._id}`, { params: { schoolName } })
@@ -147,7 +148,7 @@ export default function ForumChatUI() {
     });
 
     socketRef.current.on('new_answer', (aDoc: Answer) => {
-      if (aDoc.schoolName !== schoolName) return; // Filter by schoolName
+      if (aDoc.schoolName !== schoolName) return;
 
       const safeADoc = {
         ...aDoc,
@@ -169,7 +170,7 @@ export default function ForumChatUI() {
     });
 
     socketRef.current.on('new_reply', (rDoc: Reply) => {
-      if (rDoc.schoolName !== schoolName) return; // Filter by schoolName
+      if (rDoc.schoolName !== schoolName) return;
 
       const safeRDoc = {
         ...rDoc,

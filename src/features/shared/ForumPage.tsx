@@ -80,6 +80,7 @@ export default function ForumChatUI() {
       .then(res => {
         const fetchedQuestions = Array.isArray(res.data) ? res.data : [];
         // Ensure author defaults
+        console.log(fetchedQuestions,'fetch')
         const safeQuestions = fetchedQuestions.map(q => ({
           ...q,
           author: q.author ?? { fullName: 'Anonymous', _id: '', role: '' },

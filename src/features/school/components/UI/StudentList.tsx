@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { getAllStudents, getPurchasedCoursesByStudent } from '../../api/student.api';
 import PurchasedCoursesModal from './PurchasedCoursesModal';
-import { fetchCourseData, fetchStudentProgress } from '../../../student/api/course.api';
+import { fetchStudentProgress } from '../../../student/api/course.api';
 
 type Student = {
   _id: string;
@@ -22,53 +22,6 @@ type Course = {
   courseThumbnail: string;
   fee: number;
   createdAt: string;
-  sections: {
-    _id: string;
-    sectionName: string;
-    examRequired: boolean;
-    videos?: {
-      _id: string;
-      videoName: string;
-      url: string;
-      description: string;
-    }[];
-    exam?: {
-      _id: string;
-      title: string;
-      totalMarks: number;
-      questions: {
-        _id: string;
-        questionText: string;
-        options: string[];
-        correctAnswer: string;
-        marks: number;
-      }[];
-    };
-  }[];
-  preliminaryExam?: {
-    _id: string;
-    title: string;
-    totalMarks: number;
-    questions: {
-      _id: string;
-      questionText: string;
-      options: string[];
-      correctAnswer: string;
-      marks: number;
-    }[];
-  };
-  finalExam?: {
-    _id: string;
-    title: string;
-    totalMarks: number;
-    questions: {
-      _id: string;
-      questionText: string;
-      options: string[];
-      correctAnswer: string;
-      marks: number;
-    }[];
-  };
 };
 
 const extractSubdomain = (url: string): string => {
@@ -135,40 +88,7 @@ const StudentList: React.FC<StudentListProps> = ({ dbname, schoolData }) => {
 
     try {
       const purchasedCoursesResponse = await getPurchasedCoursesByStudent(studentId, schoolName);
-      let courses = purchasedCoursesResponse.courses;
-
-      // Fetch full course data for each purchased course and normalize structure
-      courses = await Promise.all(
-        courses.map(async (course: Course) => {
-          const fullCourseResponse = await fetchCourseData(schoolName, course._id);
-          const data = fullCourseResponse.data;
-
-          // Normalize sections and videos (convert potential objects with numeric keys to arrays)
-          let sections = data.sections;
-          if (!Array.isArray(sections)) {
-            sections = Object.values(sections || {});
-          }
-
-          const normalizedSections = sections.map((section: any) => {
-            let videos = section.videos;
-            if (!Array.isArray(videos)) {
-              videos = Object.values(videos || {});
-            }
-            return { ...section, videos };
-          });
-
-          // Merge specifically the full details without overwriting core course info
-          const mergedCourse = {
-            ...course,
-            sections: normalizedSections,
-            preliminaryExam: data.preliminaryExam,
-            finalExam: data.finalExam,
-            // Add other fields if needed, e.g., description: data.description
-          };
-
-          return mergedCourse;
-        })
-      );
+      const courses = purchasedCoursesResponse.courses;
       setPurchasedCourses(courses);
 
       const progressMap: Record<string, any> = {};

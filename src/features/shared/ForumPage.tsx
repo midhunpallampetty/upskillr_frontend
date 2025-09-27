@@ -291,9 +291,10 @@ export default function ForumChatUI() {
   useEffect(() => {
     setTypingUsers([]);
     if (selected?._id && socketRef.current) {
-      socketRef.current.emit('join_thread', selected._id);
+      // Updated: Include schoolName in join_thread payload
+      socketRef.current.emit('join_thread', { schoolName, threadId: selected._id });
     }
-  }, [selected]);
+  }, [selected, schoolName]);
 
   const selectQuestion = useCallback((qid: string, force: boolean = false) => {
     if (!force && selected?._id === qid) return;
@@ -342,7 +343,8 @@ export default function ForumChatUI() {
     axios.delete(`${API}/forum/questions/${questionId}`, { params: { schoolName } })
       .then(() => {
         if (socketRef.current) {
-          socketRef.current.emit('delete_question', questionId);
+          // Updated: Include schoolName in delete_question payload
+          socketRef.current.emit('delete_question', { schoolName, questionId });
         }
       })
       .catch(err => {
@@ -357,7 +359,8 @@ export default function ForumChatUI() {
     axios.delete(`${API}/forum/answers/${answerId}`, { params: { schoolName } })
       .then(() => {
         if (socketRef.current) {
-          socketRef.current.emit('delete_answer', { answerId, questionId });
+          // Updated: Include schoolName in delete_answer payload
+          socketRef.current.emit('delete_answer', { schoolName, answerId, questionId });
         }
         if (selected?._id === questionId) {
           selectQuestion(questionId, true);
@@ -375,7 +378,8 @@ export default function ForumChatUI() {
     axios.delete(`${API}/forum/replies/${replyId}`, { params: { schoolName } })
       .then(() => {
         if (socketRef.current) {
-          socketRef.current.emit('delete_reply', { replyId, questionId, answerId });
+          // Updated: Include schoolName in delete_reply payload
+          socketRef.current.emit('delete_reply', { schoolName, replyId, questionId, answerId });
         }
         if (selected?._id === questionId) {
           selectQuestion(questionId, true);

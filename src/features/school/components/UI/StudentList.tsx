@@ -2,6 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { getAllStudents, getPurchasedCoursesByStudent } from '../../api/student.api';
 import PurchasedCoursesModal from './PurchasedCoursesModal';
 import { fetchStudentProgress } from '../../../student/api/course.api';
+import { fetchCourseData } from '../../../student/api/course.api';
+// Assuming fetchCourseData is available; add import if necessary
+// import { fetchCourseData } from '../../../api/course.api'; // Adjust path as needed
 
 type Student = {
   _id: string;
@@ -22,6 +25,54 @@ type Course = {
   courseThumbnail: string;
   fee: number;
   createdAt: string;
+  // Add full course structure types based on API response
+  sections: {
+    _id: string;
+    sectionName: string;
+    examRequired: boolean;
+    videos: {
+      _id: string;
+      videoName: string;
+      url: string;
+      description: string;
+    }[];
+    exam?: {
+      _id: string;
+      title: string;
+      totalMarks: number;
+      questions: {
+        _id: string;
+        questionText: string;
+        options: string[];
+        correctAnswer: string;
+        marks: number;
+      }[];
+    };
+  }[];
+  preliminaryExam?: {
+    _id: string;
+    title: string;
+    totalMarks: number;
+    questions: {
+      _id: string;
+      questionText: string;
+      options: string[];
+      correctAnswer: string;
+      marks: number;
+    }[];
+  };
+  finalExam?: {
+    _id: string;
+    title: string;
+    totalMarks: number;
+    questions: {
+      _id: string;
+      questionText: string;
+      options: string[];
+      correctAnswer: string;
+      marks: number;
+    }[];
+  };
 };
 
 const extractSubdomain = (url: string): string => {
@@ -88,7 +139,15 @@ const StudentList: React.FC<StudentListProps> = ({ dbname, schoolData }) => {
 
     try {
       const purchasedCoursesResponse = await getPurchasedCoursesByStudent(studentId, schoolName);
-      const courses = purchasedCoursesResponse.courses;
+      let courses = purchasedCoursesResponse.courses;
+
+      // Fetch full course data for each purchased course to get accurate section/video counts
+      courses = await Promise.all(
+        courses.map(async (course: Course) => {
+          const fullCourseData = await fetchCourseData(schoolName, course._id); // Assuming fetchCourseData API exists
+          return { ...course, ...fullCourseData.data }; // Merge full data
+        })
+      );
       setPurchasedCourses(courses);
 
       const progressMap: Record<string, any> = {};

@@ -577,7 +577,7 @@ export default function ForumChatUI() {
                 {(selected.answers || []).filter(ans => ans != null).map(ans => ( // Null filter
                   <div key={ans._id}>
                     <Message
-                      author='User'
+                      author={ans.author?.fullName || 'Anonymous'}       //
                       text={ans.text}
                       assets={ans.assets}
                       role={ans.author?.role ?? ''}

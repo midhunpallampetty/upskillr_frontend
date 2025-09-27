@@ -348,7 +348,7 @@ export default function ForumChatUI() {
   const deleteQuestion = useCallback((questionId: string) => {
     if (!confirm('Are you sure you want to delete this question?')) return;
 
-    axios.delete(`${API}/forum/questions/${questionId}`, { params: { schoolName } })
+    axios.delete(`${API}/forum/questions/${questionId}`, { data: { schoolName } })
       .then(() => {
         if (socketRef.current) {
           socketRef.current.emit('delete_question', { schoolName, questionId });
@@ -363,7 +363,7 @@ export default function ForumChatUI() {
   const deleteAnswer = useCallback((answerId: string, questionId: string) => {
     if (!confirm('Are you sure you want to delete this answer?')) return;
 
-    axios.delete(`${API}/forum/answers/${answerId}`, { params: { schoolName } })
+    axios.delete(`${API}/forum/answers/${answerId}`, { data: { schoolName, questionId } })
       .then(() => {
         if (socketRef.current) {
           socketRef.current.emit('delete_answer', { schoolName, answerId, questionId });
@@ -381,7 +381,7 @@ export default function ForumChatUI() {
   const deleteReply = useCallback((replyId: string, questionId: string, answerId?: string) => {
     if (!confirm('Are you sure you want to delete this reply?')) return;
 
-    axios.delete(`${API}/forum/replies/${replyId}`, { params: { schoolName } })
+    axios.delete(`${API}/forum/replies/${replyId}`, { data: { schoolName, questionId, answerId } })
       .then(() => {
         if (socketRef.current) {
           socketRef.current.emit('delete_reply', { schoolName, replyId, questionId, answerId });
@@ -522,7 +522,7 @@ export default function ForumChatUI() {
                   <div className="mt-1 flex items-center gap-4 text-sm text-gray-500">
                     <span className="flex items-center gap-1">
                       <UserCircleIcon className="h-4 w-4" />
-                      'User'
+                      {selected.author?.fullName || 'Anonymous'}
                     </span>
                     <span>•</span>
                     <span>Category: {selected.category}</span>
@@ -535,7 +535,7 @@ export default function ForumChatUI() {
             <div className="flex-1 overflow-y-auto bg-gray-50 p-6">
               <div className="max-w-4xl mx-auto space-y-6">
                 <Message
-                  author='User'
+                  author={selected.author?.fullName || 'Anonymous'}
                   text={selected.question}
                   assets={selected.assets}
                   role={selected.author?.role ?? ''}
@@ -577,7 +577,7 @@ export default function ForumChatUI() {
                 {(selected.answers || []).filter(ans => ans != null).map(ans => ( // Null filter
                   <div key={ans._id}>
                     <Message
-                      author={ans.author?.fullName || 'Anonymous'}       //
+                      author={ans.author?.fullName || 'Anonymous'}
                       text={ans.text}
                       assets={ans.assets}
                       role={ans.author?.role ?? ''}

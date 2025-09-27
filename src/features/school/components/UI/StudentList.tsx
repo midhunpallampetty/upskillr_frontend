@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { getAllStudents, getPurchasedCoursesByStudent } from '../../api/student.api';
 import PurchasedCoursesModal from './PurchasedCoursesModal';
-import { fetchStudentProgress } from '../../../student/api/course.api';
+import { fetchStudentProgress, fetchCourseData } from '../../../student/api/course.api'; // Assuming fetchCourseData is imported from here based on the query
 
 type Student = {
   _id: string;
@@ -94,11 +94,31 @@ const StudentList: React.FC<StudentListProps> = ({ dbname, schoolData }) => {
       const progressMap: Record<string, any> = {};
       await Promise.all(
         courses.map(async (course) => {
+          // Fetch student progress
           const progressResponse = await fetchStudentProgress(schoolName, course._id, studentId);
+          // Fetch course details to get total videos and sections
+          const courseDetails = await fetchCourseData(schoolName, course._id); // Assuming fetchCourseData takes schoolName and courseId
+          
+          // Calculate totals from courseDetails (based on example structure)
+          // Assuming courseDetails.sections is an array, totalSections = sections.length
+          // For totalVideos, assuming we need to count videos across sections (example doesn't have videos, so simulate or adjust)
+          // If videos are not in response, you may need a separate API or to include in fetchCourseData
+          // For this example, assume courseDetails.totalVideos is available or calculate if sections have videos array
+          const totalSections = courseDetails.sections.length;
+          let totalVideos = 0; // Adjust based on actual response
+          courseDetails.sections.forEach((section: any) => {
+            if (section.videos) { // Assuming sections have videos array
+              totalVideos += section.videos.length;
+            }
+          });
+          // If totalVideos not calculable, use from progress as fallback, but ideally from course data
+
           progressMap[course._id] = {
             videos: progressResponse.videos,
             passedSections: progressResponse.passedSections,
             finalExam: progressResponse.finalExam,
+            totalVideos: totalVideos || Object.keys(progressResponse.videos).length, // Fallback if not fetched
+            totalSections,
           };
         })
       );

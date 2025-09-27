@@ -38,6 +38,8 @@ interface PurchasedCoursesModalProps {
       videos: Record<string, VideoProgress>;
       passedSections: PassedSection[];
       finalExam: FinalExam;
+      totalVideos: number; // Added from fetchCourseData
+      totalSections: number; // Added from fetchCourseData
     }
   >;
   studentId: string;
@@ -90,8 +92,7 @@ const ProgressCard: React.FC<{
         <div className="flex-1">
           <h4 className="font-semibold text-gray-800 text-sm">{title}</h4>
           <p className="text-xs text-gray-600">
-            {current} {title === 'Sections' ? '' : `of ${total}`}{' '}
-            {completed && '✓'}
+            {current} out of {total} {completed && '✓'}
           </p>
         </div>
         {completed && <CheckCircle className="w-5 h-5 text-green-600" />}
@@ -163,6 +164,8 @@ type CourseCardProps = {
     videos: Record<string, VideoProgress>;
     passedSections: PassedSection[];
     finalExam: FinalExam;
+    totalVideos: number;
+    totalSections: number;
   };
   studentId: string;
   schoolName: string;
@@ -183,16 +186,17 @@ const CourseCard: React.FC<CourseCardProps> = ({
   const completedVideoCount = Object.values(videosOfCourse).filter(
     (v) => v.completed
   ).length;
-  const totalVideos = Object.keys(videosOfCourse).length || 1;
+  const totalVideos = studentProgress?.totalVideos || Object.keys(videosOfCourse).length || 1;
 
   const passedSectionsCount = studentProgress?.passedSections?.length ?? 0;
+  const totalSections = studentProgress?.totalSections || passedSectionsCount || 1;
 
   const finalExamPassed = studentProgress?.finalExam?.passed ?? false;
   const finalExamScore = studentProgress?.finalExam?.score;
 
   const overallProgress =
     ((completedVideoCount / totalVideos) +
-      (passedSectionsCount / (passedSectionsCount || 1)) +
+      (passedSectionsCount / totalSections) +
       (finalExamPassed ? 1 : 0)) /
     3 *
     100;
@@ -276,10 +280,10 @@ const CourseCard: React.FC<CourseCardProps> = ({
             icon={<BookOpen className="w-5 h-5 text-purple-700" />}
             title="Sections"
             current={passedSectionsCount}
-            total={passedSectionsCount}
+            total={totalSections}
             color="bg-gradient-to-r from-purple-500 to-purple-600"
             bgColor="bg-purple-100"
-            completed={false}
+            completed={passedSectionsCount === totalSections}
           />
 
           <ExamStatusCard passed={finalExamPassed} score={finalExamScore} />

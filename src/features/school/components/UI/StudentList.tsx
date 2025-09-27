@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { getAllStudents, getPurchasedCoursesByStudent } from '../../api/student.api';
 import PurchasedCoursesModal from './PurchasedCoursesModal';
-import { fetchStudentProgress } from '../../../student/api/course.api';
+import { fetchStudentProgress, fetchCourseData } from '../../../student/api/course.api';
 
 type Student = {
   _id: string;
@@ -52,6 +52,7 @@ const StudentList: React.FC<StudentListProps> = ({ dbname, schoolData }) => {
   const [coursesError, setCoursesError] = useState<string>('');
 
   const [studentProgressMap, setStudentProgressMap] = useState<Record<string, any>>({});
+  const [courseDetailsMap, setCourseDetailsMap] = useState<Record<string, any>>({});
   const [progressError, setProgressError] = useState<string>('');
   const [loadingProgress, setLoadingProgress] = useState(false);
 
@@ -81,6 +82,7 @@ const StudentList: React.FC<StudentListProps> = ({ dbname, schoolData }) => {
     setLoadingCourses(true);
     setCoursesError('');
     setStudentProgressMap({});
+    setCourseDetailsMap({});
     setProgressError('');
     setLoadingProgress(true);
 
@@ -92,6 +94,7 @@ const StudentList: React.FC<StudentListProps> = ({ dbname, schoolData }) => {
       setPurchasedCourses(courses);
 
       const progressMap: Record<string, any> = {};
+      const detailsMap: Record<string, any> = {};
       await Promise.all(
         courses.map(async (course) => {
           const progressResponse = await fetchStudentProgress(schoolName, course._id, studentId);
@@ -100,9 +103,13 @@ const StudentList: React.FC<StudentListProps> = ({ dbname, schoolData }) => {
             passedSections: progressResponse.passedSections,
             finalExam: progressResponse.finalExam,
           };
+
+          const detailsResponse = await fetchCourseData(schoolName, course._id);
+          detailsMap[course._id] = detailsResponse.data;
         })
       );
       setStudentProgressMap(progressMap);
+      setCourseDetailsMap(detailsMap);
     } catch (err) {
       setCoursesError('Failed to load purchased courses');
       setProgressError('Failed to load student progress');
@@ -157,6 +164,7 @@ const StudentList: React.FC<StudentListProps> = ({ dbname, schoolData }) => {
         isOpen={isModalOpen}
         courses={purchasedCourses}
         studentProgressMap={studentProgressMap}
+        courseDetailsMap={courseDetailsMap}
         studentId={selectedStudentId || ''}
         schoolName={extractSubdomain(schoolData.subDomain || '') || schoolData.name}
         onClose={() => setIsModalOpen(false)}

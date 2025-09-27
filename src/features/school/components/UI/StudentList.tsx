@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { getAllStudents, getPurchasedCoursesByStudent } from '../../api/student.api';
 import PurchasedCoursesModal from './PurchasedCoursesModal';
-import { fetchStudentProgress } from '../../../student/api/course.api';
-import { fetchCourseData } from '../../../student/api/course.api';
+import { fetchCourseData, fetchStudentProgress } from '../../../student/api/course.api';
+
 // Assuming fetchCourseData is available; add import if necessary
 // import { fetchCourseData } from '../../../api/course.api'; // Adjust path as needed
 
@@ -30,7 +30,7 @@ type Course = {
     _id: string;
     sectionName: string;
     examRequired: boolean;
-    videos: {
+    videos?: {
       _id: string;
       videoName: string;
       url: string;

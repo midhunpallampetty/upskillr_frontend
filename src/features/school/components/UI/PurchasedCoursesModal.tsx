@@ -12,7 +12,7 @@ type Course = {
     _id: string;
     sectionName: string;
     examRequired: boolean;
-    videos: {
+    videos?: {
       _id: string;
       videoName: string;
       url: string;
@@ -229,8 +229,8 @@ const CourseCard: React.FC<CourseCardProps> = ({
   const videosOfCourse = studentProgress?.videos || {};
   const completedVideoCount = Object.values(videosOfCourse).filter((v) => v.completed).length;
 
-  // Calculate total videos and sections from full course data
-  const totalVideos = course.sections.reduce((acc, section) => acc + section.videos.length, 0);
+  // Calculate total videos and sections from full course data with safeguards
+  const totalVideos = course.sections.reduce((acc, section) => acc + (section.videos?.length || 0), 0);
   const totalSections = course.sections.length;
 
   const passedSectionsCount = studentProgress?.passedSections?.length ?? 0;
@@ -346,10 +346,10 @@ const CourseCard: React.FC<CourseCardProps> = ({
           <h4 className="text-lg font-semibold text-gray-800 mb-4">Detailed Progress</h4>
           {course.sections.map((section) => {
             const isPassed = passedSectionIds.has(section._id);
-            const sectionCompletedVideos = section.videos.filter((video) =>
+            const sectionCompletedVideos = (section.videos ?? []).filter((video) =>
               videosOfCourse[video._id]?.completed
             ).length;
-            const sectionTotalVideos = section.videos.length;
+            const sectionTotalVideos = section.videos?.length || 0;
 
             return (
               <div key={section._id} className="mb-4 border-b pb-4">
@@ -374,7 +374,7 @@ const CourseCard: React.FC<CourseCardProps> = ({
                       Videos: {sectionCompletedVideos} of {sectionTotalVideos} completed
                     </p>
                     <ul className="space-y-2">
-                      {section.videos.map((video) => {
+                      {(section.videos ?? []).map((video) => {
                         const isCompleted = videosOfCourse[video._id]?.completed;
                         return (
                           <li key={video._id} className="flex items-center gap-2 text-sm">

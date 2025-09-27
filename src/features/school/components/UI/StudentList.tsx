@@ -3,9 +3,6 @@ import { getAllStudents, getPurchasedCoursesByStudent } from '../../api/student.
 import PurchasedCoursesModal from './PurchasedCoursesModal';
 import { fetchCourseData, fetchStudentProgress } from '../../../student/api/course.api';
 
-// Assuming fetchCourseData is available; add import if necessary
-// import { fetchCourseData } from '../../../api/course.api'; // Adjust path as needed
-
 type Student = {
   _id: string;
   fullName: string;
@@ -25,7 +22,6 @@ type Course = {
   courseThumbnail: string;
   fee: number;
   createdAt: string;
-  // Add full course structure types based on API response
   sections: {
     _id: string;
     sectionName: string;
@@ -141,11 +137,36 @@ const StudentList: React.FC<StudentListProps> = ({ dbname, schoolData }) => {
       const purchasedCoursesResponse = await getPurchasedCoursesByStudent(studentId, schoolName);
       let courses = purchasedCoursesResponse.courses;
 
-      // Fetch full course data for each purchased course to get accurate section/video counts
+      // Fetch full course data for each purchased course and normalize structure
       courses = await Promise.all(
         courses.map(async (course: Course) => {
-          const fullCourseData = await fetchCourseData(schoolName, course._id); // Assuming fetchCourseData API exists
-          return { ...course, ...fullCourseData.data }; // Merge full data
+          const fullCourseResponse = await fetchCourseData(schoolName, course._id);
+          const data = fullCourseResponse.data;
+
+          // Normalize sections and videos (convert potential objects with numeric keys to arrays)
+          let sections = data.sections;
+          if (!Array.isArray(sections)) {
+            sections = Object.values(sections || {});
+          }
+
+          const normalizedSections = sections.map((section: any) => {
+            let videos = section.videos;
+            if (!Array.isArray(videos)) {
+              videos = Object.values(videos || {});
+            }
+            return { ...section, videos };
+          });
+
+          // Merge specifically the full details without overwriting core course info
+          const mergedCourse = {
+            ...course,
+            sections: normalizedSections,
+            preliminaryExam: data.preliminaryExam,
+            finalExam: data.finalExam,
+            // Add other fields if needed, e.g., description: data.description
+          };
+
+          return mergedCourse;
         })
       );
       setPurchasedCourses(courses);

@@ -84,6 +84,7 @@ export default function ForumChatUI() {
           ...q,
           author: q.author ?? { fullName: 'Anonymous', _id: '', role: '' },
         }));
+        console.log(safeQuestions,'QUESTIONS')
         setQuestions(safeQuestions);
       })
       .catch(err => {

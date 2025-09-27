@@ -339,7 +339,7 @@ export default function ForumChatUI() {
   const deleteQuestion = useCallback((questionId: string) => {
     if (!confirm('Are you sure you want to delete this question?')) return;
 
-    axios.delete(`${API}/forum/questions/${questionId}`, { data: { schoolName } })
+    axios.delete(`${API}/forum/questions/${questionId}`, { params: { schoolName } })
       .then(() => {
         if (socketRef.current) {
           socketRef.current.emit('delete_question', questionId);
@@ -354,7 +354,7 @@ export default function ForumChatUI() {
   const deleteAnswer = useCallback((answerId: string, questionId: string) => {
     if (!confirm('Are you sure you want to delete this answer?')) return;
 
-    axios.delete(`${API}/forum/answers/${answerId}`, { data: { schoolName } })
+    axios.delete(`${API}/forum/answers/${answerId}`, { params: { schoolName } })
       .then(() => {
         if (socketRef.current) {
           socketRef.current.emit('delete_answer', { answerId, questionId });
@@ -372,7 +372,7 @@ export default function ForumChatUI() {
   const deleteReply = useCallback((replyId: string, questionId: string, answerId?: string) => {
     if (!confirm('Are you sure you want to delete this reply?')) return;
 
-    axios.delete(`${API}/forum/replies/${replyId}`, { data: { schoolName } })
+    axios.delete(`${API}/forum/replies/${replyId}`, { params: { schoolName } })
       .then(() => {
         if (socketRef.current) {
           socketRef.current.emit('delete_reply', { replyId, questionId, answerId });

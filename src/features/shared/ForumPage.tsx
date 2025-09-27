@@ -102,6 +102,8 @@ export default function ForumChatUI() {
     });
 
     socketRef.current.on('new_question', (qDoc: Question) => {
+      if (qDoc.schoolName !== schoolName) return; // Filter by schoolName
+
       // Fetch full question data
       axios.get(`${API}/forum/questions/${qDoc._id}`, { params: { schoolName } })
         .then(res => {
@@ -144,6 +146,8 @@ export default function ForumChatUI() {
     });
 
     socketRef.current.on('new_answer', (aDoc: Answer) => {
+      if (aDoc.schoolName !== schoolName) return; // Filter by schoolName
+
       const safeADoc = {
         ...aDoc,
         author: aDoc.author ?? { fullName: 'Anonymous', _id: '', role: '' },
@@ -164,6 +168,8 @@ export default function ForumChatUI() {
     });
 
     socketRef.current.on('new_reply', (rDoc: Reply) => {
+      if (rDoc.schoolName !== schoolName) return; // Filter by schoolName
+
       const safeRDoc = {
         ...rDoc,
         author: rDoc.author ?? { fullName: 'Anonymous', _id: '', role: '' },
@@ -291,7 +297,6 @@ export default function ForumChatUI() {
   useEffect(() => {
     setTypingUsers([]);
     if (selected?._id && socketRef.current) {
-      // Updated: Include schoolName in join_thread payload
       socketRef.current.emit('join_thread', { schoolName, threadId: selected._id });
     }
   }, [selected, schoolName]);
@@ -343,7 +348,6 @@ export default function ForumChatUI() {
     axios.delete(`${API}/forum/questions/${questionId}`, { params: { schoolName } })
       .then(() => {
         if (socketRef.current) {
-          // Updated: Include schoolName in delete_question payload
           socketRef.current.emit('delete_question', { schoolName, questionId });
         }
       })
@@ -359,7 +363,6 @@ export default function ForumChatUI() {
     axios.delete(`${API}/forum/answers/${answerId}`, { params: { schoolName } })
       .then(() => {
         if (socketRef.current) {
-          // Updated: Include schoolName in delete_answer payload
           socketRef.current.emit('delete_answer', { schoolName, answerId, questionId });
         }
         if (selected?._id === questionId) {
@@ -378,7 +381,6 @@ export default function ForumChatUI() {
     axios.delete(`${API}/forum/replies/${replyId}`, { params: { schoolName } })
       .then(() => {
         if (socketRef.current) {
-          // Updated: Include schoolName in delete_reply payload
           socketRef.current.emit('delete_reply', { schoolName, replyId, questionId, answerId });
         }
         if (selected?._id === questionId) {

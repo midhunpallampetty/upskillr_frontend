@@ -40,7 +40,6 @@ interface PurchasedCoursesModalProps {
       finalExam: FinalExam;
     }
   >;
-  courseDetailsMap?: Record<string, any>;
   studentId: string;
   schoolName: string;
   onClose: () => void;
@@ -91,7 +90,8 @@ const ProgressCard: React.FC<{
         <div className="flex-1">
           <h4 className="font-semibold text-gray-800 text-sm">{title}</h4>
           <p className="text-xs text-gray-600">
-            {current} of {total} {completed && '✓'}
+            {current} {title === 'Sections' ? '' : `of ${total}`}{' '}
+            {completed && '✓'}
           </p>
         </div>
         {completed && <CheckCircle className="w-5 h-5 text-green-600" />}
@@ -164,7 +164,6 @@ type CourseCardProps = {
     passedSections: PassedSection[];
     finalExam: FinalExam;
   };
-  courseDetails?: any;
   studentId: string;
   schoolName: string;
   onViewCertificate: (url: string) => void;
@@ -173,28 +172,30 @@ type CourseCardProps = {
 const CourseCard: React.FC<CourseCardProps> = ({
   course,
   studentProgress,
-  courseDetails,
   studentId,
   schoolName,
   onViewCertificate,
 }) => {
-  const [loadingCert, setLoadingCert] = useState(false);
-  const [certificateUnavailable, setCertificateUnavailable] = useState(false);
+  const [loadingCert, setLoadingCert] = React.useState(false);
+  const [certificateUnavailable, setCertificateUnavailable] = React.useState(false);
 
-  const allVideos = courseDetails?.sections?.flatMap((sec: any) => sec.videos) ?? [];
-  const totalVideos = allVideos.length;
-  const completedVideoCount = allVideos.filter((v: any) => studentProgress?.videos?.[v._id]?.completed).length;
+  const videosOfCourse = studentProgress?.videos || {};
+  const completedVideoCount = Object.values(videosOfCourse).filter(
+    (v) => v.completed
+  ).length;
+  const totalVideos = Object.keys(videosOfCourse).length || 1;
 
-  const totalSections = courseDetails?.sections?.length ?? 0;
   const passedSectionsCount = studentProgress?.passedSections?.length ?? 0;
 
   const finalExamPassed = studentProgress?.finalExam?.passed ?? false;
   const finalExamScore = studentProgress?.finalExam?.score;
 
-  const videosProgress = totalVideos > 0 ? (completedVideoCount / totalVideos) * 100 : 0;
-  const sectionsProgress = totalSections > 0 ? (passedSectionsCount / totalSections) * 100 : 0;
-  const examProgress = finalExamPassed ? 100 : 0;
-  const overallProgress = (videosProgress + sectionsProgress + examProgress) / 3;
+  const overallProgress =
+    ((completedVideoCount / totalVideos) +
+      (passedSectionsCount / (passedSectionsCount || 1)) +
+      (finalExamPassed ? 1 : 0)) /
+    3 *
+    100;
 
   const canGetCertificate = overallProgress === 100 && finalExamPassed && !certificateUnavailable;
 
@@ -259,7 +260,7 @@ const CourseCard: React.FC<CourseCardProps> = ({
           />
         </div>
 
-        {/* Detailed progress summary */}
+        {/* Detailed progress */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <ProgressCard
             icon={<Play className="w-5 h-5 text-blue-700" />}
@@ -275,56 +276,13 @@ const CourseCard: React.FC<CourseCardProps> = ({
             icon={<BookOpen className="w-5 h-5 text-purple-700" />}
             title="Sections"
             current={passedSectionsCount}
-            total={totalSections}
+            total={passedSectionsCount}
             color="bg-gradient-to-r from-purple-500 to-purple-600"
             bgColor="bg-purple-100"
-            completed={passedSectionsCount === totalSections}
+            completed={false}
           />
 
           <ExamStatusCard passed={finalExamPassed} score={finalExamScore} />
-        </div>
-
-        {/* Detailed sections and videos */}
-        <div className="mt-6">
-          <h4 className="text-lg font-semibold mb-4 text-gray-800">Detailed Course Progress</h4>
-          {courseDetails?.sections?.map((section: any) => {
-            const isSectionPassed = studentProgress?.passedSections?.some(
-              (p: PassedSection) => p.sectionId === section._id
-            );
-            const sectionScore = studentProgress?.passedSections?.find(
-              (p: PassedSection) => p.sectionId === section._id
-            )?.score;
-
-            return (
-              <div key={section._id} className="mb-6 p-4 bg-gray-50 rounded-xl border border-gray-200">
-                <div className="flex items-center justify-between mb-3">
-                  <h5 className="font-medium text-gray-800">{section.sectionName}</h5>
-                  {isSectionPassed ? (
-                    <CheckCircle className="w-5 h-5 text-green-600" />
-                  ) : (
-                    <Clock className="w-5 h-5 text-orange-600" />
-                  )}
-                </div>
-                <ul className="space-y-2">
-                  {section.videos.map((video: any) => (
-                    <li key={video._id} className="flex items-center gap-3 text-sm text-gray-700">
-                      {studentProgress?.videos?.[video._id]?.completed ? (
-                        <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
-                      ) : (
-                        <Play className="w-4 h-4 text-gray-500 flex-shrink-0" />
-                      )}
-                      <span className="flex-1">{video.videoName}</span>
-                    </li>
-                  ))}
-                </ul>
-                {section.examRequired && (
-                  <div className="mt-3 text-sm text-gray-600">
-                    Section Exam: {sectionScore !== null ? `${sectionScore}%` : 'Not taken'}
-                  </div>
-                )}
-              </div>
-            );
-          })}
         </div>
 
         {/* Certificate button only if completed and available */}
@@ -372,12 +330,11 @@ const PurchasedCoursesModal: React.FC<PurchasedCoursesModalProps> = ({
   isOpen,
   courses,
   studentProgressMap,
-  courseDetailsMap,
   studentId,
   schoolName,
   onClose,
 }) => {
-  const [viewingCertificateUrl, setViewingCertificateUrl] = useState<string | null>(null);
+  const [viewingCertificateUrl, setViewingCertificateUrl] = React.useState<string | null>(null);
 
   if (!isOpen) return null;
 
@@ -457,9 +414,6 @@ const PurchasedCoursesModal: React.FC<PurchasedCoursesModalProps> = ({
                     course={course}
                     studentProgress={
                       studentProgressMap ? studentProgressMap[course._id] : undefined
-                    }
-                    courseDetails={
-                      courseDetailsMap ? courseDetailsMap[course._id] : undefined
                     }
                     studentId={studentId}
                     schoolName={schoolName}

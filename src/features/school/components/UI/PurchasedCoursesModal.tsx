@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Play, BookOpen, Award, CheckCircle, Clock, ChevronDown, ChevronRight } from 'lucide-react';
+import { X, Play, BookOpen, Award, CheckCircle, Clock, ChevronDown, ChevronRight, Lock } from 'lucide-react';
 import { getCertificate } from '../../../student/api/course.api';
 
 type Course = {
@@ -8,6 +8,20 @@ type Course = {
   courseThumbnail: string;
   fee: number;
   createdAt: string;
+  sections?: Array<{
+    _id: string;
+    sectionName: string;
+    videos: Array<{
+      _id: string;
+      videoName: string;
+      duration: string;
+      url: string;
+    }>;
+    exam?: {
+      _id: string;
+      title: string;
+    };
+  }>;
 };
 
 type VideoProgress = {
@@ -40,11 +54,6 @@ interface PurchasedCoursesModalProps {
       finalExam: FinalExam;
       totalVideos: number;
       totalSections: number;
-      sections?: Array<{ // Assuming sections data is fetched and added to progress map
-        _id: string;
-        title: string;
-        videos: Array<{ _id: string; videoName: string; duration: string }>;
-      }>; // Add detailed sections for mirroring student view
     }
   >;
   studentId: string;
@@ -171,12 +180,6 @@ type CourseCardProps = {
     finalExam: FinalExam;
     totalVideos: number;
     totalSections: number;
-    sections?: Array<{ // Detailed sections for mirroring
-      _id: string;
-      title: string;
-      videos: Array<{ _id: string; videoName: string; duration: string }>;
-      exam?: { _id: string; title: string }; // Optional exam
-    }>;
   };
   studentId: string;
   schoolName: string;
@@ -220,7 +223,7 @@ const CourseCard: React.FC<CourseCardProps> = ({
     (id) => !videosOfCourse[id].completed && videosOfCourse[id].lastPosition > 0
   ) || Object.keys(videosOfCourse).find((id) => !videosOfCourse[id].completed);
 
-  const currentVideo = studentProgress?.sections?.flatMap(s => s.videos).find(v => v._id === currentVideoId);
+  const currentVideo = course.sections?.flatMap(s => s.videos).find(v => v._id === currentVideoId);
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
@@ -228,11 +231,27 @@ const CourseCard: React.FC<CourseCardProps> = ({
   };
 
   // Determine current exam: the first section with exam not passed
-  const currentExamSection = studentProgress?.sections?.find(
-    s => s.exam && !studentProgress.passedSections.some(ps => ps.sectionId === s._id)
+  const currentExamSection = course.sections?.find(
+    s => s.exam && !studentProgress?.passedSections.some(ps => ps.sectionId === s._id)
   );
 
+  // Determine if a section is unlocked (simplified logic mirroring student side)
+  const isSectionUnlocked = (sectionIndex: number): boolean => {
+    if (sectionIndex === 0) return true;
+    const prevSection = course.sections?.[sectionIndex - 1];
+    if (!prevSection) return false;
+    const prevVideosCompleted = prevSection.videos.every(v => videosOfCourse[v._id]?.completed);
+    const prevExamPassed = !prevSection.exam || studentProgress?.passedSections.some(ps => ps.sectionId === prevSection._id);
+    return prevVideosCompleted && prevExamPassed;
+  };
+
   const toggleSection = (id: string) => {
+    const sectionIndex = course.sections?.findIndex(s => s._id === id) ?? -1;
+    if (sectionIndex < 0) return;
+    if (!isSectionUnlocked(sectionIndex)) {
+      alert('Previous section not completed');
+      return;
+    }
     setExpandedSection(prev => (prev === id ? null : id));
   };
 
@@ -335,7 +354,7 @@ const CourseCard: React.FC<CourseCardProps> = ({
           <div className="mt-3 flex items-center bg-purple-50 p-3 rounded-xl mb-4">
             <BookOpen className="text-purple-500 mr-2 w-5 h-5" />
             <span className="text-sm">
-              Currently attending: <b>{currentExamSection.exam?.title}</b> in section "{currentExamSection.title}"
+              Pending exam: <b>{currentExamSection.exam?.title}</b> in section "{currentExamSection.sectionName}"
             </span>
           </div>
         )}
@@ -343,18 +362,22 @@ const CourseCard: React.FC<CourseCardProps> = ({
         {/* Detailed Sections View (Expandable like student side) */}
         <div className="mt-6">
           <h4 className="text-lg font-semibold text-gray-800 mb-4">Section Details</h4>
-          {studentProgress?.sections?.map((section) => {
-            const sectionCompleted = studentProgress.passedSections.some(ps => ps.sectionId === section._id);
+          {course.sections?.map((section, index) => {
+            const sectionCompleted = studentProgress?.passedSections.some(ps => ps.sectionId === section._id);
             const sectionVideosCompleted = section.videos.every(v => videosOfCourse[v._id]?.completed);
             const sectionExamPassed = !section.exam || sectionCompleted;
+            const unlocked = isSectionUnlocked(index);
 
             return (
               <div key={section._id} className="mb-4">
                 <button
                   onClick={() => toggleSection(section._id)}
-                  className="w-full flex items-center justify-between p-3 bg-gray-100 rounded-lg hover:bg-gray-200 transition"
+                  disabled={!unlocked}
+                  className={`w-full flex items-center justify-between p-3 rounded-lg transition ${
+                    unlocked ? 'bg-gray-100 hover:bg-gray-200' : 'bg-gray-200 opacity-50 cursor-not-allowed'
+                  }`}
                 >
-                  <span className="font-medium">{section.title}</span>
+                  <span className="font-medium">{section.sectionName}</span>
                   <div className="flex items-center gap-2">
                     {sectionCompleted ? <CheckCircle className="w-5 h-5 text-green-600" /> : <Lock className="w-5 h-5 text-gray-500" />}
                     {expandedSection === section._id ? <ChevronDown /> : <ChevronRight />}

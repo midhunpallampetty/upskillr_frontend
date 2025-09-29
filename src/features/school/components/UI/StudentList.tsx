@@ -1,28 +1,34 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { getAllStudents, getPurchasedCoursesByStudent } from '../../api/student.api';
+import { fetchCourseData } from '../../../student/api/course.api';
+import { fetchStudentProgress } from '../../../student/api/course.api';
 import PurchasedCoursesModal from './PurchasedCoursesModal';
-import { fetchStudentProgress, fetchCourseData } from '../../../student/api/course.api'; // Assuming fetchCourseData is imported from here based on the query
 
-type Student = {
+interface Student {
   _id: string;
   fullName: string;
   email: string;
-  createdAt?: string;
-};
+}
 
-type School = {
+interface School {
   _id: string;
   name: string;
   subDomain?: string;
-};
+}
 
-type Course = {
+interface Course {
   _id: string;
   courseName: string;
   courseThumbnail: string;
   fee: number;
   createdAt: string;
-};
+  sections?: Array<any>;
+}
+
+interface StudentListProps {
+  dbname: string;
+  schoolData: School;
+}
 
 const extractSubdomain = (url: string): string => {
   try {
@@ -35,11 +41,6 @@ const extractSubdomain = (url: string): string => {
   }
 };
 
-interface StudentListProps {
-  dbname: string;
-  schoolData: School;
-}
-
 const StudentList: React.FC<StudentListProps> = ({ dbname, schoolData }) => {
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -48,12 +49,7 @@ const StudentList: React.FC<StudentListProps> = ({ dbname, schoolData }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   const [purchasedCourses, setPurchasedCourses] = useState<Course[]>([]);
-  const [loadingCourses, setLoadingCourses] = useState(false);
-  const [coursesError, setCoursesError] = useState<string>('');
-
   const [studentProgressMap, setStudentProgressMap] = useState<Record<string, any>>({});
-  const [progressError, setProgressError] = useState<string>('');
-  const [loadingProgress, setLoadingProgress] = useState(false);
 
   useEffect(() => {
     const fetchStudents = async () => {
@@ -67,68 +63,58 @@ const StudentList: React.FC<StudentListProps> = ({ dbname, schoolData }) => {
         setLoading(false);
       }
     };
-
     fetchStudents();
   }, [dbname, schoolData]);
 
   const handleViewPurchasedCourses = async (studentId: string) => {
     if (!schoolData.subDomain && !schoolData.name) {
-      setCoursesError("School info missing");
+      setError("School info missing");
       return;
     }
     setSelectedStudentId(studentId);
     setIsModalOpen(true);
-    setLoadingCourses(true);
-    setCoursesError('');
-    setStudentProgressMap({});
-    setProgressError('');
-    setLoadingProgress(true);
-
-    const schoolName = extractSubdomain(schoolData.subDomain || '') || schoolData.name;
 
     try {
-      const purchasedCoursesResponse = await getPurchasedCoursesByStudent(studentId, schoolName);
-      const courses = purchasedCoursesResponse.courses;
-      setPurchasedCourses(courses);
+      const schoolName = extractSubdomain(schoolData.subDomain || '') || schoolData.name;
+      // Step 1: fetch purchased courses
+      const purchasedResponse = await getPurchasedCoursesByStudent(studentId, schoolName);
+      const courses = purchasedResponse.courses;
 
-      const progressMap: Record<string, any> = {};
-      await Promise.all(
-        courses.map(async (course) => {
-          // Fetch student progress
-          const progressResponse = await fetchStudentProgress(schoolName, course._id, studentId);
-          // Fetch course details to get total videos and sections
-          const courseDetails = await fetchCourseData(schoolName, course._id); // Assuming fetchCourseData takes schoolName and courseId
-          
-          // Calculate totals from courseDetails (based on example structure)
-          // Assuming courseDetails.sections is an array, totalSections = sections.length
-          // For totalVideos, assuming we need to count videos across sections (example doesn't have videos, so simulate or adjust)
-          // If videos are not in response, you may need a separate API or to include in fetchCourseData
-          // For this example, assume courseDetails.totalVideos is available or calculate if sections have videos array
-          const totalSections = courseDetails.sections.length;
-          let totalVideos = 0; // Adjust based on actual response
-          courseDetails.sections.forEach((section: any) => {
-            if (section.videos) { // Assuming sections have videos array
-              totalVideos += section.videos.length;
-            }
-          });
-          // If totalVideos not calculable, use from progress as fallback, but ideally from course data
-
-          progressMap[course._id] = {
-            videos: progressResponse.videos,
-            passedSections: progressResponse.passedSections,
-            finalExam: progressResponse.finalExam,
-            totalVideos: totalVideos || Object.keys(progressResponse.videos).length, // Fallback if not fetched
-            totalSections,
+      // Step 2: Enrich each course with detailed sections and videos
+      const detailedCourses = await Promise.all(
+        courses.map(async (course: Course) => {
+          const courseDetails = await fetchCourseData(schoolName, course._id);
+          return {
+            ...course,
+            sections: courseDetails.sections || [],
+            totalVideos: courseDetails.sections.reduce(
+              (acc: number, sec: any) => acc + (sec.videos ? sec.videos.length : 0),
+              0
+            ),
+            totalSections: courseDetails.sections.length,
           };
         })
       );
-      setStudentProgressMap(progressMap);
-    } catch (err) {
-      setCoursesError('Failed to load purchased courses');
-      setProgressError('Failed to load student progress');
-    } finally {
-      setLoadingCourses(false);
-      setLoadingProgress(false);
+
+      // Step 3: Build progress map
+      const newProgressMap: Record<string, any> = {};
+      await Promise.all(
+        detailedCourses.map(async (course) => {
+          const progress = await fetchStudentProgress(schoolName, course._id, studentId);
+          newProgressMap[course._id] = {
+            videos: progress.videos || {},
+            passedSections: progress.passedSections || [],
+            finalExam: progress.finalExam || { passed: false, score: 0 },
+            totalVideos: course.totalVideos,
+            totalSections: course.totalSections,
+          };
+        })
+      );
+
+      setPurchasedCourses(detailedCourses);
+      setStudentProgressMap(newProgressMap);
+    } catch (error) {
+      setError('Failed to load purchased courses or progress');
     }
   };
 
@@ -166,12 +152,6 @@ const StudentList: React.FC<StudentListProps> = ({ dbname, schoolData }) => {
           </tbody>
         </table>
       </div>
-
-      {loadingCourses && <p className="text-center text-gray-600 mt-2">Loading purchased courses...</p>}
-      {loadingProgress && <p className="text-center text-gray-600 mt-2">Loading student progress...</p>}
-
-      {coursesError && <p className="text-center text-red-500 mt-2">{coursesError}</p>}
-      {progressError && <p className="text-center text-red-500 mt-2">{progressError}</p>}
 
       <PurchasedCoursesModal
         isOpen={isModalOpen}

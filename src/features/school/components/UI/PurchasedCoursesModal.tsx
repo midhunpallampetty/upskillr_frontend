@@ -203,7 +203,21 @@ const CourseCard: React.FC<CourseCardProps> = ({
   ).length;
   const totalVideos = studentProgress?.totalVideos || Object.keys(videosOfCourse).length || 1;
 
-  const passedSectionsCount = studentProgress?.passedSections?.length ?? 0;
+  const passedSections = new Set(studentProgress?.passedSections.map(ps => ps.sectionId) ?? []);
+
+  // Function to determine if a section is passed
+  const isSectionPassed = (section: any): boolean => {
+    const allVideosCompleted = section.videos.every((v: any) => videosOfCourse[v._id]?.completed);
+    if (section.exam) {
+      // If there's an exam, require both videos completed and exam passed
+      return allVideosCompleted && passedSections.has(section._id);
+    } else {
+      // If no exam, mark as passed if all videos are completed
+      return allVideosCompleted;
+    }
+  };
+
+  const passedSectionsCount = course.sections?.filter(isSectionPassed).length ?? 0;
   const totalSections = studentProgress?.totalSections || passedSectionsCount || 1;
 
   const finalExamPassed = studentProgress?.finalExam?.passed ?? false;
@@ -232,7 +246,7 @@ const CourseCard: React.FC<CourseCardProps> = ({
 
   // Determine current exam: the first section with exam not passed
   const currentExamSection = course.sections?.find(
-    s => s.exam && !studentProgress?.passedSections.some(ps => ps.sectionId === s._id)
+    s => s.exam && !isSectionPassed(s)
   );
 
   // Determine if a section is unlocked (simplified logic mirroring student side)
@@ -240,9 +254,7 @@ const CourseCard: React.FC<CourseCardProps> = ({
     if (sectionIndex === 0) return true;
     const prevSection = course.sections?.[sectionIndex - 1];
     if (!prevSection) return false;
-    const prevVideosCompleted = prevSection.videos.every(v => videosOfCourse[v._id]?.completed);
-    const prevExamPassed = !prevSection.exam || studentProgress?.passedSections.some(ps => ps.sectionId === prevSection._id);
-    return prevVideosCompleted && prevExamPassed;
+    return isSectionPassed(prevSection);
   };
 
   const toggleSection = (id: string) => {
@@ -363,9 +375,8 @@ const CourseCard: React.FC<CourseCardProps> = ({
         <div className="mt-6">
           <h4 className="text-lg font-semibold text-gray-800 mb-4">Section Details</h4>
           {course.sections?.map((section, index) => {
-            const sectionCompleted = studentProgress?.passedSections.some(ps => ps.sectionId === section._id);
+            const sectionPassed = isSectionPassed(section);
             const sectionVideosCompleted = section.videos.every(v => videosOfCourse[v._id]?.completed);
-            const sectionExamPassed = !section.exam || sectionCompleted;
             const unlocked = isSectionUnlocked(index);
 
             return (
@@ -379,7 +390,7 @@ const CourseCard: React.FC<CourseCardProps> = ({
                 >
                   <span className="font-medium">{section.sectionName}</span>
                   <div className="flex items-center gap-2">
-                    {sectionCompleted ? <CheckCircle className="w-5 h-5 text-green-600" /> : <Lock className="w-5 h-5 text-gray-500" />}
+                    {sectionPassed ? <CheckCircle className="w-5 h-5 text-green-600" /> : <Lock className="w-5 h-5 text-gray-500" />}
                     {expandedSection === section._id ? <ChevronDown /> : <ChevronRight />}
                   </div>
                 </button>
@@ -416,7 +427,7 @@ const CourseCard: React.FC<CourseCardProps> = ({
                       <div className="mb-3">
                         <h5 className="text-sm font-semibold mb-2">Exam: {section.exam.title}</h5>
                         <p className="text-sm">
-                          Status: {sectionExamPassed ? 'Passed' : currentExamSection?._id === section._id ? 'In progress' : 'Pending'}
+                          Status: {sectionPassed ? 'Passed' : currentExamSection?._id === section._id ? 'In progress' : 'Pending'}
                         </p>
                       </div>
                     )}

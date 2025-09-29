@@ -1,16 +1,75 @@
-import React, { useState } from 'react';
-import { 
-  X, Play, BookOpen, Award, CheckCircle, Clock, ChevronDown, ChevronRight, Lock 
+import React, { useState, useRef, useEffect } from 'react';
+import {
+  X,
+  Play,
+  BookOpen,
+  Award,
+  CheckCircle,
+  Clock,
+  ChevronDown,
+  ChevronRight,
+  Lock,
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { getCertificate } from '../../../student/api/course.api';
 
-type Course = { /* same as before */ };
-type VideoProgress = { /* same as before */ };
-type PassedSection = { /* same as before */ };
-type FinalExam = { /* same as before */ };
+type Course = {
+  _id: string;
+  courseName: string;
+  courseThumbnail: string;
+  fee: number;
+  createdAt: string;
+  sections?: Array<{
+    _id: string;
+    sectionName: string;
+    videos: Array<{
+      _id: string;
+      videoName: string;
+      duration: string;
+      url: string;
+    }>;
+    exam?: {
+      _id: string;
+      title: string;
+    };
+  }>;
+};
 
-interface PurchasedCoursesModalProps { /* same as before */ }
+type VideoProgress = {
+  completed: boolean;
+  lastPosition: number;
+  _id: string;
+};
+
+type PassedSection = {
+  sectionId: string;
+  score: number | null;
+  passedAt: string;
+  _id: string;
+};
+
+type FinalExam = {
+  passed: boolean;
+  score: number;
+  passedAt: string;
+};
+
+interface PurchasedCoursesModalProps {
+  isOpen: boolean;
+  courses: Course[];
+  studentProgressMap?: Record<
+    string,
+    {
+      videos: Record<string, VideoProgress>;
+      passedSections: PassedSection[];
+      finalExam: FinalExam;
+      totalVideos: number;
+      totalSections: number;
+    }
+  >;
+  studentId: string;
+  schoolName: string;
+  onClose: () => void;
+}
 
 const ProgressBar: React.FC<{
   progress: number;
@@ -20,11 +79,9 @@ const ProgressBar: React.FC<{
 }> = ({ progress, color, height = 'h-2', showPercentage = false }) => (
   <div className="w-full">
     <div className={`w-full bg-gray-200 rounded-full ${height} overflow-hidden`}>
-      <motion.div
-        className={`${height} rounded-full ${color}`}
-        initial={{ width: 0 }}
-        animate={{ width: `${Math.min(progress, 100)}%` }}
-        transition={{ type: 'spring', stiffness: 100, damping: 20 }}
+      <div
+        className={`${height} rounded-full transition-all duration-500 ease-out ${color}`}
+        style={{ width: `${Math.min(progress, 100)}%` }}
       />
     </div>
     {showPercentage && (
@@ -47,14 +104,12 @@ const ProgressCard: React.FC<{
   const percentage = total > 0 ? (current / total) * 100 : 0;
 
   return (
-    <motion.div
+    <div
       className={`relative p-4 rounded-xl border-2 transition-all duration-300 ${
         completed
           ? 'border-green-200 bg-gradient-to-br from-green-50 to-green-100'
           : 'border-gray-200 bg-white hover:border-gray-300'
       }`}
-      whileHover={!completed ? { scale: 1.03 } : {}}
-      layout
     >
       <div className="flex items-center gap-3 mb-3">
         <div className={`p-2 rounded-lg ${bgColor}`}>{icon}</div>
@@ -72,19 +127,20 @@ const ProgressCard: React.FC<{
         height="h-3"
         showPercentage={true}
       />
-    </motion.div>
+    </div>
   );
 };
 
-const ExamStatusCard: React.FC<{ passed: boolean; score?: number }> = ({ passed, score }) => (
-  <motion.div
+const ExamStatusCard: React.FC<{
+  passed: boolean;
+  score?: number;
+}> = ({ passed, score }) => (
+  <div
     className={`relative p-4 rounded-xl border-2 transition-all duration-300 ${
       passed
         ? 'border-green-200 bg-gradient-to-br from-green-50 to-green-100'
         : 'border-orange-200 bg-gradient-to-br from-orange-50 to-orange-100'
     }`}
-    layout
-    whileHover={{ scale: passed ? 1.03 : 1 }}
   >
     <div className="flex items-center gap-3 mb-3">
       <div
@@ -106,23 +162,31 @@ const ExamStatusCard: React.FC<{ passed: boolean; score?: number }> = ({ passed,
       </div>
       {passed && <CheckCircle className="w-5 h-5 text-green-600" />}
     </div>
-    <div className={`w-full h-3 rounded-full ${passed ? 'bg-green-300' : 'bg-orange-300'}`}>
-      <motion.div
-        className={`h-3 rounded-full ${
+    <div
+      className={`w-full h-3 rounded-full ${
+        passed ? 'bg-green-300' : 'bg-orange-300'
+      }`}
+    >
+      <div
+        className={`h-3 rounded-full transition-all duration-500 ${
           passed
             ? 'bg-gradient-to-r from-green-500 to-green-600'
             : 'bg-gradient-to-r from-orange-400 to-orange-500'
         }`}
-        initial={{ width: 0 }}
-        animate={{ width: passed ? '100%' : '0%' }}
-        transition={{ duration: 0.6 }}
+        style={{ width: passed ? '100%' : '0%' }}
       />
     </div>
     <span className="text-xs text-gray-600 mt-1 block">
       {passed ? '100%' : '0%'}
     </span>
-  </motion.div>
+  </div>
 );
+
+type OpenedVideo = {
+  url: string;
+  title: string;
+  lastPosition: number;
+};
 
 type CourseCardProps = {
   course: Course;
@@ -136,6 +200,7 @@ type CourseCardProps = {
   studentId: string;
   schoolName: string;
   onViewCertificate: (url: string) => void;
+  onOpenVideo: (url: string, title: string, lastPosition: number) => void; // new prop
 };
 
 const CourseCard: React.FC<CourseCardProps> = ({
@@ -144,26 +209,34 @@ const CourseCard: React.FC<CourseCardProps> = ({
   studentId,
   schoolName,
   onViewCertificate,
+  onOpenVideo,
 }) => {
   const [loadingCert, setLoadingCert] = useState(false);
   const [certificateUnavailable, setCertificateUnavailable] = useState(false);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
 
   const videosOfCourse = studentProgress?.videos || {};
-  const completedVideoCount = Object.values(videosOfCourse).filter(v => v.completed).length;
-  const totalVideos = studentProgress?.totalVideos || Object.keys(videosOfCourse).length || 1;
+  const completedVideoCount = Object.values(videosOfCourse).filter(
+    (v) => v.completed
+  ).length;
+  const totalVideos =
+    studentProgress?.totalVideos || Object.keys(videosOfCourse).length || 1;
 
-  const passedSections = new Set(studentProgress?.passedSections.map(ps => ps.sectionId) ?? []);
+  const passedSections = new Set(
+    studentProgress?.passedSections.map((ps) => ps.sectionId) ?? []
+  );
 
   const isSectionPassed = (section: any): boolean => {
-    const allVideosCompleted = section.videos.every((v: any) => videosOfCourse[v._id]?.completed);
+    const allVideosCompleted = section.videos.every(
+      (v: any) => videosOfCourse[v._id]?.completed
+    );
     if (section.exam) {
       return allVideosCompleted && passedSections.has(section._id);
     } else {
       return allVideosCompleted;
     }
   };
-  
+
   const passedSectionsCount = course.sections?.filter(isSectionPassed).length ?? 0;
   const totalSections = studentProgress?.totalSections || passedSectionsCount || 1;
 
@@ -177,13 +250,18 @@ const CourseCard: React.FC<CourseCardProps> = ({
     3 *
     100;
 
-  const canGetCertificate = overallProgress === 100 && finalExamPassed && !certificateUnavailable;
+  const canGetCertificate =
+    overallProgress === 100 && finalExamPassed && !certificateUnavailable;
 
-  const currentVideoId = Object.keys(videosOfCourse).find(
-    id => !videosOfCourse[id].completed && videosOfCourse[id].lastPosition > 0
-  ) || Object.keys(videosOfCourse).find(id => !videosOfCourse[id].completed);
+  const currentVideoId =
+    Object.keys(videosOfCourse).find(
+      (id) => !videosOfCourse[id].completed && videosOfCourse[id].lastPosition > 0
+    ) || Object.keys(videosOfCourse).find((id) => !videosOfCourse[id].completed);
 
-  const currentVideo = course.sections?.flatMap(s => s.videos).find(v => v._id === currentVideoId);
+  const currentVideo = course.sections
+    ?.flatMap((s) => s.videos)
+    .find((v) => v._id === currentVideoId);
+
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
@@ -191,7 +269,7 @@ const CourseCard: React.FC<CourseCardProps> = ({
   };
 
   const currentExamSection = course.sections?.find(
-    s => s.exam && !isSectionPassed(s)
+    (s) => s.exam && !isSectionPassed(s)
   );
 
   const isSectionUnlocked = (sectionIndex: number): boolean => {
@@ -202,13 +280,13 @@ const CourseCard: React.FC<CourseCardProps> = ({
   };
 
   const toggleSection = (id: string) => {
-    const sectionIndex = course.sections?.findIndex(s => s._id === id) ?? -1;
+    const sectionIndex = course.sections?.findIndex((s) => s._id === id) ?? -1;
     if (sectionIndex < 0) return;
     if (!isSectionUnlocked(sectionIndex)) {
       alert('Previous section not completed');
       return;
     }
-    setExpandedSection(prev => (prev === id ? null : id));
+    setExpandedSection((prev) => (prev === id ? null : id));
   };
 
   const handleGetCertificate = async () => {
@@ -232,13 +310,7 @@ const CourseCard: React.FC<CourseCardProps> = ({
   };
 
   return (
-    <motion.div 
-      className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300"
-      layout
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: 10 }}
-    >
+    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300">
       <div className="relative">
         <img
           src={course.courseThumbnail}
@@ -249,8 +321,7 @@ const CourseCard: React.FC<CourseCardProps> = ({
         <div className="absolute bottom-4 left-4 text-white">
           <h3 className="text-xl font-bold mb-1">{course.courseName}</h3>
           <p className="text-sm opacity-90">
-            ₹{course.fee} •{' '}
-            {new Date(course.createdAt).toLocaleDateString()}
+            ₹{course.fee} • {new Date(course.createdAt).toLocaleDateString()}
           </p>
         </div>
         <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-lg px-3 py-1">
@@ -264,12 +335,8 @@ const CourseCard: React.FC<CourseCardProps> = ({
         {/* Overall progress */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-2">
-            <h4 className="text-lg font-semibold text-gray-800">
-              Overall Progress
-            </h4>
-            <span className="text-sm text-gray-600 font-medium">
-              {Math.round(overallProgress)}%
-            </span>
+            <h4 className="text-lg font-semibold text-gray-800">Overall Progress</h4>
+            <span className="text-sm text-gray-600 font-medium">{Math.round(overallProgress)}%</span>
           </div>
           <ProgressBar
             progress={overallProgress}
@@ -303,47 +370,31 @@ const CourseCard: React.FC<CourseCardProps> = ({
           <ExamStatusCard passed={finalExamPassed} score={finalExamScore} />
         </div>
 
-        {/* Current Activity Highlights with small animated preview */}
+        {/* Current Activity Highlights */}
         {currentVideo && (
-          <motion.div
-            className="mt-3 flex items-center bg-blue-50 p-3 rounded-xl mb-4 gap-3"
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.4 }}
-          >
-            <Play className="text-blue-500 w-6 h-6" />
-            {/* Small preview box with watch time */}
-            <div className="relative w-24 h-14 bg-blue-100 rounded-lg overflow-hidden shadow-inner">
-              {/* Could show thumbnail preview here */}
-              <div className="absolute inset-0 bg-blue-200/50 flex items-center justify-center text-blue-700 text-xs font-mono select-none">
-                {formatTime(videosOfCourse[currentVideoId!].lastPosition)}
-              </div>
-            </div>
+          <div className="mt-3 flex items-center bg-blue-50 p-3 rounded-xl mb-4">
+            <Play className="text-blue-500 mr-2 w-5 h-5" />
             <span className="text-sm">
-              Currently watching: <b>{currentVideo.videoName}</b> (at {formatTime(videosOfCourse[currentVideoId!].lastPosition)})
+              Currently watching: <b>{currentVideo.videoName}</b> (at{' '}
+              {formatTime(videosOfCourse[currentVideoId!].lastPosition)})
             </span>
-          </motion.div>
+          </div>
         )}
         {currentExamSection && (
-          <motion.div
-            className="mt-3 flex items-center bg-purple-50 p-3 rounded-xl mb-4"
-            initial={{ opacity: 0, x: 10 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.4 }}
-          >
+          <div className="mt-3 flex items-center bg-purple-50 p-3 rounded-xl mb-4">
             <BookOpen className="text-purple-500 mr-2 w-5 h-5" />
             <span className="text-sm">
-              Pending exam: <b>{currentExamSection.exam?.title}</b> in section "{currentExamSection.sectionName}"
+              Pending exam: <b>{currentExamSection.exam?.title}</b> in section "
+              {currentExamSection.sectionName}"
             </span>
-          </motion.div>
+          </div>
         )}
 
-        {/* Sections with animated expansion */}
+        {/* Detailed Sections View (Expandable like student side) */}
         <div className="mt-6">
           <h4 className="text-lg font-semibold text-gray-800 mb-4">Section Details</h4>
           {course.sections?.map((section, index) => {
             const sectionPassed = isSectionPassed(section);
-            const sectionVideosCompleted = section.videos.every(v => videosOfCourse[v._id]?.completed);
             const unlocked = isSectionUnlocked(index);
 
             return (
@@ -357,87 +408,94 @@ const CourseCard: React.FC<CourseCardProps> = ({
                 >
                   <span className="font-medium">{section.sectionName}</span>
                   <div className="flex items-center gap-2">
-                    {sectionPassed ? <CheckCircle className="w-5 h-5 text-green-600" /> : <Lock className="w-5 h-5 text-gray-500" />}
+                    {sectionPassed ? (
+                      <CheckCircle className="w-5 h-5 text-green-600" />
+                    ) : (
+                      <Lock className="w-5 h-5 text-gray-500" />
+                    )}
                     {expandedSection === section._id ? <ChevronDown /> : <ChevronRight />}
                   </div>
                 </button>
-                <AnimatePresence initial={false}>
-                  {expandedSection === section._id && unlocked && (
-                    <motion.div
-                      key="content"
-                      initial="collapsed"
-                      animate="open"
-                      exit="collapsed"
-                      variants={{
-                        open: { opacity: 1, height: 'auto' },
-                        collapsed: { opacity: 0, height: 0 }
-                      }}
-                      transition={{ duration: 0.4, ease: 'easeInOut' }}
-                      className="overflow-hidden pl-4"
-                    >
-                      {/* Videos in Section */}
-                      <div className="mb-3">
-                        <h5 className="text-sm font-semibold mb-2">Videos</h5>
-                        <ul className="space-y-2">
-                          {section.videos.map((video) => {
-                            const progress = videosOfCourse[video._id];
-                            const isCurrent = video._id === currentVideoId;
-                            return (
-                              <motion.li
-                                key={video._id}
-                                className={`text-sm flex items-center gap-2 select-none cursor-pointer ${
-                                  isCurrent ? 'font-bold text-blue-600' : ''
-                                }`}
-                                whileHover={{ scale: 1.03, color: '#2563EB' }}
-                                whileTap={{ scale: 0.95 }}
-                              >
-                                <Play className="w-4 h-4" />
-                                {video.videoName} ({video.duration})
-                                {progress?.completed ? ' ✓' : ''}
-                                {isCurrent ? ' (Currently watching)' : ''}
-                                {progress && !progress.completed && progress.lastPosition > 0 ? ` — at ${formatTime(progress.lastPosition)}` : ''}
-                              </motion.li>
-                            );
-                          })}
-                        </ul>
-                        <ProgressBar
-                          progress={(section.videos.filter(v => videosOfCourse[v._id]?.completed).length / section.videos.length) * 100}
-                          color="bg-blue-500"
-                          height="h-2"
-                          showPercentage={true}
-                        />
-                      </div>
+                {expandedSection === section._id && (
+                  <div className="mt-2 pl-4">
+                    {/* Videos in Section */}
+                    <div className="mb-3">
+                      <h5 className="text-sm font-semibold mb-2">Videos</h5>
+                      <ul className="space-y-2">
+                        {section.videos.map((video) => {
+                          const progress = videosOfCourse[video._id];
+                          const isCurrent = video._id === currentVideoId;
+                          return (
+                            <li
+                              key={video._id}
+                              className={`text-sm flex items-center gap-2 cursor-pointer ${
+                                isCurrent ? 'font-bold text-blue-600' : ''
+                              }`}
+                              onClick={() =>
+                                onOpenVideo(
+                                  video.url,
+                                  video.videoName,
+                                  progress?.lastPosition || 0
+                                )
+                              }
+                              title="Click to watch video"
+                            >
+                              <Play className="w-4 h-4" />
+                              {video.videoName} ({video.duration})
+                              {progress?.completed ? ' ✓' : ''}
+                              {isCurrent ? ' (Currently watching)' : ''}
+                              {progress && !progress.completed && progress.lastPosition > 0
+                                ? ` — at ${formatTime(progress.lastPosition)}`
+                                : ''}
+                            </li>
+                          );
+                        })}
+                      </ul>
+                      <ProgressBar
+                        progress={
+                          (section.videos.filter((v) => videosOfCourse[v._id]?.completed).length /
+                            section.videos.length) *
+                          100
+                        }
+                        color="bg-blue-500"
+                        height="h-2"
+                        showPercentage={true}
+                      />
+                    </div>
 
-                      {/* Exam in Section */}
-                      {section.exam && (
-                        <div className="mb-3">
-                          <h5 className="text-sm font-semibold mb-2">Exam: {section.exam.title}</h5>
-                          <p className="text-sm">
-                            Status: {sectionPassed ? 'Passed' : currentExamSection?._id === section._id ? 'In progress' : 'Pending'}
-                          </p>
-                        </div>
-                      )}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                    {/* Exam in Section */}
+                    {section.exam && (
+                      <div className="mb-3">
+                        <h5 className="text-sm font-semibold mb-2">Exam: {section.exam.title}</h5>
+                        <p className="text-sm">
+                          Status:{' '}
+                          {sectionPassed
+                            ? 'Passed'
+                            : currentExamSection?._id === section._id
+                            ? 'In progress'
+                            : 'Pending'}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             );
-          }) || <p className="text-sm text-gray-600">No detailed section data available.</p>}
+          }) ?? <p className="text-sm text-gray-600">No detailed section data available.</p>}
         </div>
 
-        {/* Certificate button */}
-        <motion.button
-          onClick={handleGetCertificate}
-          disabled={loadingCert || !canGetCertificate}
-          className="mt-6 w-full bg-green-600 text-white rounded px-4 py-3 hover:bg-green-700 transition disabled:opacity-60"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: canGetCertificate ? 1 : 0.5, y: 0 }}
-          transition={{ duration: 0.4 }}
-        >
-          {loadingCert ? 'Loading Certificate...' : 'Get Certificate'}
-        </motion.button>
+        {/* Certificate button only if completed and available */}
+        {canGetCertificate && (
+          <button
+            onClick={handleGetCertificate}
+            disabled={loadingCert}
+            className="mt-6 w-full bg-green-600 text-white rounded px-4 py-3 hover:bg-green-700 transition disabled:opacity-60"
+          >
+            {loadingCert ? 'Loading Certificate...' : 'Get Certificate'}
+          </button>
+        )}
 
-        {/* Certificate unavailable message */}
+        {/* Show message if certificate unavailable */}
         {certificateUnavailable && (
           <p className="mt-4 text-red-600 text-sm font-medium">
             Certificate not found or not yet issued.
@@ -446,29 +504,49 @@ const CourseCard: React.FC<CourseCardProps> = ({
 
         {/* Completion message */}
         {overallProgress === 100 && !certificateUnavailable && (
-          <motion.div 
-            className="mt-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6 }}
-          >
+          <div className="mt-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-green-100 rounded-full">
                 <Award className="w-6 h-6 text-green-600" />
               </div>
               <div>
-                <h5 className="font-semibold text-green-800">
-                  Course Completed!
-                </h5>
-                <p className="text-sm text-green-700">
-                  All requirements met.
-                </p>
+                <h5 className="font-semibold text-green-800">Course Completed!</h5>
+                <p className="text-sm text-green-700">All requirements met.</p>
               </div>
             </div>
-          </motion.div>
+          </div>
         )}
       </div>
-    </motion.div>
+    </div>
+  );
+};
+
+// Video Player component
+const VideoPlayer: React.FC<{ url: string; startPosition: number }> = ({
+  url,
+  startPosition,
+}) => {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.currentTime = startPosition;
+      videoRef.current.play().catch(() => {
+        // Autoplay might be blocked, ignore error
+      });
+    }
+  }, [startPosition]);
+
+  return (
+    <video
+      ref={videoRef}
+      controls
+      className="w-full max-h-[600px] rounded-xl"
+      preload="metadata"
+    >
+      <source src={url} type="video/mp4" />
+      Your browser does not support the video tag.
+    </video>
   );
 };
 
@@ -481,118 +559,103 @@ const PurchasedCoursesModal: React.FC<PurchasedCoursesModalProps> = ({
   onClose,
 }) => {
   const [viewingCertificateUrl, setViewingCertificateUrl] = useState<string | null>(null);
+  const [openedVideo, setOpenedVideo] = useState<OpenedVideo | null>(null);
 
   if (!isOpen) return null;
 
   const handleBackToCourses = () => {
     setViewingCertificateUrl(null);
+    setOpenedVideo(null);
   };
 
   const handleViewCertificate = (url: string) => {
     setViewingCertificateUrl(url);
   };
 
-  return (
-    <AnimatePresence>
-      {isOpen && (
-        <motion.div
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-50 p-4"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.4 }}
-        >
-          <motion.div
-            className="bg-gray-50 rounded-3xl max-w-6xl w-full max-h-[90vh] overflow-hidden shadow-2xl flex flex-col"
-            initial={{ scale: 0.97, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.97, opacity: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            {/* Header */}
-            <div className="bg-white p-6 border-b border-gray-200 flex items-center justify-between">
-              {!viewingCertificateUrl ? (
-                <>
-                  <div>
-                    <h2 className="text-2xl font-bold text-gray-900">
-                      Student Learning Progress
-                    </h2>
-                    <p className="text-gray-600 mt-1">
-                      Track progress across all purchased courses
-                    </p>
-                  </div>
-                  <button
-                    onClick={onClose}
-                    className="p-2 hover:bg-gray-100 rounded-full transition-colors duration-200 group"
-                  >
-                    <X className="w-6 h-6 text-gray-500 group-hover:text-gray-700" />
-                  </button>
-                </>
-              ) : (
-                <>
-                  <button
-                    onClick={handleBackToCourses}
-                    className="p-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition"
-                  >
-                    Back
-                  </button>
-                  <div className="flex-1 text-center font-semibold text-gray-800">
-                    Certificate View
-                  </div>
-                  <button
-                    onClick={onClose}
-                    className="p-2 hover:bg-gray-100 rounded-full transition-colors duration-200 group"
-                  >
-                    <X className="w-6 h-6 text-gray-500 group-hover:text-gray-700" />
-                  </button>
-                </>
-              )}
-            </div>
+  const handleOpenVideo = (url: string, title: string, lastPosition: number) => {
+    setOpenedVideo({ url, title, lastPosition });
+  };
 
-            {/* Body */}
-            <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)] flex-1">
-              {!viewingCertificateUrl ? (
-                courses.length === 0 ? (
-                  <div className="text-center py-12">
-                    <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <BookOpen className="w-12 h-12 text-gray-400" />
-                    </div>
-                    <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                      No Courses Yet
-                    </h3>
-                    <p className="text-gray-600">
-                      No courses purchased yet.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    {courses.map((course) => (
-                      <CourseCard
-                        key={course._id}
-                        course={course}
-                        studentProgress={
-                          studentProgressMap ? studentProgressMap[course._id] : undefined
-                        }
-                        studentId={studentId}
-                        schoolName={schoolName}
-                        onViewCertificate={handleViewCertificate}
-                      />
-                    ))}
-                  </div>
-                )
-              ) : (
-                <iframe
-                  src={viewingCertificateUrl}
-                  title="Certificate"
-                  className="w-full h-full rounded-xl border border-gray-300"
-                  style={{ minHeight: '600px' }}
-                />
-              )}
-            </div>
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+  return (
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-50 p-4">
+      <div className="bg-gray-50 rounded-3xl max-w-6xl w-full max-h-[90vh] overflow-hidden shadow-2xl flex flex-col">
+        {/* Header */}
+        <div className="bg-white p-6 border-b border-gray-200 flex items-center justify-between">
+          {!viewingCertificateUrl && !openedVideo ? (
+            <>
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">Student Learning Progress</h2>
+                <p className="text-gray-600 mt-1">Track progress across all purchased courses</p>
+              </div>
+              <button
+                onClick={onClose}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors duration-200 group"
+              >
+                <X className="w-6 h-6 text-gray-500 group-hover:text-gray-700" />
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                onClick={handleBackToCourses}
+                className="p-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition"
+              >
+                Back
+              </button>
+              <div className="flex-1 text-center font-semibold text-gray-800">
+                {viewingCertificateUrl ? 'Certificate View' : openedVideo?.title}
+              </div>
+              <button
+                onClick={onClose}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors duration-200 group"
+              >
+                <X className="w-6 h-6 text-gray-500 group-hover:text-gray-700" />
+              </button>
+            </>
+          )}
+        </div>
+
+        {/* Body */}
+        <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)] flex-1">
+          {!viewingCertificateUrl && !openedVideo ? (
+            courses.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <BookOpen className="w-12 h-12 text-gray-400" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-800 mb-2">No Courses Yet</h3>
+                <p className="text-gray-600">No courses purchased yet.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {courses.map((course) => (
+                  <CourseCard
+                    key={course._id}
+                    course={course}
+                    studentProgress={
+                      studentProgressMap ? studentProgressMap[course._id] : undefined
+                    }
+                    studentId={studentId}
+                    schoolName={schoolName}
+                    onViewCertificate={handleViewCertificate}
+                    onOpenVideo={handleOpenVideo}
+                  />
+                ))}
+              </div>
+            )
+          ) : viewingCertificateUrl ? (
+            <iframe
+              src={viewingCertificateUrl}
+              title="Certificate"
+              className="w-full h-full rounded-xl border border-gray-300"
+              style={{ minHeight: '600px' }}
+            />
+          ) : openedVideo ? (
+            <VideoPlayer url={openedVideo.url} startPosition={openedVideo.lastPosition} />
+          ) : null}
+        </div>
+      </div>
+    </div>
   );
 };
 

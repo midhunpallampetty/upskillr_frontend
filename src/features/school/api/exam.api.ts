@@ -1,6 +1,8 @@
 import examAxios from '../../../utils/axios/exam';
 import { apiRequest } from './../../../utils/apiRequest';
+import courseAxios from '../../../utils/axios/course';
 
+import { Exam } from '../types/Exam';
 // Fetch all exams for a school
 export const fetchExams = (dbName: string) => {
   return apiRequest(examAxios, 'get', '/exam/all-exams', undefined, {
@@ -43,4 +45,51 @@ export const updateQuestion = (questionId: string, dbName: string, updateBody: a
 // Delete a question
 export const deleteQuestion = (questionId: string, dbName: string) => {
   return apiRequest(examAxios, 'delete', `/question/${questionId}/${dbName}`);
+};
+
+
+
+
+
+
+// ✅ Get all exams by school
+export const getAllExams = async (schoolName: string): Promise<Exam[]> => {
+  const data = await apiRequest<Exam[]>(
+    examAxios,
+    'get',
+    `/exam/all-exams?schoolName=${schoolName}`
+  );
+  return data || [];
+};
+
+// ✅ Get current section exam
+export const getSectionExam = async (
+  schoolName: string,
+  sectionId: string
+): Promise<Exam | null> => {
+  try {
+    const data = await apiRequest<{ data: Exam }>(
+      courseAxios,
+      'get',
+      `/${schoolName}/sections/${sectionId}/exam`
+    );
+    return data?.data || null;
+  } catch (error: any) {
+    if (error.response?.status === 404) return null; // no exam assigned
+    throw error;
+  }
+};
+
+// ✅ Add or replace exam for section
+export const addExamToSection = async (
+  schoolName: string,
+  sectionId: string,
+  examId: string
+) => {
+  return await apiRequest<any>(
+    courseAxios,
+    'post',
+    `/${schoolName}/sections/${sectionId}/exam`,
+    { examId }
+  );
 };

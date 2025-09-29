@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
-import axios from 'axios';
-import { Exam } from '../../types/Exam'; 
+import { Exam } from '../../types/Exam';
 import { AddExamToSectionModalProps } from '../../types/AddExamToSectionModalProps';
+import { getAllExams, getSectionExam, addExamToSection } from '../../api/exam.api';
 
 const AddExamToSectionModal: React.FC<AddExamToSectionModalProps> = ({
   isOpen,
@@ -21,24 +21,13 @@ const AddExamToSectionModal: React.FC<AddExamToSectionModalProps> = ({
       const fetchData = async () => {
         setLoading(true);
         try {
-          // 1. Get all exams
-          const { data } = await axios.get(
-            `https://exam.upskillr.online/api/exam/all-exams?schoolName=${schoolName}`
-          );
-          setExams(data);
+          const examsList = await getAllExams(schoolName);
+          setExams(examsList);
 
-          // 2. Get current section exam (if any)
-          try {
-            const res = await axios.get(
-              `https://course.upskillr.online/api/${schoolName}/sections/${sectionId}/exam`
-            );
-            setCurrentExam(res.data?.data || null);
-          } catch (err: any) {
-            // if no exam assigned, API may throw → just ignore
-            setCurrentExam(null);
-          }
+          const sectionExam = await getSectionExam(schoolName, sectionId);
+          setCurrentExam(sectionExam);
         } catch (err) {
-          console.error('❌ Failed to fetch exams:', err);
+          console.error('❌ Failed to fetch exams or section exam:', err);
           Swal.fire({
             title: 'Error!',
             text: 'Failed to load exams.',
@@ -54,11 +43,7 @@ const AddExamToSectionModal: React.FC<AddExamToSectionModalProps> = ({
 
   const handleAddExam = async () => {
     if (!selectedExamId) {
-      Swal.fire({
-        title: 'Error!',
-        text: 'Please select an exam.',
-        icon: 'warning',
-      });
+      Swal.fire({ title: 'Error!', text: 'Please select an exam.', icon: 'warning' });
       return;
     }
 
@@ -68,18 +53,13 @@ const AddExamToSectionModal: React.FC<AddExamToSectionModalProps> = ({
         text: `This section already has an exam (${currentExam.title}). Do you want to replace it?`,
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
         confirmButtonText: 'Yes, replace it!',
       });
       if (!confirmReplace.isConfirmed) return;
     }
 
     try {
-      await axios.post(
-        `https://course.upskillr.online/api/${schoolName}/sections/${sectionId}/exam`,
-        { examId: selectedExamId }
-      );
+      await addExamToSection(schoolName, sectionId, selectedExamId);
       await Swal.fire({
         title: 'Success!',
         text: currentExam ? 'Exam replaced successfully.' : 'Exam added successfully.',
@@ -89,11 +69,7 @@ const AddExamToSectionModal: React.FC<AddExamToSectionModalProps> = ({
       onClose();
     } catch (err) {
       console.error('❌ Failed to add exam:', err);
-      Swal.fire({
-        title: 'Error!',
-        text: 'Failed to add exam.',
-        icon: 'error',
-      });
+      Swal.fire({ title: 'Error!', text: 'Failed to add exam.', icon: 'error' });
     }
   };
 

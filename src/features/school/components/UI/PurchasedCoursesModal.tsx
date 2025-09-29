@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Play, BookOpen, Award, CheckCircle, Clock } from 'lucide-react';
+import { X, Play, BookOpen, Award, CheckCircle, Clock, ChevronDown, ChevronRight } from 'lucide-react';
 import { getCertificate } from '../../../student/api/course.api';
 
 type Course = {
@@ -38,8 +38,13 @@ interface PurchasedCoursesModalProps {
       videos: Record<string, VideoProgress>;
       passedSections: PassedSection[];
       finalExam: FinalExam;
-      totalVideos: number; // Added from fetchCourseData
-      totalSections: number; // Added from fetchCourseData
+      totalVideos: number;
+      totalSections: number;
+      sections?: Array<{ // Assuming sections data is fetched and added to progress map
+        _id: string;
+        title: string;
+        videos: Array<{ _id: string; videoName: string; duration: string }>;
+      }>; // Add detailed sections for mirroring student view
     }
   >;
   studentId: string;
@@ -166,6 +171,12 @@ type CourseCardProps = {
     finalExam: FinalExam;
     totalVideos: number;
     totalSections: number;
+    sections?: Array<{ // Detailed sections for mirroring
+      _id: string;
+      title: string;
+      videos: Array<{ _id: string; videoName: string; duration: string }>;
+      exam?: { _id: string; title: string }; // Optional exam
+    }>;
   };
   studentId: string;
   schoolName: string;
@@ -179,8 +190,9 @@ const CourseCard: React.FC<CourseCardProps> = ({
   schoolName,
   onViewCertificate,
 }) => {
-  const [loadingCert, setLoadingCert] = React.useState(false);
-  const [certificateUnavailable, setCertificateUnavailable] = React.useState(false);
+  const [loadingCert, setLoadingCert] = useState(false);
+  const [certificateUnavailable, setCertificateUnavailable] = useState(false);
+  const [expandedSection, setExpandedSection] = useState<string | null>(null);
 
   const videosOfCourse = studentProgress?.videos || {};
   const completedVideoCount = Object.values(videosOfCourse).filter(
@@ -202,6 +214,27 @@ const CourseCard: React.FC<CourseCardProps> = ({
     100;
 
   const canGetCertificate = overallProgress === 100 && finalExamPassed && !certificateUnavailable;
+
+  // Determine current video: the first incomplete with lastPosition > 0, or first incomplete
+  const currentVideoId = Object.keys(videosOfCourse).find(
+    (id) => !videosOfCourse[id].completed && videosOfCourse[id].lastPosition > 0
+  ) || Object.keys(videosOfCourse).find((id) => !videosOfCourse[id].completed);
+
+  const currentVideo = studentProgress?.sections?.flatMap(s => s.videos).find(v => v._id === currentVideoId);
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  // Determine current exam: the first section with exam not passed
+  const currentExamSection = studentProgress?.sections?.find(
+    s => s.exam && !studentProgress.passedSections.some(ps => ps.sectionId === s._id)
+  );
+
+  const toggleSection = (id: string) => {
+    setExpandedSection(prev => (prev === id ? null : id));
+  };
 
   const handleGetCertificate = async () => {
     setLoadingCert(true);
@@ -265,7 +298,7 @@ const CourseCard: React.FC<CourseCardProps> = ({
         </div>
 
         {/* Detailed progress */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <ProgressCard
             icon={<Play className="w-5 h-5 text-blue-700" />}
             title="Videos"
@@ -287,6 +320,88 @@ const CourseCard: React.FC<CourseCardProps> = ({
           />
 
           <ExamStatusCard passed={finalExamPassed} score={finalExamScore} />
+        </div>
+
+        {/* Current Activity Highlights */}
+        {currentVideo && (
+          <div className="mt-3 flex items-center bg-blue-50 p-3 rounded-xl mb-4">
+            <Play className="text-blue-500 mr-2 w-5 h-5" />
+            <span className="text-sm">
+              Currently watching: <b>{currentVideo.videoName}</b> (at {formatTime(videosOfCourse[currentVideoId!].lastPosition)})
+            </span>
+          </div>
+        )}
+        {currentExamSection && (
+          <div className="mt-3 flex items-center bg-purple-50 p-3 rounded-xl mb-4">
+            <BookOpen className="text-purple-500 mr-2 w-5 h-5" />
+            <span className="text-sm">
+              Currently attending: <b>{currentExamSection.exam?.title}</b> in section "{currentExamSection.title}"
+            </span>
+          </div>
+        )}
+
+        {/* Detailed Sections View (Expandable like student side) */}
+        <div className="mt-6">
+          <h4 className="text-lg font-semibold text-gray-800 mb-4">Section Details</h4>
+          {studentProgress?.sections?.map((section) => {
+            const sectionCompleted = studentProgress.passedSections.some(ps => ps.sectionId === section._id);
+            const sectionVideosCompleted = section.videos.every(v => videosOfCourse[v._id]?.completed);
+            const sectionExamPassed = !section.exam || sectionCompleted;
+
+            return (
+              <div key={section._id} className="mb-4">
+                <button
+                  onClick={() => toggleSection(section._id)}
+                  className="w-full flex items-center justify-between p-3 bg-gray-100 rounded-lg hover:bg-gray-200 transition"
+                >
+                  <span className="font-medium">{section.title}</span>
+                  <div className="flex items-center gap-2">
+                    {sectionCompleted ? <CheckCircle className="w-5 h-5 text-green-600" /> : <Lock className="w-5 h-5 text-gray-500" />}
+                    {expandedSection === section._id ? <ChevronDown /> : <ChevronRight />}
+                  </div>
+                </button>
+                {expandedSection === section._id && (
+                  <div className="mt-2 pl-4">
+                    {/* Videos in Section */}
+                    <div className="mb-3">
+                      <h5 className="text-sm font-semibold mb-2">Videos</h5>
+                      <ul className="space-y-2">
+                        {section.videos.map((video) => {
+                          const progress = videosOfCourse[video._id];
+                          const isCurrent = video._id === currentVideoId;
+                          return (
+                            <li key={video._id} className={`text-sm flex items-center gap-2 ${isCurrent ? 'font-bold text-blue-600' : ''}`}>
+                              <Play className="w-4 h-4" />
+                              {video.videoName} ({video.duration})
+                              {progress?.completed ? ' ✓' : ''}
+                              {isCurrent ? ' (Currently watching)' : ''}
+                              {progress && !progress.completed && progress.lastPosition > 0 ? ` — at ${formatTime(progress.lastPosition)}` : ''}
+                            </li>
+                          );
+                        })}
+                      </ul>
+                      <ProgressBar
+                        progress={(section.videos.filter(v => videosOfCourse[v._id]?.completed).length / section.videos.length) * 100}
+                        color="bg-blue-500"
+                        height="h-2"
+                        showPercentage={true}
+                      />
+                    </div>
+
+                    {/* Exam in Section */}
+                    {section.exam && (
+                      <div className="mb-3">
+                        <h5 className="text-sm font-semibold mb-2">Exam: {section.exam.title}</h5>
+                        <p className="text-sm">
+                          Status: {sectionExamPassed ? 'Passed' : currentExamSection?._id === section._id ? 'In progress' : 'Pending'}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          }) || <p className="text-sm text-gray-600">No detailed section data available.</p>}
         </div>
 
         {/* Certificate button only if completed and available */}
@@ -319,7 +434,7 @@ const CourseCard: React.FC<CourseCardProps> = ({
                   Course Completed!
                 </h5>
                 <p className="text-sm text-green-700">
-                  Congratulations on completing this course
+                  All requirements met.
                 </p>
               </div>
             </div>
@@ -338,7 +453,7 @@ const PurchasedCoursesModal: React.FC<PurchasedCoursesModalProps> = ({
   schoolName,
   onClose,
 }) => {
-  const [viewingCertificateUrl, setViewingCertificateUrl] = React.useState<string | null>(null);
+  const [viewingCertificateUrl, setViewingCertificateUrl] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
@@ -361,10 +476,10 @@ const PurchasedCoursesModal: React.FC<PurchasedCoursesModalProps> = ({
             <>
               <div>
                 <h2 className="text-2xl font-bold text-gray-900">
-                  My Learning Progress
+                  Student Learning Progress
                 </h2>
                 <p className="text-gray-600 mt-1">
-                  Track your progress across all purchased courses
+                  Track progress across all purchased courses
                 </p>
               </div>
               <button
@@ -407,7 +522,7 @@ const PurchasedCoursesModal: React.FC<PurchasedCoursesModalProps> = ({
                   No Courses Yet
                 </h3>
                 <p className="text-gray-600">
-                  You haven't purchased any courses yet. Start learning today!
+                  No courses purchased yet.
                 </p>
               </div>
             ) : (

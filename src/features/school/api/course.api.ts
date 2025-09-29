@@ -101,3 +101,20 @@ export const softDeleteSectionById = async (
     throw new Error(message);
   }
 };
+export const getSectionExam = async (
+  schoolDb: string,
+  sectionId: string
+) => {
+  try {
+    const data = await apiRequest<{ data: any }>(
+      courseAxios,
+      'get',
+      `/${schoolDb}/sections/${sectionId}/exam`
+    );
+    return data?.data || null;
+  } catch (error: any) {
+    const message =
+      error.response?.data?.message || 'Failed to fetch section exam';
+    throw new Error(message);
+  }
+};

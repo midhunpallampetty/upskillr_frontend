@@ -6,14 +6,17 @@ import VideoModal from '../../components/UI/VideoModal';
 import Section from '../../../course/types/Section';
 import EditCourseModal from './EditCourseModal';
 import { Video } from '../../types/Video';
-import { getCoursesBySchool, getSectionsByCourse, getVideoById, updateCourseById, deleteCourseById, softDeleteSectionById, softDeleteVideoById } from '../../api/course.api';
+import { getCoursesBySchool, getSectionsByCourse, getVideosBySection, updateVideoOrder, getVideoById, updateCourseById, deleteCourseById, softDeleteSectionById, softDeleteVideoById } from '../../api/course.api';
 import Swal from 'sweetalert2';
 import ModalExamSelector from '../Layout/ModalExamSelector';
 import AddExamToSectionModal from '../Layout/AddExamSection';
+import DragVideoOrderModal from './DragVideoOrderModal';
 
 const SchoolCourses: React.FC<Props> = ({ schoolId, dbname }) => {
   const [examModalOpen, setExamModalOpen] = useState(false);
   const [examModalCourseId, setExamModalCourseId] = useState<string | null>(null);
+  const [dragOrderModalOpen, setDragOrderModalOpen] = useState(false);
+  const [sectionForReorder, setSectionForReorder] = useState<Section | null>(null);
 
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
@@ -36,6 +39,25 @@ const SchoolCourses: React.FC<Props> = ({ schoolId, dbname }) => {
   const handleOpenExamModal = (courseId: string) => {
     setExamModalCourseId(courseId);
     setExamModalOpen(true);
+  };
+  const handleOpenReorderModal = async (section: Section) => {
+    try {
+      const videos = await getVideosBySection(dbname, section._id);
+
+      // Sort videos by order ascending
+      videos.sort((a: Video, b: Video) => a.order - b.order);
+
+      setSectionForReorder({ ...section, videos });
+      setDragOrderModalOpen(true);
+    } catch (error) {
+      console.error('Failed to fetch videos for reorder:', error);
+      Swal.fire({
+        title: 'Error',
+        text: 'Failed to load videos for reordering.',
+        icon: 'error',
+        confirmButtonColor: '#ef4444',
+      });
+    }
   };
 
   const handleCloseExamModal = () => {
@@ -384,8 +406,8 @@ const SchoolCourses: React.FC<Props> = ({ schoolId, dbname }) => {
             {loading ? (
               <LoadingSpinner />
             ) : courses.length === 0 ? (
-              <EmptyState 
-                title="No Courses Yet" 
+              <EmptyState
+                title="No Courses Yet"
                 description="Start by creating your first course to begin building your educational content."
                 icon="📚"
               />
@@ -442,7 +464,7 @@ const SchoolCourses: React.FC<Props> = ({ schoolId, dbname }) => {
                       <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
                         {course.courseName}
                       </h3>
-                      
+
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center space-x-1">
                           <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -450,11 +472,10 @@ const SchoolCourses: React.FC<Props> = ({ schoolId, dbname }) => {
                           </svg>
                           <span className="text-lg font-bold text-green-600">₹{course.fee}</span>
                         </div>
-                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                          course.isPreliminaryRequired 
-                            ? 'bg-orange-100 text-orange-800' 
-                            : 'bg-green-100 text-green-800'
-                        }`}>
+                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${course.isPreliminaryRequired
+                          ? 'bg-orange-100 text-orange-800'
+                          : 'bg-green-100 text-green-800'
+                          }`}>
                           {course.isPreliminaryRequired ? 'Prerequisites' : 'Open Access'}
                         </span>
                       </div>
@@ -508,11 +529,10 @@ const SchoolCourses: React.FC<Props> = ({ schoolId, dbname }) => {
                   <h1 className="text-2xl font-bold text-gray-900">{selectedCourse.courseName}</h1>
                   <div className="flex items-center space-x-4 mt-2">
                     <span className="text-green-600 font-semibold">₹{selectedCourse.fee}</span>
-                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                      selectedCourse.isPreliminaryRequired 
-                        ? 'bg-orange-100 text-orange-800' 
-                        : 'bg-green-100 text-green-800'
-                    }`}>
+                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${selectedCourse.isPreliminaryRequired
+                      ? 'bg-orange-100 text-orange-800'
+                      : 'bg-green-100 text-green-800'
+                      }`}>
                       {selectedCourse.isPreliminaryRequired ? 'Prerequisites Required' : 'Open Access'}
                     </span>
                   </div>
@@ -530,8 +550,8 @@ const SchoolCourses: React.FC<Props> = ({ schoolId, dbname }) => {
               {loadingSections ? (
                 <LoadingSpinner />
               ) : sections.length === 0 ? (
-                <EmptyState 
-                  title="No Sections Yet" 
+                <EmptyState
+                  title="No Sections Yet"
                   description="Create sections to organize your course content and videos."
                   icon="📋"
                 />
@@ -549,14 +569,13 @@ const SchoolCourses: React.FC<Props> = ({ schoolId, dbname }) => {
                           </div>
 
                           <div className="flex items-center space-x-4 ml-11">
-                            <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${
-                              section.examRequired 
-                                ? 'bg-blue-100 text-blue-800' 
-                                : 'bg-gray-100 text-gray-800'
-                            }`}>
+                            <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${section.examRequired
+                              ? 'bg-blue-100 text-blue-800'
+                              : 'bg-gray-100 text-gray-800'
+                              }`}>
                               {section.examRequired ? '📝 Exam Required' : '📖 No Exam'}
                             </span>
-                            
+
                             {section.exam && (
                               <span className="text-sm text-gray-600">
                                 Exam: {section.exam.examName}
@@ -579,7 +598,7 @@ const SchoolCourses: React.FC<Props> = ({ schoolId, dbname }) => {
                             </svg>
                             Add Video
                           </button>
-                          
+
                           <button
                             onClick={() => handleShowVideos(section)}
                             className="inline-flex items-center px-3 py-2 text-sm font-medium text-indigo-700 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors"
@@ -589,7 +608,7 @@ const SchoolCourses: React.FC<Props> = ({ schoolId, dbname }) => {
                             </svg>
                             Show Videos
                           </button>
-                          
+
                           <button
                             onClick={() => handleOpenAddExamModal(section._id)}
                             className="inline-flex items-center px-3 py-2 text-sm font-medium text-blue-700 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
@@ -599,7 +618,14 @@ const SchoolCourses: React.FC<Props> = ({ schoolId, dbname }) => {
                             </svg>
                             Add Exam
                           </button>
-                          
+                          <button
+                            onClick={() => handleOpenReorderModal(section)}
+                            className="inline-flex items-center px-3 py-2 text-sm font-medium text-yellow-700 bg-yellow-50 rounded-lg hover:bg-yellow-100 transition-colors"
+                          >
+                            Reorder Videos
+                          </button>
+
+
                           <button
                             onClick={() => handleDeleteSection(section._id)}
                             className="inline-flex items-center px-3 py-2 text-sm font-medium text-red-700 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
@@ -618,6 +644,21 @@ const SchoolCourses: React.FC<Props> = ({ schoolId, dbname }) => {
             </div>
           </>
         )}
+        {sectionForReorder && (
+          <DragVideoOrderModal
+            open={dragOrderModalOpen}
+            onClose={() => setDragOrderModalOpen(false)}
+            videos={sectionForReorder.videos || []}
+            sectionId={sectionForReorder._id}
+            schoolDb={dbname}
+            onOrderUpdated={() => {
+              if (selectedCourse) {
+                fetchSections(selectedCourse._id);
+              }
+            }}
+          />
+        )}
+
 
         {/* Modals */}
         <VideoModal

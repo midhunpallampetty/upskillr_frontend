@@ -118,3 +118,42 @@ export const getSectionExam = async (
     throw new Error(message);
   }
 };
+
+export const updateVideoOrder = async (
+  schoolDb: string,
+  sectionId: string,
+  items: { _id: string; order: number }[]
+) => {
+  try {
+    const data = await apiRequest<any>(
+      courseAxios,
+      'put',
+      `/${schoolDb}/sections/${sectionId}/videos/order`,
+      { items }
+    );
+    return data;
+  } catch (error: any) {
+    const message =
+      error.response?.data?.message || 'Failed to update video order';
+    throw new Error(message);
+  }
+};
+
+export const getVideosBySection = async (
+  schoolDb: string,
+  sectionId: string
+): Promise<Video[]> => {
+  try {
+    const data = await apiRequest<{ data: Video[] }>(
+      courseAxios,
+      'get',
+      `/${schoolDb}/sections/${sectionId}/videos`
+    );
+    return data?.data || [];
+  } catch (error: any) {
+    const message =
+      error.response?.data?.message || 'Failed to fetch section videos';
+    throw new Error(message);
+  }
+};
+

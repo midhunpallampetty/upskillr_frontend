@@ -25,7 +25,6 @@ const DragVideoOrderModal: React.FC<DragVideoOrderModalProps> = ({
 
   useEffect(() => {
     if (open) {
-      // Defensive copy of videos array to avoid external mutations
       setLocalVideos(videos ? [...videos] : []);
     } else {
       setLocalVideos([]);
@@ -66,25 +65,39 @@ const DragVideoOrderModal: React.FC<DragVideoOrderModalProps> = ({
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm"
     >
-      <div className="bg-white rounded-lg p-6 w-96 max-h-[80vh] overflow-auto">
-        <h2 className="text-xl font-semibold mb-4">Reorder Videos</h2>
+      <div className="bg-white rounded-2xl p-8 w-[500px] max-h-[85vh] overflow-auto shadow-xl">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-semibold text-gray-800">Reorder Videos</h2>
+          <button
+            onClick={onClose}
+            aria-label="Close"
+            className="text-gray-500 hover:text-gray-700 transition"
+          >
+            &#10005;
+          </button>
+        </div>
 
         <ReactSortable
           list={localVideos}
           setList={setLocalVideos}
-          animation={150}
+          animation={250}
+          easing="cubic-bezier(0.25, 1, 0.5, 1)"
+          delay={5}
+          delayOnTouchOnly={true}
           tag="ul"
+          className="space-y-3"
+          ghostClass="opacity-50"
         >
           {localVideos.map((video) => (
             <li
               key={video._id}
               data-id={video._id}
-              className="p-3 mb-2 bg-gray-100 rounded cursor-move flex items-center"
+              className="flex items-center p-4 rounded-xl bg-gray-100 cursor-grab hover:bg-gray-200 shadow-sm select-none"
             >
               <svg
-                className="w-5 h-5 mr-3 text-gray-600"
+                className="w-6 h-6 mr-4 text-gray-500 flex-shrink-0"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -96,21 +109,23 @@ const DragVideoOrderModal: React.FC<DragVideoOrderModalProps> = ({
                   d="M4 8h16M4 16h16"
                 />
               </svg>
-              {video.videoName || video.title || 'Untitled Video'}
+              <span className="text-gray-700 font-medium">
+                {video.videoName || video.title || 'Untitled Video'}
+              </span>
             </li>
           ))}
         </ReactSortable>
 
-        <div className="mt-6 flex justify-end space-x-3">
+        <div className="mt-8 flex justify-end space-x-4">
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400"
+            className="px-6 py-3 rounded-lg bg-gray-300 text-gray-700 hover:bg-gray-400 transition"
           >
             Cancel
           </button>
           <button
             onClick={handleSaveOrder}
-            className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
+            className="px-6 py-3 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition"
           >
             Save Order
           </button>

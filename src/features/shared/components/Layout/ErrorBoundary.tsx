@@ -97,7 +97,23 @@ class ErrorBoundary extends Component<Props, State> {
 
       const { error, errorInfo, isRetrying, showDetails, stackCopied } = this.state;
       const isDevelopment = process.env.NODE_ENV === 'development';
-
+          const isNotFound = error?.message?.includes("404");
+    if (isNotFound) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-gray-100 p-6">
+          <div className="text-center space-y-4">
+            <h1 className="text-6xl font-bold text-red-500">404</h1>
+            <p className="text-xl text-gray-700">Oops! Page not found.</p>
+            <a
+              href="/"
+              className="inline-block px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+            >
+              Go Back Home
+            </a>
+          </div>
+        </div>
+      );
+    }
       return (
         <div className="min-h-screen bg-gradient-to-br from-red-50 to-orange-50 flex items-center justify-center p-4">
           <div className="max-w-2xl w-full">

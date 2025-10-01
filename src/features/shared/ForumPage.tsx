@@ -19,7 +19,7 @@ export default function ForumChatUI() {
     const hostname = new URL(url).hostname;
     const parts = hostname.split('.');
     if (parts.length > 2) {
-      return parts[0]; // e.g., 'gamersclub' from 'gamersclub.eduvia.space'
+      return parts[0];
     }
     return 'defaultSchool';
   }, []);
@@ -71,7 +71,6 @@ export default function ForumChatUI() {
     scrollToBottom();
   }, [selected?.answers, selected?.replies, scrollToBottom]);
 
-  // FETCH INITIAL QUESTIONS
   useEffect(() => {
     setLoading(true);
     axios.get(`${API}/forum/questions`, { params: { schoolName } })
@@ -90,14 +89,28 @@ export default function ForumChatUI() {
       .finally(() => setLoading(false));
   }, [addToast, schoolName]);
 
-  // SOCKET SETUP
   useEffect(() => {
     socketRef.current = io(import.meta.env.VITE_SOCKET_URL);
 
     socketRef.current.on('connect', () => {
       addToast('Connected to real-time updates', 'success');
-      // Always join school room and a general starting thread on connect
       socketRef.current.emit('join_thread', { schoolName, threadId: 'general' });
+    });
+
+    socketRef.current.on('refresh_questions', () => {
+      axios.get(`${API}/forum/questions`, { params: { schoolName } })
+        .then(res => {
+          const fetchedQuestions = Array.isArray(res.data) ? res.data : [];
+          const safeQuestions = fetchedQuestions.map(q => ({
+            ...q,
+            author: q.author ?? { fullName: 'Anonymous', _id: '', role: '' },
+          }));
+          setQuestions(safeQuestions);
+        })
+        .catch(err => {
+          console.error('Failed to refresh questions:', err);
+          addToast('Failed to refresh questions. Please refresh the page.', 'error');
+        });
     });
 
     socketRef.current.on('new_question', (qDoc: Question) => {
@@ -280,7 +293,6 @@ export default function ForumChatUI() {
     selectedRef.current = selected;
   }, [selected]);
 
-  // Thread room join: only changes thread room, does not affect school room
   useEffect(() => {
     setTypingUsers([]);
     if (selected?._id && socketRef.current) {

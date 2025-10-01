@@ -97,65 +97,31 @@ export default function ForumChatUI() {
       socketRef.current.emit('join_thread', { schoolName, threadId: 'general' });
     });
 
-    socketRef.current.on('refresh_questions', () => {
-      axios.get(`${API}/forum/questions`, { params: { schoolName } })
-        .then(res => {
-          const fetchedQuestions = Array.isArray(res.data) ? res.data : [];
-          const safeQuestions = fetchedQuestions.map(q => ({
-            ...q,
-            author: q.author ?? { fullName: 'Anonymous', _id: '', role: '' },
-          }));
-          setQuestions(safeQuestions);
-        })
-        .catch(err => {
-          console.error('Failed to refresh questions:', err);
-          addToast('Failed to refresh questions. Please refresh the page.', 'error');
-        });
-    });
+    // Removed 'refresh_questions' handler - no longer needed with backend fixes
 
     socketRef.current.on('new_question', (qDoc: Question) => {
       if (qDoc.schoolName !== schoolName) return;
-      axios.get(`${API}/forum/questions/${qDoc._id}`, { params: { schoolName } })
-        .then(res => {
-          let fullQuestion = res.data;
-          fullQuestion = {
-            ...fullQuestion,
-            author: fullQuestion.author ?? { fullName: 'Anonymous', _id: '', role: '' },
-          };
-          setQuestions(prevQuestions => {
-            if (prevQuestions.some(q => q._id === fullQuestion._id)) {
-              return prevQuestions.map(q =>
-                q._id === fullQuestion._id ? fullQuestion : q
-              );
-            }
-            return [fullQuestion, ...prevQuestions];
-          });
-          if (String(fullQuestion.author._id) !== String(user._id)) {
-            addToast(`A new question was posted.`, 'info');
-          }
-        })
-        .catch(err => {
-          console.error('Failed to fetch new question details:', err);
-          const safeQDoc = {
-            ...qDoc,
-            author: qDoc.author ?? { fullName: 'Anonymous', _id: '', role: '' },
-          };
-          setQuestions(prevQuestions => {
-            if (prevQuestions.some(q => q._id === safeQDoc._id)) {
-              return prevQuestions.map(q =>
-                q._id === safeQDoc._id ? { ...q, ...safeQDoc } : q
-              );
-            }
-            return [safeQDoc, ...prevQuestions];
-          });
-          if (String(safeQDoc.author._id) !== String(user._id)) {
-            addToast(`A new question was posted.`, 'info');
-          }
-        });
+      // Use emitted data directly (now populated); no extra fetch needed
+      const safeQDoc = {
+        ...qDoc,
+        author: qDoc.author ?? { fullName: 'Anonymous', _id: '', role: '' },
+      };
+      setQuestions(prevQuestions => {
+        if (prevQuestions.some(q => q._id === safeQDoc._id)) {
+          return prevQuestions.map(q =>
+            q._id === safeQDoc._id ? safeQDoc : q
+          );
+        }
+        return [safeQDoc, ...prevQuestions];
+      });
+      if (String(safeQDoc.author._id) !== String(user._id)) {
+        addToast(`A new question was posted.`, 'info');
+      }
     });
 
     socketRef.current.on('new_answer', (aDoc: Answer) => {
       if (aDoc.schoolName !== schoolName) return;
+      // Use emitted data directly (now populated)
       const safeADoc = { ...aDoc, author: aDoc.author ?? { fullName: 'Anonymous', _id: '', role: '' } };
       if (selectedRef.current && selectedRef.current._id === safeADoc.forum_question_id) {
         selectQuestion(selectedRef.current._id, true);
@@ -174,6 +140,7 @@ export default function ForumChatUI() {
 
     socketRef.current.on('new_reply', (rDoc: Reply) => {
       if (rDoc.schoolName !== schoolName) return;
+      // Use emitted data directly (now populated)
       const safeRDoc = { ...rDoc, author: rDoc.author ?? { fullName: 'Anonymous', _id: '', role: '' } };
       if (selectedRef.current && selectedRef.current._id === safeRDoc.forum_question_id) {
         selectQuestion(selectedRef.current._id, true);
@@ -411,22 +378,7 @@ export default function ForumChatUI() {
               .then(res => {
                 const newQuestionId = res.data._id;
                 addToast('Question posted successfully!', 'success');
-                return axios.get(`${API}/forum/questions/${newQuestionId}`, { params: { schoolName } })
-                  .then(fetchRes => {
-                    let fullQuestion = fetchRes.data;
-                    fullQuestion = {
-                      ...fullQuestion,
-                      author: fullQuestion.author ?? { fullName: 'Anonymous', _id: '', role: '' },
-                    };
-                    setQuestions(prevQuestions => {
-                      if (prevQuestions.some(q => q._id === fullQuestion._id)) {
-                        return prevQuestions.map(q =>
-                          q._id === fullQuestion._id ? fullQuestion : q
-                        );
-                      }
-                      return [fullQuestion, ...prevQuestions];
-                    });
-                  });
+                // Removed extra fetch here - backend now emits populated data via socket
               })
               .catch(err => {
                 console.error('Failed to post question:', err);

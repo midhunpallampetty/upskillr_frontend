@@ -23,7 +23,6 @@ export default function ForumChatUI() {
     }
     return 'defaultSchool';
   }, []);
-
   const schoolName = useMemo(() => detectSchoolName(), [detectSchoolName]);
 
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
@@ -40,13 +39,12 @@ export default function ForumChatUI() {
   const [loading, setLoading] = useState(true);
   const socketRef = useRef<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const selectedRef = useRef<Question | null>(null); // Ref to track current selected without triggering rerenders
+  const selectedRef = useRef<Question | null>(null);
 
   const addToast = useCallback((message: string, type: Toast['type'] = 'info') => {
     const id = Date.now().toString();
     const newToast: Toast = { id, message, type };
     setToasts(prev => [...prev, newToast]);
-
     setTimeout(() => {
       setToasts(prev => prev.filter(toast => toast.id !== id));
     }, 5000);
@@ -65,7 +63,7 @@ export default function ForumChatUI() {
       const matchesSearch = q.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (q.author?.fullName?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false);
       const matchesCategory = selectedCategory === 'all' || q.category === selectedCategory;
-      return !q.isDeleted && matchesSearch && matchesCategory && q.author != null; // Added null check for author
+      return !q.isDeleted && matchesSearch && matchesCategory && q.author != null;
     });
   }, [questions, searchQuery, selectedCategory]);
 
@@ -73,14 +71,12 @@ export default function ForumChatUI() {
     scrollToBottom();
   }, [selected?.answers, selected?.replies, scrollToBottom]);
 
-  // Fetch initial questions only once
+  // FETCH INITIAL QUESTIONS
   useEffect(() => {
     setLoading(true);
     axios.get(`${API}/forum/questions`, { params: { schoolName } })
       .then(res => {
         const fetchedQuestions = Array.isArray(res.data) ? res.data : [];
-        // Ensure author defaults
-        console.log(fetchedQuestions,'fetch')
         const safeQuestions = fetchedQuestions.map(q => ({
           ...q,
           author: q.author ?? { fullName: 'Anonymous', _id: '', role: '' },
@@ -94,71 +90,64 @@ export default function ForumChatUI() {
       .finally(() => setLoading(false));
   }, [addToast, schoolName]);
 
-  // Socket setup
+  // SOCKET SETUP
   useEffect(() => {
     socketRef.current = io(import.meta.env.VITE_SOCKET_URL);
 
     socketRef.current.on('connect', () => {
       addToast('Connected to real-time updates', 'success');
-      // Join school room immediately on connect
-      socketRef.current.emit('join_thread', { schoolName, threadId: 'general' }); // Use a general threadId or omit if backend allows
+      // Always join school room and a general starting thread on connect
+      socketRef.current.emit('join_thread', { schoolName, threadId: 'general' });
     });
 
     socketRef.current.on('new_question', (qDoc: Question) => {
       if (qDoc.schoolName !== schoolName) return;
-
-      // Fetch full question data
       axios.get(`${API}/forum/questions/${qDoc._id}`, { params: { schoolName } })
         .then(res => {
           let fullQuestion = res.data;
           fullQuestion = {
             ...fullQuestion,
-            author: fullQuestion.author ?? { fullName: 'Anonymous', _id: '', role: '' }, // Default if null
+            author: fullQuestion.author ?? { fullName: 'Anonymous', _id: '', role: '' },
           };
           setQuestions(prevQuestions => {
             if (prevQuestions.some(q => q._id === fullQuestion._id)) {
-              return prevQuestions.map(q => 
+              return prevQuestions.map(q =>
                 q._id === fullQuestion._id ? fullQuestion : q
               );
             }
             return [fullQuestion, ...prevQuestions];
           });
           if (String(fullQuestion.author._id) !== String(user._id)) {
-            addToast(`a new question`, 'info');
+            addToast(`A new question was posted.`, 'info');
           }
         })
         .catch(err => {
           console.error('Failed to fetch new question details:', err);
-          // Fallback with defaults
           const safeQDoc = {
             ...qDoc,
             author: qDoc.author ?? { fullName: 'Anonymous', _id: '', role: '' },
           };
           setQuestions(prevQuestions => {
             if (prevQuestions.some(q => q._id === safeQDoc._id)) {
-              return prevQuestions.map(q => 
+              return prevQuestions.map(q =>
                 q._id === safeQDoc._id ? { ...q, ...safeQDoc } : q
               );
             }
             return [safeQDoc, ...prevQuestions];
           });
           if (String(safeQDoc.author._id) !== String(user._id)) {
-            addToast(`a new question`, 'info');
+            addToast(`A new question was posted.`, 'info');
           }
         });
     });
 
     socketRef.current.on('new_answer', (aDoc: Answer) => {
       if (aDoc.schoolName !== schoolName) return;
-
-      const safeADoc = {
-        ...aDoc,
-        author: aDoc.author ?? { fullName: 'Anonymous', _id: '', role: '' },
-      };
+      const safeADoc = { ...aDoc, author: aDoc.author ?? { fullName: 'Anonymous', _id: '', role: '' } };
       if (selectedRef.current && selectedRef.current._id === safeADoc.forum_question_id) {
         selectQuestion(selectedRef.current._id, true);
         if (String(safeADoc.author._id) !== String(user._id)) {
-          addToast(`response to the question`, 'success');
+          addToast(`A response was added.`, 'success');
         }
       } else {
         setQuestions(prevQuestions =>
@@ -172,21 +161,16 @@ export default function ForumChatUI() {
 
     socketRef.current.on('new_reply', (rDoc: Reply) => {
       if (rDoc.schoolName !== schoolName) return;
-
-      const safeRDoc = {
-        ...rDoc,
-        author: rDoc.author ?? { fullName: 'Anonymous', _id: '', role: '' },
-      };
+      const safeRDoc = { ...rDoc, author: rDoc.author ?? { fullName: 'Anonymous', _id: '', role: '' } };
       if (selectedRef.current && selectedRef.current._id === safeRDoc.forum_question_id) {
         selectQuestion(selectedRef.current._id, true);
         if (String(safeRDoc.author._id) !== String(user._id)) {
-          addToast(`replied to a message`, 'info');
+          addToast(`A message was replied to.`, 'info');
         }
       } else {
-        // Minimal update for non-selected questions
         const updateNestedReplies = (replies: Reply[], newReply: Reply): Reply[] => {
           if (!newReply.parent_reply_id) {
-            return [...replies.filter(r => r != null), { ...newReply, replies: [] }]; // Filter null
+            return [...replies.filter(r => r != null), { ...newReply, replies: [] }];
           }
           return replies.filter(r => r != null).map(r => {
             if (r._id === newReply.parent_reply_id) {
@@ -256,12 +240,11 @@ export default function ForumChatUI() {
       if (selectedRef.current && selectedRef.current._id === questionId) {
         selectQuestion(questionId, true);
       } else {
-        const removeNestedReply = (replies: Reply[]): Reply[] => {
-          return replies.reduce((acc, r) => {
-            if (r?._id === id) return acc; // Null-safe
+        const removeNestedReply = (replies: Reply[]): Reply[] =>
+          replies.reduce((acc, r) => {
+            if (r?._id === id) return acc;
             return [...acc, { ...r, replies: removeNestedReply(r.replies || []) }];
           }, [] as Reply[]);
-        };
 
         setQuestions(prevQuestions =>
           prevQuestions.map(q => {
@@ -297,6 +280,7 @@ export default function ForumChatUI() {
     selectedRef.current = selected;
   }, [selected]);
 
+  // Thread room join: only changes thread room, does not affect school room
   useEffect(() => {
     setTypingUsers([]);
     if (selected?._id && socketRef.current) {
@@ -313,13 +297,6 @@ export default function ForumChatUI() {
         if (!res.data || !res.data._id) {
           throw new Error('Invalid question data');
         }
-        console.log('Fetched question data:', res.data); // Debug
-        console.log('Answers with replies:', res.data.answers?.map(ans => ({
-          answerId: ans._id,
-          replyCount: ans.replies?.length || 0
-        }))); // Debug
-
-        // Ensure author defaults for question, answers, and replies
         const safeData = {
           ...res.data,
           author: res.data.author ?? { fullName: 'Anonymous', _id: '', role: '' },
@@ -422,8 +399,6 @@ export default function ForumChatUI() {
               .then(res => {
                 const newQuestionId = res.data._id;
                 addToast('Question posted successfully!', 'success');
-
-                // Fetch full question
                 return axios.get(`${API}/forum/questions/${newQuestionId}`, { params: { schoolName } })
                   .then(fetchRes => {
                     let fullQuestion = fetchRes.data;
@@ -549,12 +524,12 @@ export default function ForumChatUI() {
                   itemId={selected.author?._id ?? ''}
                 />
                 <ReplyRenderer
-                  replies={selected.replies?.filter(r => r != null) ?? []} // Null filter
+                  replies={selected.replies?.filter(r => r != null) ?? []}
                   onReplySubmit={(text, imgs, parentReplyId, forum_question_id, forum_answer_id) =>
                     axios.post(`${API}/forum/replies`, {
                       schoolName,
                       forum_question_id: forum_question_id || selected._id,
-                      forum_answer_id: forum_answer_id,
+                      forum_answer_id,
                       text,
                       author: user._id,
                       authorType: user.role,
@@ -574,7 +549,7 @@ export default function ForumChatUI() {
                   currentUserId={user._id}
                   questionId={selected._id}
                 />
-                {(selected.answers || []).filter(ans => ans != null).map(ans => ( // Null filter
+                {(selected.answers || []).filter(ans => ans != null).map(ans => (
                   <div key={ans._id}>
                     <Message
                       author={ans.author?.fullName || 'Anonymous'}
@@ -590,7 +565,7 @@ export default function ForumChatUI() {
                       userName={user.fullName}
                     />
                     <ReplyRenderer
-                      replies={ans.replies?.filter(r => r != null) ?? []} // Null filter
+                      replies={ans.replies?.filter(r => r != null) ?? []}
                       onReplySubmit={(text, imgs, parentReplyId, forum_question_id, forum_answer_id) =>
                         axios.post(`${API}/forum/replies`, {
                           schoolName,

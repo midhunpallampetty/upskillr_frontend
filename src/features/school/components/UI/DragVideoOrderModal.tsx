@@ -79,42 +79,49 @@ const DragVideoOrderModal: React.FC<DragVideoOrderModalProps> = ({
           </button>
         </div>
 
-        <ReactSortable
-          list={localVideos}
-          setList={setLocalVideos}
-          animation={250}
-          easing="cubic-bezier(0.25, 1, 0.5, 1)"
-          delay={5}
-          delayOnTouchOnly={true}
-          tag="ul"
-          className="space-y-3"
-          ghostClass="opacity-50"
+<ReactSortable
+  list={localVideos}
+  setList={setLocalVideos}
+  animation={250}
+  easing="cubic-bezier(0.25, 1, 0.5, 1)"
+  delay={5}
+  delayOnTouchOnly={true}
+  tag="ul"
+  className="space-y-3"
+  ghostClass="opacity-50"
+>
+  {localVideos.length === 0 ? (
+    <li className="text-gray-500 text-center p-4 bg-gray-100 rounded-xl">
+      No videos available to reorder.
+    </li>
+  ) : (
+    localVideos.map((video) => (
+      <li
+        key={video._id}
+        data-id={video._id}
+        className="flex items-center p-4 rounded-xl bg-gray-100 cursor-grab hover:bg-gray-200 shadow-sm select-none"
+      >
+        <svg
+          className="w-6 h-6 mr-4 text-gray-500 flex-shrink-0"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
         >
-          {localVideos.map((video) => (
-            <li
-              key={video._id}
-              data-id={video._id}
-              className="flex items-center p-4 rounded-xl bg-gray-100 cursor-grab hover:bg-gray-200 shadow-sm select-none"
-            >
-              <svg
-                className="w-6 h-6 mr-4 text-gray-500 flex-shrink-0"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 8h16M4 16h16"
-                />
-              </svg>
-              <span className="text-gray-700 font-medium">
-                {video.videoName || video.title || 'Untitled Video'}
-              </span>
-            </li>
-          ))}
-        </ReactSortable>
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M4 8h16M4 16h16"
+          />
+        </svg>
+        <span className="text-gray-700 font-medium">
+          {video.videoName || video.title || 'Untitled Video'}
+        </span>
+      </li>
+    ))
+  )}
+</ReactSortable>
+
 
         <div className="mt-8 flex justify-end space-x-4">
           <button

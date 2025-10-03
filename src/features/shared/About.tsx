@@ -23,22 +23,7 @@ const About = () => (
       <p style={{ fontSize: '1.4em', marginBottom: '2em' }}>
         Upskillr empowers schools, teachers, and students by providing interactive live classes, certified schools directory, and always-on technical support. Our mission is to transform learning experiences with seamless, intuitive, and reliable technology.
       </p>
-      <a
-        href="/studentRegister"
-        style={{
-          display: 'inline-block',
-          backgroundColor: '#ff69b4', // Pink
-          color: '#fff',
-          padding: '0.75em 1.5em',
-          fontSize: '1.25em',
-          borderRadius: '4px',
-          textDecoration: 'none',
-          marginRight: '1em',
-          cursor: 'pointer',
-        }}
-      >
-        🚀 Get Started
-      </a>
+      
    
     </div>
   </div>

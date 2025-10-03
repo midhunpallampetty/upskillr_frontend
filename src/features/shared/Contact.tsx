@@ -16,9 +16,7 @@
     <a href="/" className="inline-block border border-white px-6 py-3 text-lg rounded-lg mr-4 hover:bg-white hover:text-purple-600 transition">
       🏠 Back to Home
     </a>
-    <a href="/forum" className="inline-block border border-white px-6 py-3 text-lg rounded-lg hover:bg-white hover:text-purple-600 transition">
-      ❓ Support Center
-    </a>
+  
   </div>
 </div>
 

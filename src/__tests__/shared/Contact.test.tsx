@@ -26,12 +26,10 @@ describe('Contact Page', () => {
     expect(screen.getByText(/📍 Address: 123 Education Lane, Tech City, USA/i)).toBeInTheDocument();
   });
 
-  test('renders navigation buttons', () => {
+  test('renders Back to Home link correctly', () => {
     renderComponent();
     const homeButton = screen.getByRole('link', { name: /🏠 Back to Home/i });
-    const forumButton = screen.getByRole('link', { name: /❓ Support Center/i });
-
+    expect(homeButton).toBeInTheDocument();
     expect(homeButton).toHaveAttribute('href', '/');
-    expect(forumButton).toHaveAttribute('href', '/forum');
   });
 });

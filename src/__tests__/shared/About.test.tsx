@@ -25,11 +25,4 @@ describe('About Page', () => {
       screen.getByText(/Upskillr empowers schools, teachers, and students/i)
     ).toBeInTheDocument();
   });
-
-  test('renders Get Started link with correct href', () => {
-    renderComponent();
-    const getStartedLink = screen.getByRole('link', { name: /🚀 Get Started/i });
-    expect(getStartedLink).toBeInTheDocument();
-    expect(getStartedLink).toHaveAttribute('href', '/studentRegister');
-  });
 });

@@ -521,32 +521,78 @@ const CourseCard: React.FC<CourseCardProps> = ({
   );
 };
 
-// Video Player component
+// Updated Video Player component
 const VideoPlayer: React.FC<{ url: string; startPosition: number }> = ({
   url,
   startPosition,
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [duration, setDuration] = useState(0);
 
   useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.currentTime = startPosition;
-      videoRef.current.play().catch(() => {
-        // Autoplay might be blocked, ignore error
-      });
+    const video = videoRef.current;
+    if (video) {
+      video.currentTime = startPosition;
+      setIsPlaying(false);
+
+      const handleLoadedMetadata = () => {
+        setDuration(video.duration);
+      };
+
+      video.addEventListener('loadedmetadata', handleLoadedMetadata);
+      return () => video.removeEventListener('loadedmetadata', handleLoadedMetadata);
     }
   }, [startPosition]);
 
+  const handlePlay = () => {
+    setIsPlaying(true);
+  };
+
+  const handlePause = () => {
+    setIsPlaying(false);
+  };
+
+  // Calculate progress percent for the marker (use duration once loaded)
+  const progressPercent = duration > 0 ? Math.min((startPosition / duration) * 100, 100) : 0;
+
   return (
-    <video
-      ref={videoRef}
-      controls
-      className="w-full max-h-[600px] rounded-xl"
-      preload="metadata"
-    >
-      <source src={url} type="video/mp4" />
-      Your browser does not support the video tag.
-    </video>
+    <div className="relative w-full">
+      <video
+        ref={videoRef}
+        controls
+        className="w-full max-h-[600px] rounded-xl"
+        preload="metadata"
+        onPlay={handlePlay}
+        onPause={handlePause}
+      >
+        <source src={url} type="video/mp4" />
+        Your browser does not support the video tag.
+      </video>
+
+      {/* Progress marker ribbon (red bar) at the bottom showing last position */}
+      <div className="absolute bottom-2 left-0 right-0 h-1 bg-gray-300 rounded mx-4">
+        <div
+          className="h-1 bg-red-500 rounded"
+          style={{ width: `${progressPercent}%` }}
+          title={`Last watched position: ${Math.round(progressPercent)}%`}
+        ></div>
+      </div>
+
+      {/* Overlay with play button if not playing */}
+      {!isPlaying && (
+        <div
+          className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 cursor-pointer text-white text-6xl rounded-xl"
+          onClick={() => {
+            videoRef.current?.play();
+            setIsPlaying(true);
+          }}
+          title="Click to play video from last position"
+        >
+          ▶
+        </div>
+      )}
+    </div>
   );
 };
 

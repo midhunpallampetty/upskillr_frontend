@@ -26,7 +26,8 @@ import {
   ArrowLeft, 
   Upload, 
   AlertCircle, 
-  Loader2 
+  Loader2,
+  Eye 
 } from 'lucide-react';
 
 const SchoolProfilePage = () => {
@@ -71,6 +72,25 @@ const SchoolProfilePage = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const showFullSizeImage = (imageUrl: string, alt: string, width: number = 600, height: number = 400) => {
+    if (imageUrl) {
+      Swal.fire({
+        imageUrl,
+        imageWidth: width,
+        imageHeight: height,
+        imageAlt: alt,
+        showCloseButton: true,
+        showConfirmButton: false,
+        background: isDarkMode ? '#1f2937' : '#ffffff',
+        color: isDarkMode ? '#ffffff' : '#000000',
+        customClass: {
+          popup: 'rounded-lg',
+          image: 'rounded-lg shadow-lg'
+        }
+      });
+    }
   };
 
   const handleUpdate = async () => {
@@ -188,6 +208,9 @@ const SchoolProfilePage = () => {
     );
   }
 
+  const profileImageSrc = imagePreview || form.image || '';
+  const coverImageSrc = coverPreview || form.coverImage || '';
+
   return (
     <div className={`min-h-screen transition-colors duration-300 ${
       isDarkMode 
@@ -212,7 +235,7 @@ const SchoolProfilePage = () => {
             <div
               className="h-40 bg-cover bg-center relative overflow-hidden rounded-t-2xl"
               style={{ 
-                backgroundImage: `url(${coverPreview || form.coverImage || ''})`,
+                backgroundImage: `url(${coverImageSrc})`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center'
               }}
@@ -224,13 +247,28 @@ const SchoolProfilePage = () => {
                 onUpload={(file) => handleImageUpload(file, 'cover')}
                 label="Change Cover"
               />
+              <button
+                type="button"
+                onClick={() => showFullSizeImage(coverImageSrc, 'School Banner', 800, 300)}
+                disabled={!coverImageSrc || uploadingCover}
+                className={`absolute top-3 right-3 flex items-center space-x-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                  coverImageSrc 
+                    ? 'bg-white/90 hover:bg-white text-gray-900 shadow-lg hover:shadow-md' 
+                    : 'bg-gray-400/50 cursor-not-allowed opacity-50'
+                } ${uploadingCover ? 'pointer-events-none' : ''}`}
+              >
+                <Eye className="w-4 h-4" />
+                <span>View</span>
+              </button>
               <div className="absolute bottom-0 left-0 right-0 p-4">
                 <div className="flex items-center space-x-4">
                   <div className="relative group">
                     <img
-                      src={imagePreview || form.image || ''}
+                      src={profileImageSrc}
                       alt="School Logo"
-                      className="w-16 h-16 rounded-full border-4 border-white shadow-lg object-cover"
+                      className={`w-16 h-16 rounded-full border-4 border-white shadow-lg object-cover ${
+                        uploadingImage ? 'opacity-50' : ''
+                      }`}
                     />
                     <ImageUpload
                       isDarkMode={isDarkMode}
@@ -239,6 +277,18 @@ const SchoolProfilePage = () => {
                       label=""
                       isProfile
                     />
+                    <button
+                      type="button"
+                      onClick={() => showFullSizeImage(profileImageSrc, 'School Logo', 400, 400)}
+                      disabled={!profileImageSrc || uploadingImage}
+                      className={`absolute -top-2 -right-2 flex items-center space-x-1 p-1.5 rounded-full shadow-lg transition-all duration-200 ${
+                        profileImageSrc 
+                          ? 'bg-white/90 hover:bg-white text-gray-900 hover:shadow-md' 
+                          : 'bg-gray-400/50 cursor-not-allowed opacity-50'
+                      } ${uploadingImage ? 'pointer-events-none' : ''}`}
+                    >
+                      <Eye className="w-3 h-3" />
+                    </button>
                   </div>
                   <div className="text-white">
                     <h2 className="text-xl font-bold mb-1">{form.name || 'N/A'}</h2>
